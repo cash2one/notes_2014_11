@@ -1,9 +1,14 @@
 
 * 安装Rails
-ruby -v确认的的Mac的ruby版本是2.0，比Rails需要的1.9要高。这很好，Mac确实对程序员很友好的一个系统。然后我sudo gem install rails，安装rails，但是遇到了一些权限问题，导致我无法成功安装。一查发现是我的/usr和/usr/local目录的权限太宽了，是777！我对它们chmod 755后，问题解决。参考此文。
+ruby -v确认的的Mac的ruby版本是2.0，比Rails需要的1.9要高。这很好，Mac确实对程序员
+很友好的一个系统。然后我sudo gem install rails，安装rails，但是遇到了一些权限问题，
+导致我无法成功安装。一查发现是我的/usr和/usr/local目录的权限太宽了，是777！我对它
+们chmod 755后，问题解决。参考此文。
 
-然后，我用rails new blog来生成一个app，发现总是失败，失败原因是缺少依赖，需要通过gem install来安装某个包。我装好后，rails new blog继续失败，提示我通过gem install安装另外一个包。。。如此我一个一个地安装好了依赖后，终于new blog成功了。Rails给我的感觉是：
-Rails的依赖太多了，这个框架真的如传说中的那么庞大臃肿。
+然后，我用rails new blog来生成一个app，发现总是失败，失败原因是缺少依赖，需要通过
+gem install来安装某个包。我装好后，rails new blog继续失败，提示我通过gem install
+安装另外一个包。。。如此我一个一个地安装好了依赖后，终于new blog成功了。Rails给我
+的感觉是：Rails的依赖太多了，这个框架真的如传说中的那么庞大臃肿。
 
 暂停，今晚继续学习 - 2014-01-26 12:27:36
 
@@ -16,26 +21,37 @@ Rails的依赖太多了，这个框架真的如传说中的那么庞大臃肿。
   2. gem source -a http://ruby.taobao.org
   3. gem sources -l
   4. rails new blog --skip-bundle
-  5. vi blog/Gemfile (source 'https://rubygems.org' -> source 'http://ruby.taobao.org')   
+  5. vi blog/Gemfile (source 'https://rubygems.org' -> source
+     'http://ruby.taobao.org')
   6. sudo gem install bundle
   7. cd blog
   8. rails server
   9. http://localhost:3000  
 
-Open the file config/routes.rb in your editor.This is your application's routing file which holds entries in a special DSL (domain-specific language) that tells Rails how to connect incoming requests to controllers and actions. 
+Open the file config/routes.rb in your editor.This is your
+application's routing file which holds entries in a special DSL
+(domain-specific language) that tells Rails how to connect incoming
+requests to controllers and actions.
 
-于是，我们修改get "welcome/index"为root "welcome#index”，告诉rails，将blog这个application的根页面访问请求映射到'welcome’这个controller的’index’这个action。
+于是，我们修改get "welcome/index"为root "welcome#index”，告诉rails，将
+blog这个application的根页面访问请求映射到'welcome’这个
+controller的’index’这个action。
 
-所有的Controller都继承自ApplicationController基类，在各个Controller类中定义method就相当于定义action（看来，method == action）
+所有的Controller都继承自ApplicationController基类，在各个Controller类中
+定义method就相当于定义action（看来，method == action）
 
 用erb生成了一个提交表单的HTML页面。erb应该是类似于jinja的HTML模板库。
 
-Model在5.4节被引入，MVC三者终于凑齐了。Controller和View我之前就理解，而Model，我看了下这一节发现它和数据库相关，具体地说，是和数据库里的某张表相关。
+Model在5.4节被引入，MVC三者终于凑齐了。Controller和View我之前就理解，而
+Model，我看了下这一节发现它和数据库相关，具体地说，是和数据库里的某张表
+相关。
 
-rails g model Post title:string text:text
-这行语句的效果为：创建一个名叫Post的Model，并（隐式）创建一个名为posts的table，table中有两个字段。这里还有一个对应关系：Modle的attributes对应设table中的column。
+rails g model Post title:string text:text这行语句的效果为：创建一个名叫Post的
+Model，并（隐式）创建一个名为posts的table，table中有两个字段。这里还有一个对应关
+系：Modle的attributes对应设table中的column。
 
 改变了Model之后，需要执行rake db:migrate来应用migrate。
 
 进展 - 2014-01-31 01:42:20
 已经学习到了“5.9 Adding links”，学了50%。感觉这个Guides真赞啊，手把手详细地介绍Rails框架。
+

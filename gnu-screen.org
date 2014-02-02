@@ -9,15 +9,17 @@
 也很简单，输入screen即可。
 
 * 常用指令：
-| 指令          | 作用                                                                                                 |
+| 指令          | 作用                                                                                               |
 |---------------+----------------------------------------------------------------------------------------------------|
 | screen -ls    | 查看所有session，包括Attached的和Detached的session。                                               |
 | screen -r xxx | Attach上已被detached的id为xxx的session。可以让自己立刻回到上次的工作状态，非常强大。               |
 | screen -S xxx | 创建一个名字为xxx的session。注意，如果在.screenrc里面能把sessionname配置项指定了的话，-S是无效的。 |
 
 * 如何配置？
-配置跟vim类似，是在~目录下，建立一个~/.screenrc的文件，在里面写入配置，比如说screen状态行（标签行），还有按键映射，自动创建的session名字和标签名字等等。下面就是状态行就是通过配置文件配置出来的：
-[0$ zy 1-$ zy 2$ zy 3$* zy][ (F8)Detach (F9)New (F10)Rename (F11)Pre (F12)Next ]
+配置跟vim类似，是在~目录下，建立一个~/.screenrc的文件，在里面写入配置，比如说
+screen状态行（标签行），还有按键映射，自动创建的session名字和标签名字等等。下面就
+是状态行就是通过配置文件配置出来的：[0$ zy 1-$ zy 2$ zy 3$* zy][ (F8)Detach
+(F9)New (F10)Rename (F11)Pre (F12)Next ]
 
 * 按键映射：
 可以自由地在~/.screenrc文件里面设定按键映射。下面是例子：
@@ -29,15 +31,15 @@
   bindkey -k F1 prev  
 #+END_SRC
 
-其中 k; 和 F1
-为F10和F11的按键代码，其他所有的按键代码在这里： [[http://www.gnu.org/software/screen/manual/html_node/Input-Translation.html#Input-Translation][http://www.gnu.org/software/screen/manual/html\_node/Input-Translation.html#Input-Translation]] 
+其中 k; 和 F1为F10和F11的按键代码，其他所有的按键代码在这里：
+ [[http://www.gnu.org/software/screen/manual/html_node/Input-Translation.html#Input-Translation][http://www.gnu.org/software/screen/manual/html\_node/Input-Translation.html#Input-Translation]] 
 
 * 总结：
 screen使用简单，功能强大，提高程序员的工作效率，是个典型的Unix风格的软件。
 
 * 问题记录
 ** screen -S xxx为何无法成功改名字？
-可能是你在~/.screenrc中设置了sessionname，注释掉这一行即可。         
+可能是你在~/.screenrc中设置了sessionname，注释掉这一行即可。
 ** 为什么用了screen之后经常会闪屏？特别是按tab的时候？眼都快被闪瞎了。
 闪屏是screen提供给用户的一个特性，你可以关掉它。指令是CTRL+a, CTRL+g。参考[[http://easwy.com/blog/archives/disable-vbell-of-screen/][此文]]。 
 ** 状态行怎么老是在最下面？能够设置到上面吗？
@@ -50,13 +52,16 @@ screen使用简单，功能强大，提高程序员的工作效率，是个典�
 默认情况下，新生成的标签的名字为"x$* bash"的字样，如果想让名字为空，好重命名，可以在~/.screenrc中加入：shelltitle
 ""，即主动设为空。|
 ** 为何使用了screen之后，我的F1到F4都不管用了？
-可能是你的~/.screenrc中有这么一行：term linux，这个配置导致你的F1和F4被屏蔽了，变成了换行+P等等。解决方法是去掉这一行，不设置终端（这个配置的作用？）
-。最后执行source ~/.screenrc。
+可能是你的~/.screenrc中有这么一行：term linux，这个配置导致你的F1和F4被屏蔽了，变
+成了换行+P等等。解决方法是去掉这一行，不设置终端（这个配置的作用？）。最后执行
+source ~/.screenrc。
 ** screen默认的command key是\^A，如何更换？
-在~/.screenrc文件中重新绑定即可，例如：escape \^Vv，就可以绑定为\^V，并把 literal command character设置为v，最后执行source ~/.screenrc。
-参考：[[http://www.gnu.org/software/screen/manual/screen.html#Command-Character][http://www.gnu.org/software/screen/manual/screen.html#Command-Character]]
+在~/.screenrc文件中重新绑定即可，例如：escape \^Vv，就可以绑定为\^V，并把
+literal command character设置为v，最后执行source ~/.screenrc。参考：
+[[http://www.gnu.org/software/screen/manual/screen.html#Command-Character][http://www.gnu.org/software/screen/manual/screen.html#Command-Character]]
 ** 为何我一切换标签，屏幕缓冲区就立刻被清空？
-很可能是你的终端类型没设对。假如你用的是Mac上的自带终端，该终端的类型是：xterm-256color。所以你需要在termcapinfo里面加上xterm-256color。
-termcapinfo xterm-256color|xterm|xterms|xs|rxvt ti@:te@
+很可能是你的终端类型没设对。假如你用的是Mac上的自带终端，该终端的类型是：
+xterm-256color。所以你需要在termcapinfo里面加上xterm-256color。termcapinfo
+xterm-256color|xterm|xterms|xs|rxvt ti@:te@
 ** 如何将各个标签绑定到某个快捷键上：
 [[http://stackoverflow.com/questions/4653572/how-do-i-get-the-f1-f12-keys-to-switch-screens-in-gnu-screen-in-cygwin-when-conn][http://stackoverflow.com/questions/4653572/how-do-i-get-the-f1-f12-keys-to-switch-screens-in-gnu-screen-in-cygwin-when-conn]]
