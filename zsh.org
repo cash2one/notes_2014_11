@@ -1,3 +1,5 @@
+#+TITLE: Zsh (Z shell) - A powerful shell (may be) better than bash shell
+
 * oh-my-zsh
 我是zsh的初学者，为了尽快入手zsh，我选择了使用 [[https://github.com/robbyrussell/oh-my-zsh][oh-my-zsh]] （在MacTalk的 [[http://macshuo.com/?p%3D676][终极 Shell]]
 一文的介绍下）。
