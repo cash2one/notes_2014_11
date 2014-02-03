@@ -1,4 +1,5 @@
-#+TITLE: Zsh (Z shell) - A powerful shell (may be) better than bash shell
+#+TITLE: Zsh (Z shell) - A powerful shell (maybe) better than bash shell
+#+OPTIONS: ^:{}
 
 * oh-my-zsh
 我是zsh的初学者，为了尽快入手zsh，我选择了使用 [[https://github.com/robbyrussell/oh-my-zsh][oh-my-zsh]] （在MacTalk的 [[http://macshuo.com/?p=676][终极 Shell]]一文的介绍下）。
@@ -42,4 +43,14 @@ zle
 - *sharehistory* 代表在多个zsh会话中，共享一份command history。
 - *incappendhistory* 代表在command被执行之前就把它保存到history中。
 
-** TODO 禁止多会话共享历史 
+** 禁止多会话间共享command history
+多会话间共享command history是oh-my-zsh默认开启的特性，我用起来感觉不适应，因为我
+不同的会话是用来干不同的事情的，它们间的comand history不应该混杂到一起，所以我想
+关闭它。
+
+该特性相关的配置项是share_history，开启它的指令是setopt share_history。我根据Vim
+的使用经验猜测，关闭它的指令是setopt no_share_history。试了一下，发现我猜得没错。
+
+下面是具体的执行步骤；
+1. 打开~/.zshrc，加入setopt no_share_history
+2. 执行source ~/.zshrc
