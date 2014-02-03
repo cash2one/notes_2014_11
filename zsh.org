@@ -1,0 +1,44 @@
+* oh-my-zsh
+我是zsh的初学者，为了尽快入手zsh，我选择了使用 [[https://github.com/robbyrussell/oh-my-zsh][oh-my-zsh]] （在MacTalk的 [[http://macshuo.com/?p%3D676][终极 Shell]]
+一文的介绍下）。
+
+oh-my-zsh，据作者robbyrussell介绍，是一个开源的，社区驱动的，用来管理zsh配置的框
+架。它附带了 *数以吨记* 的有价值的函数，插件和主题，以及其它让使用者“大呼过瘾”
+的有趣玩意……
+
+* zsh配置相关
+** 查看所有选项
+直接在zsh中输入 *setopt* 即可查看。在我安装好oh-my-zsh后，setopt的结果如下：
+
+#+BEGIN_SRC sh
+➜  ~  setopt             
+alwaystoend
+autocd
+autonamedirs
+autopushd
+cdablevars
+completeinword
+extendedhistory
+noflowcontrol
+histexpiredupsfirst
+histignoredups
+histignorespace
+histverify
+incappendhistory
+interactive
+login
+longlistjobs
+monitor
+promptsubst
+pushdignoredups
+pushdminus
+sharehistory
+shinstdin
+zle
+#+END_SRC
+
+在上述配置项中： 
+- *sharehistory* 代表在多个zsh会话中，共享一份command history。
+- *incappendhistory* 代表在command被执行之前就把它保存到history中。
+
+** 禁止多会话共享历史 
