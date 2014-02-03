@@ -2,7 +2,7 @@
 我是zsh的初学者，为了尽快入手zsh，我选择了使用 [[https://github.com/robbyrussell/oh-my-zsh][oh-my-zsh]] （在MacTalk的 [[http://macshuo.com/?p%3D676][终极 Shell]]
 一文的介绍下）。
 
-oh-my-zsh，据作者robbyrussell介绍，是一个开源的，社区驱动的，用来管理zsh配置的框
+据作者robbyrussell介绍，oh-my-zsh是一个开源的，社区驱动的，用来管理zsh配置的框
 架。它附带了 *数以吨记* 的有价值的函数，插件和主题，以及其它让使用者“大呼过瘾”
 的有趣玩意……
 
