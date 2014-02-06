@@ -55,3 +55,26 @@ Model，并（隐式）创建一个名为posts的table，table中有两个字段
 进展 - 2014-01-31 01:42:20
 已经学习到了“5.9 Adding links”，学了50%。感觉这个Guides真赞啊，手把手详细地介绍Rails框架。
 
+
+
+* Test :hsdf:text:
+H_2 O
+
+E=mc^2
+
+=git=
+
+_hehe_
+
++haha+
+
+/hoho/
+
+* 
+
+
+
+* CANCELLED <2014-02-09 日>					  :CANCELLED:
+  - State "CANCELLED"  from "TODO"       [2014-02-06 四 22:37]
+** 
+
