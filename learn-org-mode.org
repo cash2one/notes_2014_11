@@ -1,0 +1,21 @@
+* 学习Org-mode的官方手册
+地址是：[[http://orgmode.org/manual/index.html][The Org Manual]]。这份文档制作很精良，而且（显然）是用Org-mode写的。
+
+** 
+
+** 语言支持
+Org-mode支持大量的语言，除了常见的C++，Java，Python外，甚至还支持Graphviz，
+Gnuplot，Plantuml等复杂的绘图语言，非常的强大。这是[[http://orgmode.org/manual/Languages.html#Languages][Org-Mode支持的语言列表]]。
+
+* 学习"Org Mode - Organize Your Life In Plain Text!"
+这篇文章据说非常经典，但确实非常长。地址是：[[http://doc.norang.ca/org-mode.html]]
+
+** DONE 前六章读完 <2014-02-06 四>
+
+第六章讲了如何快速地 *Add New Tasks*, 包括下面几个要点：
+1. 用Capture Mode来快速Add Task
+2. 所有新增的Tasks都加入到一个专门的文件中（refile.org）
+4. 为每类Task（如Phone，Meeting，普通Task等）各预设一个模板
+5. 快速地完成Task的添加，不中断手头的工作
+
+

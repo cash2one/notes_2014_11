@@ -1,29 +1,5 @@
-
-* Health and Recreation
-  :PROPERTIES:
-  :CATEGORY: Health
-  :END:
-  ...
-* HOLD House Maintenance
-  SCHEDULED: <2014-02-04 二>
-  - State "HOLD"       from "WAITING"    [2014-02-04 二 23:05]
-  - State "WAITING"    from "DONE"       [2014-02-04 二 23:05]
-  - State "PHONE"      from "CANCELLED"  [2014-02-04 二 23:05]
-  - State "HOLD"       from "WAITING"    [2014-02-04 二 23:03]
-  - State "WAITING"    from "DONE"       [2014-02-04 二 23:03]
-  - State "NEXT"       from "CANCELLED"  [2014-02-04 二 23:03]
-  - State "CANCELLED"  from "WAITING"    [2014-02-04 二 23:02]
-  - State "WAITING"    from "DONE"       [2014-02-04 二 23:02]
-  - State "DONE"       from "WAITING"    [2014-02-04 二 23:02]
-  - State "WAITING"    from "DONE"       [2014-02-04 二 23:01]
-  - State "DONE"       from "WAITING"    [2014-02-04 二 23:01]
-  - State "HOLD"       from "WAITING"    [2014-02-04 二 23:00]
-  - State "WAITING"    from "DONE"       [2014-02-04 二 23:00]
-  - State "PHONE"      from "CANCELLED"  [2014-02-04 二 23:00]
-  - State "CANCELLED"  from "HOLD"       [2014-02-04 二 23:00]
-  CLOCK: [2014-02-04 二 18:30]
-  :PROPERTIES:
-  :CATEGORY: House
-  :END:
+#+FILETAGS: REFILE
+* TODO Read org-mode
+  CLOCK: [2014-02-06 四 23:02]--[2014-02-06 四 23:02] =>  0:00
 
 
