@@ -1,13 +1,20 @@
 * 学习Org-mode的官方手册
 地址是：[[http://orgmode.org/manual/index.html][The Org Manual]]。这份文档制作很精良，而且（显然）是用Org-mode写的。
 
-** 
+** Wiki式的Inner link
+Org-mode支持wiki式的内部链接，格式为：
+
+#+BEGIN_SRC org
+[[file:org-mode.org][Org Mode - Organize Your Life In Plain Text!]]
+#+END_SRC 
+
+这就让org-mode拥有了写wiki的能力。
 
 ** 语言支持
 Org-mode支持大量的语言，除了常见的C++，Java，Python外，甚至还支持Graphviz，
 Gnuplot，Plantuml等复杂的绘图语言，非常的强大。这是[[http://orgmode.org/manual/Languages.html#Languages][Org-Mode支持的语言列表]]。
 
-* 学习"Org Mode - Organize Your Life In Plain Text!"
+* 阅读"Org Mode - Organize Your Life In Plain Text!"
 这篇文章据说非常经典，但确实非常长。地址是：[[http://doc.norang.ca/org-mode.html]]
 
 ** DONE 前六章读完 <2014-02-06 四>
@@ -18,4 +25,18 @@ Gnuplot，Plantuml等复杂的绘图语言，非常的强大。这是[[http://or
 4. 为每类Task（如Phone，Meeting，普通Task等）各预设一个模板
 5. 快速地完成Task的添加，不中断手头的工作
 
+
+** 今天看完了的第18章的部分 <2014-02-07 五>
+拷贝了作者的emacs lisp脚本，实现了一键批量递归转化为HTML并拷贝到elvestar.com， *初步将我的新式的知识管理流程给打通了* ，意义很大！
+   
+* 升级Org-mode
+我机器上的org-mode版本较低，无法支持批量（Project）地导出为HTML，所以我尝试将其升级为最新的 *Stable version 8.2.5h (Jan. 2014)*
+
+升级步骤：
+1. git clone git://orgmode.org/org-mode.git
+2. cd org-mode
+3. sudo make 
+4. sudo make install （注意，默认是安装到/usr/share/emacs/site-lisp/org/）
+5. sudo mv \/usr/local/Cellar/emacs/24.3/share/emacs/24.3/lisp/org org_bak （备份老版的org-mode）
+6. sudo mv \/usr/share/emacs/site-lisp/org/ \/usr/local/Cellar/emacs/24.3/share/emacs/24.3/lisp/ 
 

@@ -1,0 +1,9 @@
+#+TITLE: Elvestar's notes
+
++ [[file:learn-org-mode.org][Learn Emacs Org-mode]]
++ [[file:stock.org][Stock]]
++ [[file:protobuf.org][Protobuf]]
++ [[file:buy-ipad.org][Buy iPad]]
++ [[file:ruby-on-rails.org][Ruby on Rails]]
++ [[file:zsh.org][Zsh (Z shell) - A powerful shell (maybe) better than bash shell]]
++ [[file:screen.org][Gnu Screen]]
