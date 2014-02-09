@@ -1,0 +1,29 @@
+
+* Life
+** TODO 办支持双币支付的招行信用卡
+   SCHEDULED: <2014-02-15 六>
+
+** TODO 将存单上的钱转出到招行
+   SCHEDULED: <2014-02-09 日>
+
+** TODO 剃头
+   SCHEDULED: <2014-02-09 日>
+
+** TODO 给妈妈买一个微波炉
+   SCHEDULED: <2014-02-15 六>
+*** TODO 完成一篇关于微波炉知识的笔记
+    SCHEDULED: <2014-02-15 六>
+   
+** TODO 买条牛仔裤，新买的外套要收货
+   SCHEDULED: <2014-02-15 六>
+
+** TODO 写完2014春节回家记
+   SCHEDULED: <2014-02-16 日>
+
+** TODO 买iPad Air
+   SCHEDULED: <2014-02-16 日>
+
+
+
+
+* Work

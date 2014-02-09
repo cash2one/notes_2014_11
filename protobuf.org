@@ -63,6 +63,5 @@ Protobuf在ZeroCopyStream上派生出了*CodedInputStream*/*CodedOutputStream*�
 
 ** TextFormat简介
 
-* TODO <2014-02-07 五>
 
-* DONE <2014-03-06 四>
+
