@@ -1,0 +1,36 @@
+#+TITLE: Tmux - GNU Screen的替代者
+
+
+* 前言
+
+*tmux* 是一种终端复用的工具。它可以在一个终端里虚拟出多个终端，而且可以将这些终端
+以 *session（会话）* 的形式保存下来，用户可以随时随地断开，随时随地连接。
+
+一些链接：
++ [[http://tmux.sourceforge.net/][tmux的主页]] （Sourceforge的，需要用VPN登陆）
++ [[http://www.openbsd.org/cgi-bin/man.cgi?query%3Dtmux&sektion%3D1][tmux的用户手册]]
+
+我用了很久的screen，在使用过程中踩了不少坑，也排了不少坑（参考 [[file:screen.org][screen]] ）。现在我
+又遇到了一个screen与vim的兼容问题，导致很多vim插件的特殊符号无法显示（如倒三角和
+右三角），我决定这次先不排这个坑了，而是尝试一下据说是screen的替代者的 *tmux* 。
+
+* Quick Start
+我有screen的使用经验，我知道作为一种终端复用的工具最常用的操作是什么，所以我
+这里画了一张表格，列出screen的常用操作及其快捷键，同时还列出了tmux相应的快捷键。
+另外，我决定在上手之前，先不改默认的快捷键。
+
+| 操作            | screen            | tmux                     |
+|-----------------+-------------------+--------------------------|
+| 新建session     | screen -S xxx     | tmux new -s xxx          |
+| 断开session     | C-a d             | C-b d                    |
+| 连接session     | screen -dr xxx    | tmux                     |
+| 删除session     |                   | tmux kill-session -t xxx |
+| 列出全部session | screen -ls        | tmux ls                  |
+| 新建窗口        | C-a c             | C-b c                    |
+| 删除窗口        | C-d （shell指令） | C-d                      |
+| 下一个窗口      | C-a n             | C-b n                    |
+| 上一个窗口      | C-a p             | C-b p                    |
+  
+
+  
+

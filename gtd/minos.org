@@ -1,9 +1,47 @@
+#+TITLE: Minos Master 详细设计
 
 * Master
+
+** Notifier
+*** 通知模块的职责
+Minos的通知模块的职责是在数据分片传输就位时，通知下游的数据系统该数据分片
+（DataSlice）可用了。
+
+拿通知云图（CloudAtlas）来说，通知模块具体职责包括：
+1. 获取上次通知的时间点，以及通知间隔，获得一个有待通知的数据分片列表；
+2. 判断待通知的数据分片是否传输就位；
+3. 调用云图client的AddSlice接口，来对已就位的数据分片执行通知；
+4. 当成功为某个数据分片执行通知后，保存通知进度；
+
+*** 模块过程
+**** 为各个传输流调用通知接口
+Monitor类 *定期轮询* 所有的传输流，并以传输流的当前Checkpoint（类型为
+LogFlowMessage）作为参数，调用Notifier类的 *Notify()* 接口。
+
+**** 获取传输流未通知的DataSlice
+在Notifier的Notify()函数中，会
+
+**** 判断数据分片是否准备就绪
+通知模块有一个static的函数，专门用来判断某传输流的某数据分片是否已经就绪。函数原型如下：
+
+#+BEGIN_SRC C++
+static bool IsDataSliceReady(const LogFlowMessage& log_flow, 
+                             const DataSlice& data_slice);    
+#+END_SRC
+
+**** 执行通知
+为了不阻塞调用线程，Notifier的Notifier()接口的工作其实只是讲DataSlice添加到
+Notifier内部的通知队列中，然后立刻返回。有一个内部通知线程负责从通知队列中取
+DataSlice，然后执行真正的通知下游的过程。
+
+**** 通知成功后，将通知进度写回到传输流
+内部通知线程为某DataSlice通知成功后，会主动将通知进度写回传输流，传输流会把通知进
+度作为原信息定期保存起来。
+
+Notifier会调用LogFlowManager的GetLogFlow()接口来获取DataSlice的LogFlow。LogFlow提
+供了 *UpdateLatestNotifiedSlice()* 的接口，来供Notifier写回通知进度。
+
 ** Alarmer
 *** 报警逻辑抽取
 *** 报警逻辑详细设计
 
-** Notifier
-*** 整合针对三种下游执行通知的代码
-*** 

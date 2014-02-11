@@ -3,12 +3,13 @@
 ** TODO 办支持双币支付的招行信用卡
    SCHEDULED: <2014-02-15 六>
 
-** TODO 将存单上的钱转出到招行
+** CANCELLED 将存单上的钱转出到招行				  :CANCELLED:
    SCHEDULED: <2014-02-09 日>
+   - State "CANCELLED"  from "TODO"       [2014-02-10 一 00:23]
 
 ** TODO 剃头
-   SCHEDULED: <2014-02-09 日>
-
+   SCHEDULED: <2014-02-15 六>
+   
 ** TODO 给妈妈买一个微波炉
    SCHEDULED: <2014-02-15 六>
 *** TODO 完成一篇关于微波炉知识的笔记
@@ -23,7 +24,20 @@
 ** TODO 买iPad Air
    SCHEDULED: <2014-02-16 日>
 
-
-
+** TODO 把org-mode那篇经典文章看完
+   SCHEDULED: <2014-02-09 日>
+** DONE 清点一下自己的资产
+   SCHEDULED: <2014-02-09 日>
+   发现自己的只有不到9。
 
 * Work
+** TODO 职称评定申请
+   SCHEDULED: <2014-02-11 二>
+** TODO Minos报警模块开发
+   SCHEDULED: <2014-02-10 一>
+** TODO Minos通知模块三种下游的整合
+   SCHEDULED: <2014-02-10 一>
+** TODO 完成tmux.org
+   SCHEDULED: <2014-02-16 日>
+
+   
