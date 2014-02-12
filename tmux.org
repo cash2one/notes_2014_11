@@ -23,14 +23,18 @@
 |-----------------+-------------------+--------------------------|
 | 新建session     | screen -S xxx     | tmux new -s xxx          |
 | 断开session     | C-a d             | C-b d                    |
-| 连接session     | screen -dr xxx    | tmux                     |
-| 删除session     |                   | tmux kill-session -t xxx |
+| 连接session     | screen -dr xxx    | tmux attach -d -t xxx    |
+| 删除session     | 连续C-d（略搓）   | tmux kill-session -t xxx |
 | 列出全部session | screen -ls        | tmux ls                  |
 | 新建窗口        | C-a c             | C-b c                    |
 | 删除窗口        | C-d （shell指令） | C-d                      |
 | 下一个窗口      | C-a n             | C-b n                    |
 | 上一个窗口      | C-a p             | C-b p                    |
-  
+
+** 修改 prefix key (激活控制台的按键)
+
+** 一个很酷炫的操作
+C-b t，然后屏幕中间就出来一个时钟了。
 
   
 
