@@ -22,7 +22,7 @@
 ** TODO 写完2014春节回家记
    SCHEDULED: <2014-02-16 日>
 
-** TODO 买iPad Air
+** DONE 买iPad Air
    SCHEDULED: <2014-02-16 日>
 *** DONE 通过返利网在一号店下单，价格3348
 
@@ -34,8 +34,13 @@
 ** TODO 完成2013年度回顾
    SCHEDULED: <2014-02-15 六>
 
+** TODO 交（大量）发票
+   SCHEDULED: <2014-02-14 五>
+
+** TODO 提2月份的报销
+   SCHEDULED: <2014-02-21 五>
 * Work
-** TODO 职称评定申请
+** DONE 职称评定申请
    SCHEDULED: <2014-02-11 二>
 ** TODO Minos报警模块开发
    SCHEDULED: <2014-02-11 二>
@@ -46,10 +51,51 @@
     SCHEDULED: <2014-02-11 二>
 ** TODO 完成tmux.org
    SCHEDULED: <2014-02-16 日>
-** TODO Nova cmui网卡打满问题跟进
+** DONE Nova cmui网卡打满问题跟进
    SCHEDULED: <2014-02-11 二>
    
 ** TODO LSP 通知的代码美化
    SCHEDULED: <2014-02-17 一>
 ** TODO DtMeta 通知的代码美化
    SCHEDULED: <2014-02-20 四>
+** TODO pb_access定时刷新
+   SCHEDULED: <2014-02-12 三>
+** TODO 线下端口（9998）与线上端口（425）的处理
+** WAITING 帮晓璇迁移1份5级文本日志				    :WAITING:
+   SCHEDULED: <2014-02-12 三>
+   - State "WAITING"    from "TODO"       [2014-02-12 三 20:50]
+** DONE 帮荣讯迁移3份b2log
+   SCHEDULED: <2014-02-12 三>
+   - State "DONE"       from "WAITING"    [2014-02-13 四 13:30]
+   - State "WAITING"    from "TODO"       [2014-02-12 三 20:50]
+** TODO 帮张力将三份app日志通知到线上的dt-meta
+   SCHEDULED: <2014-02-12 三>
+** TODO 开始多Master的开发
+   SCHEDULED: <2014-02-13 四>
+
+** DONE AddNode 与 FallBack 在做BNS同步时才分别对待
+   SCHEDULED: <2014-02-12 三>
+** TODO Master通知时要兼容带log_module_id和不带log_module_id这两种情况
+** TODO 新建日志时，判断日志名是否重复
+** DONE 解决Checkpoint超过1M导致Master出core的问题
+   SCHEDULED: <2014-02-13 四>
+*** DONE Id为145的日志的重点看护
+** DONE Minos元信息的Snappy压缩
+   SCHEDULED: <2014-02-14 五>
+** TODO 完成Checkpoint存储的改造
+   SCHEDULED: <2014-02-20 四>
+** DONE 搭建Master的测试环境
+   SCHEDULED: <2014-02-14 五>
+** DONE Master支持time_format配置（与佳捷）
+   SCHEDULED: <2014-02-14 五>
+* Someday
+** TODO 学习Cocos2D
+*** DONE CocosD-x环境搭建
+    SCHEDULED: <2014-02-13 四>
+*** TODO 从折腾别人的工程开始入手。例如：[[http://code4app.net/category/cocos2d][Cocos2d source code examples]]
+    SCHEDULED: <2014-02-16 日>
+** TODO 阅读ctci
+*** 第一部分
+    SCHEDULED: <2014-02-16 日>
+** TODO 写一个用Vim打开b2log日志的插件（参考/user/local/share/vim/vim73下面的gzip.vim）
+** TODO 完成声韵输入法以及Trie树是介绍

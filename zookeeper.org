@@ -1,0 +1,23 @@
+
+* 使用问题记录
+** ZNode数据过大导致出core
+Zookeeper一般被用来存储系统的核心元数据，而不会用来作为一个普通的分布式存储系统。
+我在做Minos系统时，为了简便，把每个业务的各个节点的当前状态信息一并写入到一个ZK节
+点里。一开始没发现问题，直到有一天，某个业务的状态信息超过了1M，然后导致模块出
+core。
+
+默认情况下，ZK的ZNode存储的数据的限制是1M之内。虽然，这个限额是可配置的，但是官方
+文档极度不推荐将限额改大。见此链接：[[http://zookeeper.apache.org/doc/r3.3.3/zookeeperAdmin.html#Unsafe%2BOptions][Zookeeper的jute.maxbuffer配置项说明]]
+
+为了解决这个问题，我有如下的选择：
+1. 改大Zookeeper Server的jute.maxbuffer配置项，同时改大client的相关配置项（暂时未知）
+2. 对状态信息数据进行压缩后再写入ZK
+3. 不要将状态信息写到ZK，写到另外的分布式存储上面！ZK只存系统的关键性的元数据。
+
+方法1直接否定，太龌蹉，而且要找OP改配置重启，麻烦。方法2可行，根据测试，用Google
+的Snappy能将这些数据压缩4倍，能支撑一会。方法3是真正的解决之道，但是升级需要时间。
+
+* 参考文章
++ [[http://www.cnblogs.com/gpcuster/archive/2010/12/29/1921213.html][Zookeeper解惑]]
++ 
+

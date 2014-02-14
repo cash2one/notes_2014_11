@@ -1,7 +1,6 @@
 #+TITLE: Minos Master 详细设计
 
 * Master
-
 ** Notifier
 *** 通知模块的职责
 Minos的通知模块的职责是在数据分片传输就位时，通知下游的数据系统该数据分片
@@ -41,7 +40,100 @@ DataSlice，然后执行真正的通知下游的过程。
 Notifier会调用LogFlowManager的GetLogFlow()接口来获取DataSlice的LogFlow。LogFlow提
 供了 *UpdateLatestNotifiedSlice()* 的接口，来供Notifier写回通知进度。
 
+*** 通知条件
+获取传输流中所有 *没有被disabled* 的节点的synced的log_time列表，如果全部log_time
+均大于待通知的DataSlice的timestamp_end，则认为可以通知，否则，不能通知。
+
 ** Alarmer
+*** 报警模块的职责
++ 判断传输流是否发生了需要报警的异常
++ 向指定用户或组发送短信报警和邮件报警
+
+*** 主要过程
+1. 判断传输流是否发生了异常
+2. 根据预定义的报警策略，判断本次是否需要报警
+3. 发报警
+
+*** 传输流状态与报警条件
+Minos将数据传输到集群后，Master通过定期向下游计算系统执行 *通知* 来让下游使用这部
+分数据。所以说， *通知进度* 是传输流状态的最主要的标记，也是Master进行报警的最主
+要依据（目前是唯一依据。2014-02-12）
+
+*** 短信报警
+用户在新建Minos日志传输时，填写的是用户邮箱前缀（如zhongyi01），Master为了达成报
+警，有两个难点：
+1. 根据邮箱前缀来获取其对应的手机号
+2. 在程序中向指定手机号发短信
+
+对于第一点，可以用公司提供了一个用soap实现的公共服务来实现。不过这会为Master引入
+soap client。对于第二点，可以调用公司每台机器的gsmsend脚本。例子如下：
+#+BEGIN_SRC sh
+gsmsend -s emp01.baidu.com:15003 -s emp02.baidu.com:15003 18810001881@"I'm zhongyi"
+#+END_SRC
+
+幸运的是，我们组的OP自己开发了一个专门的报警工具。我只需要向指定的数据库表insert一
+条记录（包含邮箱前缀和报警内容），该报警工具就会触发报警。
+
+**** 短信报警表的结构
+#+BEGIN_EXAMPLE
+mysql> desc t_alarm_info;
++-----------+----------------+------+-----+---------+-------+
+| Field     | Type           | Null | Key | Default | Extra |
++-----------+----------------+------+-----+---------+-------+
+| data_id   | bigint(20)     | NO   | PRI | NULL    |       |
+| baseTime  | datetime       | NO   | PRI | NULL    |       |
+| mail_to   | varchar(10240) | YES  |     | NULL    |       |
+| mail_text | text           | YES  |     | NULL    |       |
+| gsm_to    | varchar(10240) | YES  |     | NULL    |       |
+| gsm_text  | text           | YES  |     | NULL    |       |
+| sendTime  | datetime       | YES  |     | NULL    |       |
+| is_send   | smallint(6)    | NO   | MUL | 0       |       |
++-----------+----------------+------+-----+---------+-------+
+#+END_EXAMPLE
+
+**** 向表中插入记录以触发报警
+向表中插入一条记录，就会触发报警。SQL语句如下：
+#+BEGIN_SRC sql
+insert into t_alarm_info (data_id, baseTime, gsm_to, gsm_text) values (7881, NOW(), "zhongyi01", "hehehehehe");
+#+END_SRC
+
+data_id对应于LDM中的log_plan_id，如果是Minos的话，则对应于log_module_id。由于
+data_id和baseTime共同构成了这种表的主键，所以两条记录这两个字段相同的话，第二条记
+录将会插入失败。
+
+*** 邮件报警
+
 *** 报警逻辑抽取
 *** 报警逻辑详细设计
+** 元信息管理
+*** 元信息压缩
+使用Snappy压缩，要处理
+
+** 传输流管理
+*** BNS同步
+*** 为慢节点调用Fallback
+*** 为MA选择MC
+** 监控与统计
+*** 全局counter
+在Master内，维护者一批全局的Counter，通过监控这些Counter及其变化，可以监控系统的整体运行情况。
+
+| Counter                  |   |
+|--------------------------+---|
+| 节点更新状态的次数       |   |
+| 对节点执行Fallback的次数 |   |
+| 短信报警的次数           |   |
+| 邮件报警的次数           |   |
+|                          |   |
+
+** 线下环境
+为线下Master的特殊配置：
+| 配置项           | 值                               |
+|------------------+----------------------------------|
+| FLAGS_is_offline | 设为true                         |
+| CloudAtlas       | 线下（在加好白名单之前，先禁掉） |
+| 旧DtMeta         | 线下                             |
+| LSP              | 线下                             |
+| 集群             | QA线下集群                       |
+| HDFS路径         | 规则不变                         |
+
 
