@@ -1,0 +1,99 @@
+
+* 前言
+大学时，上Java课时用过Eclipse，研究Android和写声韵输入法也在Eclipse上进行的，但迄
+今为止，我对Eclipse的了解仍不够系统。恰好我近期要研究HDFS的代码，我决定以此为契机，
+重新学习一次Eclipse。
+
+* 上手
+在 [[http://www.eclipse.org/downloads/][Eclipse官网]] 下载Eclipse Standard 4.3.1(196 MB)，解压并打开，按照帮助文档新建了
+HelloWorld项目，并新建了HelloWorld的类（注意：不是文件），然后运行，发现成功。
+
+初步感受：
+#+begin_example
+Mac下面的Eclipse的界面真不错，特别是全屏之后，非常之简洁。作为一个Unix环境下在终端中用Vim编程的程序员，我感到有一些羡慕。
+#+end_example
+
+* 在Eclipse上搭建Hadoop项目
+首先，下载hadoop-1.0.0的源码
+#+begin_example
+svn co http://svn.apache.org/repos/asf/hadoop/common/tags/release-1.0.0 hadoop-1.0.0
+#+end_example
+
+然后，cd到源码目录，执行 *ant eclipse* ，利用源码中的build.xml来生成hadoop-1.0.0
+的Eclipse项目配置文件。这个过程比较漫长。
+
+关于ant和ivy的介绍
+#+begin_example
+ant: Apache下的一种跨平台，可扩展，基于XML的Java构建工具。
+ivy: 一种用来管理项目外部依赖的构建工具。它是Apache Ant的子项目。
+#+end_example
+
+然后，在Eclipse中新建项目，起名叫做hadoop-1.0.0，项目目录设定为hadoop-1.0.0的源码
+目录，Eclipse会自动找到上一步中生成的项目配置。这样，hadoop-1.0.0的Eclipse项目就
+建好了。
+
+最后，我们在Eclipse的Package Explorer中找到hadoop-1.0.0的 *build.xml* ，右击它，
+点击"Run As" -> "Ant Build"，开始编译hadoop-1.0.0。然后就是漫长的编译，我的机器
+花了4分半才把它编译好。编译的产出物放在源码目录下的 *build* 目录。
+
+* 编辑器改进
+默认情况下，Eclipse的编辑器的功能是很弱的。还好，Eclipse提供了Emacs风格的按键绑定，
+这个设置项位于Preferences->General->Key里面。我们将Schema设为Emacs之后，Eclipse仿
+h佛被Emacs灵魂半附体（我的氪金左小指又要遭罪了。。）
+
+在Emacs Schema下，Eclipse提供了一个很人性化的特性。按下control + x，一小会后
+它会弹出一个快捷键清单。如下：
+
+[[./img/eclipse-1.png]]
+
+* Eclipse常用操作及其快捷键
+** 位置跳转
+| 位置               | 快捷键      |
+|--------------------+-------------|
+| 向前跳转           | command + [ |
+| 向后跳转           | command + ] |
+| 最近一次编辑的位置 | control + q |
+
+这里可以与Vim做一个类比。Vim的的向前/向后跳转的快捷键是control + o/i。
+
+** 查看类/方法的定义
+在类/方法名上右击，点击 *Open Declaration* ，即可跳转到其定义处。该操作的快捷键是
+*F3* 。
+
+跳转并查看完毕后，想要跳转回去的话，可以点击工具栏上的向右的箭头 *Back* 。快捷键
+是 *command + [* 。
+
+** 根据类名查找类
+点击"Navigate" -> "Open Type"，可以打开 *Open Type* 窗口，输入类名搜索即可（支持
+Glob通配符，如*或?）。该操作的快捷键是 *command + shift + t* 。
+
+[[./img/eclipse-2.png]]
+
+** 查看类的层次结构
+在类名上右击，再点 *Open Type Hierarchy* ，就可在左侧新建窗口查看该类的层次结构，
+比如说它继承自那个类，被那些类继承。如果它是接口类的话，还可以查看它被那些类实现。
+快捷键是 *F4* 。
+
+可以点 *Quick Type Hierarchy* ，来打开小型悬浮窗口来查看类的层次结构。快捷键是
+*command + t* 。
+
+** 查看类的成员
+在类名上右击，再点 *Quick Outline* 。即可打开悬浮窗口，查看该类的成员变量和方
+法。快捷键是 *command + o* 。
+
+悬浮窗口带有搜索功能（也支持通配），可以方便地找到我们想要的方法和变量。如图：
+
+[[./img/eclipse-3.png]]
+
+** 查看方法的调用关系
+在类名上右击，再点 *Open Call Hierarchy* ，就可查看方法的调用关系。快捷键是
+*control + alt + h* 。
+* 学习回顾
+** 初步感受Eclipse <2014-02-15 六>
+今天我通过搭建Hadoop项目来熟悉Eclipse，并通过《Hadoop技术内幕》一书来了解Eclipse
+的常用操作。在习惯了拿Vim当IDE使这么久之后，Mac下面的Eclipse给我带来一种清风拂面
+的感觉，Java的 *生态环境* 确实比C++好太多了。
+
+下一步我会：
+1. 继续拿Vim作为我的IDE，但我要汲取Eclipse的优点来继续改造Vim，更深地挖掘Vim的潜力；
+2. 探寻如何用Eclipse + CDT作为C/C++代码阅读工具；

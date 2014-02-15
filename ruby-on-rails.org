@@ -10,12 +10,9 @@ gem install来安装某个包。我装好后，rails new blog继续失败，提�
 安装另外一个包。。。如此我一个一个地安装好了依赖后，终于new blog成功了。Rails给我
 的感觉是：Rails的依赖太多了，这个框架真的如传说中的那么庞大臃肿。
 
-暂停，今晚继续学习 - 2014-01-26 12:27:36
-
-* 重新开始学习 - 2014-01-30 23:58:35
+* 学习Rails Guides (2014-01-30)
 
 参考：Mac上安装Rails。
-
 
   1. gem sources --remove https://rubygems.org/
   2. gem source -a http://ruby.taobao.org
@@ -42,9 +39,8 @@ controller的’index’这个action。
 
 用erb生成了一个提交表单的HTML页面。erb应该是类似于jinja的HTML模板库。
 
-Model在5.4节被引入，MVC三者终于凑齐了。Controller和View我之前就理解，而
-Model，我看了下这一节发现它和数据库相关，具体地说，是和数据库里的某张表
-相关。
+Model在5.4节被引入，MVC三者终于凑齐了。Controller和View我之前就理解，而Model，我
+看了下这一节发现它和数据库相关，具体地说，是和数据库里的某张表相关。
 
 rails g model Post title:string text:text这行语句的效果为：创建一个名叫Post的
 Model，并（隐式）创建一个名为posts的table，table中有两个字段。这里还有一个对应关
@@ -52,29 +48,67 @@ Model，并（隐式）创建一个名为posts的table，table中有两个字段
 
 改变了Model之后，需要执行rake db:migrate来应用migrate。
 
-进展 - 2014-01-31 01:42:20
-已经学习到了“5.9 Adding links”，学了50%。感觉这个Guides真赞啊，手把手详细地介绍Rails框架。
+** Rails的Post参数检验和错误提示
+参数校验（Validation）是在Module里面设定的，而错误提示的展现是放在View里面实现的。
 
+** Edit and update
+截止目前，CRUD四者中，CR已经实现。现在要实现U。按照Rails Guides，实现updates需的
+步骤如下：
+1. 在posts_controller中定义edit action
+2. 在views/posts/下面实现edit对应的view
+3. 在posts_controller中定义update action
+4. 修改posts index view，为每个post加上'Edit'，链接到对应edit view
 
+** 添加第二个model: comment
+首先，需要生成model：
+#+begin_src sh
+rails generate model Comment commenter:string body:text post:references
+#+end_src
 
-* Test :hsdf:text:
-H_2 O
+生成model之后，需要执行migration：
+#+begin_src sh
+rake db:migrate
+#+end_src 
 
-E=mc^2
+然后，我们要将两个model（comment和post）关联起来，让post可以通过post.comments来获
+取每篇文章的评论。我们要编辑app/models/post.rb，加上一行 *has_many :comments* 
 
-=git=
+我们还要修改config/routes.rb，让comments属于posts的 *nested resource*
 
-_hehe_
+Model已经生成好了，下面要生成其controller。如下：
+#+begin_src sh                                                                      
+rails generate controller Comments
+#+end_src
 
-+haha+
+然后编辑app/controllers/comments_controller.rb，实现create方法：
+#+begin_src ruby
+def create     
+    @post = Post.find(params[:post_id])    
+    @comment = @post.comments.create(params[:comment].permit(:commenter, :body))        redirect_to post_path(@post)
+end    
+#+end_src 
 
-/hoho/
+最后，实现view。comment不需要专门的view，它是嵌套在post的show view内部的。我们需
+要编辑 app/views/posts/show.html.erb，加入新增comment以及展示comments的erb代码。
 
-* 
+这样，我们的新model（comment）已经创建好并集成到post了。
 
+* 初步感受
+学完Rails Guides中的 [[http://guides.rubyonrails.org/getting_started.html][Getting Started with Rails]] 后，对Rails的初步印象如下：
+1. Rails尽量减少不需要的重复，比如说源码文件路径结构已经隐含了
+   Model/View/Controller的层次结构，源码中直接调用就可以了，不必要再加入
+   #include/import这样的语句了
+2. Ruby语法很怪异（以我这个C++程序员的角度），但是用起来很舒服（舒服度更甚于Python）
+3. Rails在私底下为用户做了各种事，虽然用少量代码就完成了一个app，但我完全不知道底层细节
 
+* 问题记录
+** undefined method `errors' for nil:NilClass
+Google一下，在 [[http://stackoverflow.com/questions/18136632/undefined-method-errors-for-nilnilclass-when-calling-on-errors-method][Stackoverflow上]] 得到答案。原来，我访问post的new action后，后端会执
+行controller的new方法，而我的new方法中并没有构造对象，导致了NilClass错误。
 
-* CANCELLED <2014-02-09 日>					  :CANCELLED:
-  - State "CANCELLED"  from "TODO"       [2014-02-06 四 22:37]
-** 
-
+我应该修改 *app/controllers/posts_controller.rb* 的new方法。如下：
+#+begin_src ruby
+def new     
+    @post = Post.new    
+end  
+#+end_src

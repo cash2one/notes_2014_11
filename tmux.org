@@ -2,6 +2,9 @@
 
 
 * 前言
+我用了很久的screen，在使用过程中踩了不少坑，也排了不少坑（参考 [[file:screen.org][screen]] ）。现在我
+又遇到了一个screen与vim的兼容问题，导致很多vim插件的特殊符号无法显示（如倒三角和
+右三角），我决定这次先不排这个坑了，而是尝试一下据说是screen的替代者的 *tmux* 。
 
 *tmux* 是一种终端复用的工具。它可以在一个终端里虚拟出多个终端，而且可以将这些终端
 以 *session（会话）* 的形式保存下来，用户可以随时随地断开，随时随地连接。
@@ -9,10 +12,6 @@
 一些链接：
 + [[http://tmux.sourceforge.net/][tmux的主页]] （Sourceforge的，需要用VPN登陆）
 + [[http://www.openbsd.org/cgi-bin/man.cgi?query%3Dtmux&sektion%3D1][tmux的用户手册]]
-
-我用了很久的screen，在使用过程中踩了不少坑，也排了不少坑（参考 [[file:screen.org][screen]] ）。现在我
-又遇到了一个screen与vim的兼容问题，导致很多vim插件的特殊符号无法显示（如倒三角和
-右三角），我决定这次先不排这个坑了，而是尝试一下据说是screen的替代者的 *tmux* 。
 
 * Quick Start
 我有screen的使用经验，我知道作为一种终端复用的工具最常用的操作是什么，所以我
