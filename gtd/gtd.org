@@ -13,8 +13,9 @@
 
 ** TODO 剃头
    SCHEDULED: <2014-02-22 六>
-** TODO 买两个灯泡
+** DONE 买两个灯泡
    SCHEDULED: <2014-02-15 六>
+   栗涛帮我搞定。
 ** DONE 给妈妈买一个微波炉
    SCHEDULED: <2014-02-15 六>
 *** DONE 完成一篇关于微波炉知识的笔记
@@ -26,16 +27,13 @@
 *** DONE 新买的外套要收货
    SCHEDULED: <2014-02-15 六>
 
-** TODO 写完2014春节回家记
+** DONE 写完2014春节回家记
    SCHEDULED: <2014-02-16 日>
 
 ** DONE 买iPad Air
    SCHEDULED: <2014-02-16 日>
 *** DONE 通过返利网在一号店下单，价格3348
 
-** 把org-mode那篇经典文章看完
-*** TODO 搞定Capture和Refile
-    SCHEDULED: <2014-02-22 六>
 ** DONE 清点一下自己的资产
    SCHEDULED: <2014-02-09 日>
    发现自己的只有不到9。
@@ -49,6 +47,10 @@
    SCHEDULED: <2014-02-21 五>
 ** TODO 多看（小米）账号修改绑定的手机号
    SCHEDULED: <2014-02-15 六>
+*** 给小米客服发了一封吐槽的邮件
+** DONE 爬百望山，从后面下山
+   SCHEDULED: <2014-02-16 日>
+   花了3个半小时
 * Work
 ** DONE 职称评定申请
    SCHEDULED: <2014-02-11 二>
@@ -114,9 +116,19 @@
 ** TODO 学习Ruby on Rails
 *** DONE 完成 Getting Started with Rails 的学习
 ** TODO 研究Hadoop
-*** 在Eclipse基础上搭建Hadoop源码阅读环境
+*** DONE 在Eclipse基础上搭建Hadoop源码阅读环境
+    SCHEDULED: <2014-02-15 六>
 *** 看《Hadoop技术内幕》的Common和HDFS分册
 *** 顺带学习Eclipse的使用
+** TODO 基于Eclipse搭建一个C/C++代码阅读环境
+   SCHEDULED: <2014-02-23 日>
 ** TODO 系统学习GDB
    SCHEDULED: <2014-02-22 六>
+** TODO 学习org-mode
+*** CANCELLED 尝试一下支持org-mode的博客生成器			  :CANCELLED:
+    SCHEDULED: <2014-02-15 六>
+    - State "CANCELLED"  from "TODO"       [2014-02-16 日 21:14]
+*** 把org-mode那篇经典文章看完
+*** TODO 搞定Capture和Refile
+    SCHEDULED: <2014-02-22 六>
 

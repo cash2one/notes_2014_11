@@ -1,5 +1,5 @@
-* 学习Org-mode的官方手册
 地址是：[[http://orgmode.org/manual/index.html][The Org Manual]]。这份文档制作很精良，而且（显然）是用Org-mode写的。
+* 学习Org-mode的官方手册
 
 ** Wiki式的Inner link
 Org-mode支持wiki式的内部链接，格式为：
@@ -47,6 +47,9 @@ Gnuplot，Plantuml等复杂的绘图语言，非常的强大。这是[[http://or
 5. sudo mv \/usr/local/Cellar/emacs/24.3/share/emacs/24.3/lisp/org org_bak （备份老版的org-mode）
 6. sudo mv \/usr/share/emacs/site-lisp/org/ \/usr/local/Cellar/emacs/24.3/share/emacs/24.3/lisp/ 
 
+   
+* 将Org文件导出为博客
+试了下 [[http://exaos.github.io/o-blog/index.html][o-blog]] ，发现不好用。故决定推迟，先用norang的HTML导出方案。
 
 
 * 学习回顾
