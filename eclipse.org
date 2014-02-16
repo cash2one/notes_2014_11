@@ -1,7 +1,7 @@
 
 * 前言
-大学时，上Java课时用过Eclipse，研究Android和写声韵输入法也在Eclipse上进行的，但迄
-今为止，我对Eclipse的了解仍不够系统。恰好我近期要研究HDFS的代码，我决定以此为契机，
+大学时，上Java课时用过Eclipse，研究Android和写声韵输入法也是在Eclipse上进行的，但迄
+今为止，我对Eclipse的了解仍不够系统。恰好近期我要研究HDFS的代码，我决定以此为契机，
 重新学习一次Eclipse。
 
 * 上手
@@ -14,7 +14,7 @@ Mac下面的Eclipse的界面真不错，特别是全屏之后，非常之简洁�
 #+end_example
 
 * 在Eclipse上搭建Hadoop项目
-首先，下载hadoop-1.0.0的源码
+首先，下载hadoop-1.0.0的源码：
 #+begin_example
 svn co http://svn.apache.org/repos/asf/hadoop/common/tags/release-1.0.0 hadoop-1.0.0
 #+end_example
@@ -22,10 +22,10 @@ svn co http://svn.apache.org/repos/asf/hadoop/common/tags/release-1.0.0 hadoop-1
 然后，cd到源码目录，执行 *ant eclipse* ，利用源码中的build.xml来生成hadoop-1.0.0
 的Eclipse项目配置文件。这个过程比较漫长。
 
-关于ant和ivy的介绍
+关于ant和ivy的介绍：
 #+begin_example
 ant: Apache下的一种跨平台，可扩展，基于XML的Java构建工具。
-ivy: 一种用来管理项目外部依赖的构建工具。它是Apache Ant的子项目。
+ivy: 一种用来管理项目外部依赖的工具。它是Apache Ant的子项目。
 #+end_example
 
 然后，在Eclipse中新建项目，起名叫做hadoop-1.0.0，项目目录设定为hadoop-1.0.0的源码
@@ -39,7 +39,7 @@ ivy: 一种用来管理项目外部依赖的构建工具。它是Apache Ant的�
 * 编辑器改进
 默认情况下，Eclipse的编辑器的功能是很弱的。还好，Eclipse提供了Emacs风格的按键绑定，
 这个设置项位于Preferences->General->Key里面。我们将Schema设为Emacs之后，Eclipse仿
-h佛被Emacs灵魂半附体（我的氪金左小指又要遭罪了。。）
+佛被Emacs灵魂半附体（我的氪金左小指又要遭罪了。。）
 
 在Emacs Schema下，Eclipse提供了一个很人性化的特性。按下control + x，一小会后
 它会弹出一个快捷键清单。如下：
