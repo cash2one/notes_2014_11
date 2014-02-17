@@ -13,7 +13,7 @@ HelloWorld项目，并新建了HelloWorld的类（注意：不是文件），然
 Mac下面的Eclipse的界面真不错，特别是全屏之后，非常之简洁。作为一个Unix环境下在终端中用Vim编程的程序员，我感到有一些羡慕。
 #+end_example
 
-* 在Eclipse上搭建Hadoop项目
+** 在Eclipse上搭建Hadoop项目
 首先，下载hadoop-1.0.0的源码：
 #+begin_example
 svn co http://svn.apache.org/repos/asf/hadoop/common/tags/release-1.0.0 hadoop-1.0.0
@@ -88,6 +88,39 @@ Glob通配符，如*或?）。该操作的快捷键是 *command + shift + t* 。
 ** 查看方法的调用关系
 在类名上右击，再点 *Open Call Hierarchy* ，就可查看方法的调用关系。快捷键是
 *control + alt + h* 。
+* 安装CDT插件
+Eclipse提供了 *Marketplace* 来让用户方便地安装插件，类似于苹果的App Store。
+
+点击"Help" -> "Eclipse Marketplace"，然后以cdt为关键词搜索到了CTD插件，安装它。
+
+[[./img/eclipse-4.png]]
+
+然后是新建个简单的C++工程，建好后，Run之，报错，错误提示：
+
+[[./img/eclipse-5.png]]
+
+搜索一下，找到了两种解法：
+1. [[http://www.scottdstrader.com/blog/ether_archives/000921.html][Resolving spurious project errors in Eclipse]]
+2. [[http://stackoverflow.com/questions/3632632/the-project-cannot-be-built-until-the-build-path-errors-are-resolved][the-project-cannot-be-built(Stackoverflow)]]
+
+** 在CDT基础上建立Redis项目
+我选择了建立Redis项目来试一下CDT的威力。Redis的代码是在Github上，我clone了它最新的unstable分支：
+#+begin_src sh
+git clone https://github.com/antirez/redis.git
+#+end_src
+
+然后新建名为redis的C工程。注意，Redis有着自己的Makefile，新建的工程类型必须为
+*Makefile Project* 。否则，Eclipse会自己生成makefile，进而可能会导致各种编译问题。
+就拿Redis来说吧，Eclipse自己生成的makefile会强制编译 *ae_epoll.c* ，而我的Mac OS
+上只有kqueue，没有epoll，这必然导致编译错误。
+
+建好后，点击"Build All"（快捷键 *command + b* ），然后Eclipse会调用Redis自己的
+Makefile来编译。
+
+* Eclipse实践经验收集
++ [[http://wiki.apache.org/hadoop/Hbase/EclipseEnvironment][Working with HBase under Eclipse]]
++ [[http://xbgd.iteye.com/blog/1259544][利用Eclipse CDT 阅读C/C++代码]]
+
 * 学习回顾
 ** 初步感受Eclipse <2014-02-15 六>
 今天我通过搭建Hadoop项目来熟悉Eclipse，并通过《Hadoop技术内幕》一书来了解Eclipse
@@ -97,3 +130,8 @@ Glob通配符，如*或?）。该操作的快捷键是 *command + shift + t* 。
 下一步我会：
 1. 继续拿Vim作为我的IDE，但我要汲取Eclipse的优点来继续改造Vim，更深地挖掘Vim的潜力；
 2. 探寻如何用Eclipse + CDT作为C/C++代码阅读工具；
+
+** 成功地使用CDT编译Redis <2014-02-18 二>
+本来是准备周末搞一下CDT插件的，但是忍不住给弄了，因为我太想要一个良好的C++代码阅
+读环境了。今天我可以用Eclipse编译Redis，并能很好地阅读了Redis的代码了。但是还遗留
+一个问题：系统头文件无法识别，也无法跳转。看来是没有include进去。

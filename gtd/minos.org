@@ -1,8 +1,8 @@
 #+TITLE: Minos Master 详细设计
 
 * Master
-** Notifier
-*** 通知模块的职责
+* Notifier
+** 通知模块的职责
 Minos的通知模块的职责是在数据分片传输就位时，通知下游的数据系统该数据分片
 （DataSlice）可用了。
 
@@ -12,15 +12,15 @@ Minos的通知模块的职责是在数据分片传输就位时，通知下游的
 3. 调用云图client的AddSlice接口，来对已就位的数据分片执行通知；
 4. 当成功为某个数据分片执行通知后，保存通知进度；
 
-*** 模块过程
-**** 为各个传输流调用通知接口
+** 模块过程
+*** 为各个传输流调用通知接口
 Monitor类 *定期轮询* 所有的传输流，并以传输流的当前Checkpoint（类型为
 LogFlowMessage）作为参数，调用Notifier类的 *Notify()* 接口。
 
-**** 获取传输流未通知的DataSlice
+*** 获取传输流未通知的DataSlice
 在Notifier的Notify()函数中，会
 
-**** 判断数据分片是否准备就绪
+*** 判断数据分片是否准备就绪
 通知模块有一个static的函数，专门用来判断某传输流的某数据分片是否已经就绪。函数原型如下：
 
 #+BEGIN_SRC C++
@@ -28,38 +28,38 @@ static bool IsDataSliceReady(const LogFlowMessage& log_flow,
                              const DataSlice& data_slice);    
 #+END_SRC
 
-**** 执行通知
+*** 执行通知
 为了不阻塞调用线程，Notifier的Notifier()接口的工作其实只是讲DataSlice添加到
 Notifier内部的通知队列中，然后立刻返回。有一个内部通知线程负责从通知队列中取
 DataSlice，然后执行真正的通知下游的过程。
 
-**** 通知成功后，将通知进度写回到传输流
+*** 通知成功后，将通知进度写回到传输流
 内部通知线程为某DataSlice通知成功后，会主动将通知进度写回传输流，传输流会把通知进
 度作为原信息定期保存起来。
 
 Notifier会调用LogFlowManager的GetLogFlow()接口来获取DataSlice的LogFlow。LogFlow提
 供了 *UpdateLatestNotifiedSlice()* 的接口，来供Notifier写回通知进度。
 
-*** 通知条件
+** 通知条件
 获取传输流中所有 *没有被disabled* 的节点的synced的log_time列表，如果全部log_time
 均大于待通知的DataSlice的timestamp_end，则认为可以通知，否则，不能通知。
 
-** Alarmer
-*** 报警模块的职责
+* Alarmer
+** 报警模块的职责
 + 判断传输流是否发生了需要报警的异常
 + 向指定用户或组发送短信报警和邮件报警
 
-*** 主要过程
+** 主要过程
 1. 判断传输流是否发生了异常
 2. 根据预定义的报警策略，判断本次是否需要报警
 3. 发报警
 
-*** 传输流状态与报警条件
+** 传输流状态与报警条件
 Minos将数据传输到集群后，Master通过定期向下游计算系统执行 *通知* 来让下游使用这部
 分数据。所以说， *通知进度* 是传输流状态的最主要的标记，也是Master进行报警的最主
 要依据（目前是唯一依据。2014-02-12）
 
-*** 短信报警
+** 短信报警
 用户在新建Minos日志传输时，填写的是用户邮箱前缀（如zhongyi01），Master为了达成报
 警，有两个难点：
 1. 根据邮箱前缀来获取其对应的手机号
@@ -74,7 +74,7 @@ gsmsend -s emp01.baidu.com:15003 -s emp02.baidu.com:15003 18810001881@"I'm zhong
 幸运的是，我们组的OP自己开发了一个专门的报警工具。我只需要向指定的数据库表insert一
 条记录（包含邮箱前缀和报警内容），该报警工具就会触发报警。
 
-**** 短信报警表的结构
+*** 短信报警表的结构
 #+BEGIN_EXAMPLE
 mysql> desc t_alarm_info;
 +-----------+----------------+------+-----+---------+-------+
@@ -91,7 +91,7 @@ mysql> desc t_alarm_info;
 +-----------+----------------+------+-----+---------+-------+
 #+END_EXAMPLE
 
-**** 向表中插入记录以触发报警
+*** 向表中插入记录以触发报警
 向表中插入一条记录，就会触发报警。SQL语句如下：
 #+BEGIN_SRC sql
 insert into t_alarm_info (data_id, baseTime, gsm_to, gsm_text) values (7881, NOW(), "zhongyi01", "hehehehehe");
@@ -101,20 +101,82 @@ data_id对应于LDM中的log_plan_id，如果是Minos的话，则对应于log_mo
 data_id和baseTime共同构成了这种表的主键，所以两条记录这两个字段相同的话，第二条记
 录将会插入失败。
 
-*** 邮件报警
+** 邮件报警
 
-*** 报警逻辑抽取
-*** 报警逻辑详细设计
-** 元信息管理
-*** 元信息压缩
-使用Snappy压缩，要处理
+** 报警逻辑抽取
+** 报警逻辑详细设计
+* 元信息管理
+** 元信息压缩
+使用Snappy压缩。
+** 传输流Checkpoint的存储
 
-** 传输流管理
-*** BNS同步
-*** 为慢节点调用Fallback
-*** 为MA选择MC
-** 监控与统计
-*** 全局counter
+之前传输流的Checkpoint是和日志配置一起存储在Zookeeper上面的，但是最近发现几份日志的Checkpoint暴涨，
+超过ZK的1M限制，导致Master频繁出core。现在要寻求一种更好的存储方式。
+
+备选方案如下：
+| 序号 | 方案           | 优点                                                 | 缺点                                        |
+|------+----------------+------------------------------------------------------+---------------------------------------------|
+|    1 | HDFS           | HDFS应用广泛，且能满足应用场景                       | 需要依赖libhdfs和libjvm，且受集群可用性限制 |
+|    2 | Mola           | 上一个项目用Mola，效果很好，且应用场景完全匹配（KV） | Mola的Value大小有限制，是4M                 |
+|    3 | NFS            | 通过fuse能像本地Filesystem一样来用NFS                | NFS刚面世，稳定性还未知                      |
+|    4 | 本地Filesystem | 方便易用，且能满足易用场景                           | 单机存储，受磁盘故障影响                    |
+
+决定本期先使用本地Filesystem存储，并以循环写入的方式为每个传输流存储多个版本的
+Checkpoint。未来会考虑NFS，也可能继续用本地Filesystem，继续用的话就要作更多的容错
+性考虑（可以研究下HDFS的元数据本地化存储方案）。
+
+*** Checkpoint本地化
+目前，传输流的Checkpoint的存储是由MinosMeta来负责存储到ZK。升级为本地化存储之后，
+需要在MinosMeta模块到本地Filesystem之间新加一层，相关类叫做
+*LocalMetaDataAccessor* 。
+
+LocalMetaDataAccessor会为每份日志维护三个版本的Checkpoint，这些Checkpoint的存储路
+径如下：
+#+begin_example
+/path/to/log-flow/${log_module_id}/${timestamp}
+#+end_example
+其中，${timestamp}代表存储Checkpoint这个时刻的时间戳。
+
+传输流Checkpoint的本地存储相关的过程有：
++ 获取某日志的Checkpoint
++ 存储某日志的Checkpoint
++ 删除某日志的Checkpoint
+
+**** 获取某日志的Checkpoint
+MinosMeta会根据传入的log_module_id拼装出该日志的Checkpoint的目录，如下：
+*/path/to/log-flow/${log_module_id}* ，然后调用LocalMetaDataAccessor的
+GetMetaData接口。
+
+GetMetaData的过程如下：
+1. 判断路径是否存在，不存在则返回false；
+2. 获取路径下面的所有文件，如果文件数目为空，则返回false；
+3. 通过文件名中的时间戳来为这些文件排序，选择最新的那个文件，读取内容返回给调用者；
+
+**** 存储某日志的Checkpoint
+拼装Checkpoint存储目录仍然由MinosMeta负责，然后调用LocalMetaDataAccessor的
+UpdateMetaData/AddMetaData接口。
+
+UpdateMetaData/AddMetaData的过程如下：
+1. 判断目录是否存在，不存在则创建目录；
+2. 以当前时间戳作为文件名，在目录下创建文件，将Checkpoint存储到这个文件中。如果该
+   文件已经存在，则覆盖写；
+3. 获取路径下面的所有文件，按照文件名中的时间戳排序。如果Checkpoint文件数目超过
+   Checkpoint版本的最大数目，则删除较老的Checkpoint文件；
+
+**** 删除某日志的Checkpoint
+拼装Checkpoint存储目录还是由MinosMeta负责，然后调用LocalMetaDataAccessor的
+DeleteMetaData接口。
+
+DeleteMetaData的过程如下：
+1. 判断目录是否存在，不存在则返回false；
+2. 递归删除该目录；
+
+* 传输流管理
+** BNS同步
+** 为慢节点调用Fallback
+** 为MA选择MC
+* 监控与统计
+** 全局counter
 在Master内，维护者一批全局的Counter，通过监控这些Counter及其变化，可以监控系统的整体运行情况。
 
 | Counter                  |   |
@@ -125,7 +187,7 @@ data_id和baseTime共同构成了这种表的主键，所以两条记录这两�
 | 邮件报警的次数           |   |
 |                          |   |
 
-** 线下环境
+* 线下环境
 为线下Master的特殊配置：
 | 配置项           | 值                               |
 |------------------+----------------------------------|
@@ -136,4 +198,6 @@ data_id和baseTime共同构成了这种表的主键，所以两条记录这两�
 | 集群             | QA线下集群                       |
 | HDFS路径         | 规则不变                         |
 
+
+* 多Master方案
 

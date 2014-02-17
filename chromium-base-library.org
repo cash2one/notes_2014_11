@@ -1,0 +1,31 @@
+#+TITLE: Chromium工程代码base库和net库的研究
+
+在晓明的介绍下，我再次开始研究了Chromium的base库，结果发现下面的东西又全又好，弥
+补了我对toft库的缺憾。我严重怀疑： *这个base库跟Google内部的base库相差无几！*
+
++ [[http://src.chromium.org/viewvc/chrome/trunk/src/base/][Chromium base库]]
++ [[http://src.chromium.org/viewvc/chrome/trunk/src/net/][Chromium net库]]
+
+在net库中，包含了对socket的封装，以及基于tcp/ip的各种协议的封装。
+
+关于event（事件循环）库，我没有在base/net中找到，只是在third_party下面找到
+libevent。看来，chromium自己并没有实现一套event库。但是在base库中有message_loop，
+它是消息循环的封装，支持DEFAULT/UI/IO/GPU/JAVA/CUSTOM等各种“event”。看来，我刚
+才的论断可能是错误的，base库里面有event库，而且是比一般event库更加高档的message
+loop库。
+
+到目前为止，我在base/net库中找到的好东西有：
+1. 完整的stack_trace，跟踪函数调用
+2. logging，从此不需要再额外依赖glog
+3. message_loop，我得好好研究，看能够借助它实现一个事件循环
+4. stringprintf支持将std::string直接传给%s
+5. file_util中有ReadFileToString，还有一系列处理软硬链的函数
+6. 还有一个生成GUID的函数！
+7. 比C下面的原生rand函数好用N多的RandXxx系列函数
+8. 获取系统信息的系列函数，在sys_info.h里面
+9. 自带json库，接口和jsoncpp类似，但是功能强大。其中Value定义在base下面，更通用化，而不是base/json下面
+10. 专门用来将文件map到内存的MemoryMappedFile（位于base/file里面）
+11. 专门用来处理request url的库，位于net/url_request下面
+
+先到此为止吧（2014-01-29 22:58:29），base/net库（以及整个Chromium项目）的好东西太
+多太多了，再看下去估计没法睡觉了）

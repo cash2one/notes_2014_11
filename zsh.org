@@ -54,3 +54,6 @@ zle
 下面是具体的执行步骤；
 1. 打开~/.zshrc，加入setopt no_share_history
 2. 执行source ~/.zshrc
+* zsh的自动补全
+** kill process-id
+** 大小写不感知
