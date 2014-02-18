@@ -117,6 +117,12 @@ git clone https://github.com/antirez/redis.git
 建好后，点击"Build All"（快捷键 *command + b* ），然后Eclipse会调用Redis自己的
 Makefile来编译。
 
+* Eclipse与版本管理
+右击文件，"Compare With" -> "History.."，然后可以选择将该文件与其任一历史版本进行
+diff。Eclipse的diff窗口也是挺别致的。
+
+[[./img/eclipse-6.png]]
+
 * Eclipse实践经验收集
 + [[http://wiki.apache.org/hadoop/Hbase/EclipseEnvironment][Working with HBase under Eclipse]]
 + [[http://xbgd.iteye.com/blog/1259544][利用Eclipse CDT 阅读C/C++代码]]
