@@ -3,7 +3,6 @@
 * 前言
 决定深入研究一下经典的protobuf，研究一下它的架构和实现。通过研究它，我希望达到：
 1. 增加我的模块的设计能力；
-2. 为以后基于它做分布式编程框架做好基础；
 
 * 先零散地按照技术点来写
 ** Closure
@@ -62,6 +61,4 @@ Protobuf在ZeroCopyStream上派生出了*CodedInputStream*/*CodedOutputStream*�
 为了解析Proto文件，IO子模块实现了Tokenizer类。
 
 ** TextFormat简介
-
-
 

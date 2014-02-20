@@ -1,0 +1,15 @@
+
+* 前言
+之前在百度的几个项目的存储选型中，曾经考虑到使用Redis，因为应用场景很适合。但是最
+终因为对Redis的存储持久化，多机以及运维监控存在疑虑而放弃，并转用公司内部的KV存储。
+
+* Redis Client
+通过Eclipse稍微阅读了Redis Client端的代码。Client端的代码位于redis-cli.c以及
+hiredis.c中，其中后者是Client与Redis Server通讯的核心代码，前者封装了后者，提供给
+用户以命令行的接口。
+
+在redis-cli的交互式的每轮循环中，有会两个函数被先后调用。
+#+begin_src C
+int redisAppendCommandArgv(redisContext *c, int argc, const char **argv, const size_t *argvlen);
+int redisGetReply(redisContext *c, void **reply);
+#+end_src

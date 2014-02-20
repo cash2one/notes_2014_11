@@ -1,7 +1,92 @@
 #+TITLE: Minos Master 详细设计
 
-* Master
-* Notifier
+* Master总览
+* 元信息管理
+** 元信息压缩
+使用Snappy压缩。
+** 传输流Checkpoint的存储
+
+之前传输流的Checkpoint是和日志配置一起存储在Zookeeper上面的，但是最近发现几份日志
+的Checkpoint暴涨，超过ZK的1M限制，导致Master频繁出core。现在要寻求一种更好的存储
+方式。
+
+备选方案如下：
+| 序号 | 方案           | 优点                                                 | 缺点                                        |
+|------+----------------+------------------------------------------------------+---------------------------------------------|
+|    1 | HDFS           | HDFS应用广泛，且能满足应用场景                       | 需要依赖libhdfs和libjvm，且受集群可用性限制 |
+|    2 | Mola           | 上一个项目用Mola，效果很好，且应用场景完全匹配（KV） | Mola的Value大小有限制，是4M                 |
+|    3 | NFS            | 通过fuse能像本地Filesystem一样来用NFS                | NFS刚面世，稳定性还未知                      |
+|    4 | 本地Filesystem | 方便易用，且能满足易用场景                           | 单机存储，受磁盘故障影响，故障迁移麻烦             |
+
+决定本期先使用本地Filesystem存储，并以循环写入的方式为每个传输流存储多个版本的
+Checkpoint。未来会考虑NFS，也可能继续用本地Filesystem，继续用的话就要作更多的容错
+性考虑（可以研究下HDFS的元数据本地化存储方案）。
+
+*** Checkpoint本地化
+目前，传输流的Checkpoint的存储是由MinosMeta来负责存储到ZK。升级为本地化存储之后，
+需要在MinosMeta模块到本地Filesystem之间新加一层，相关类叫做
+*LocalMetaDataAccessor* 。
+
+LocalMetaDataAccessor会为每份日志维护多个版本的Checkpoint，这些Checkpoint的存储路
+径如下：
+#+begin_example
+/path/to/log-flow/${log_module_id}/${timestamp}
+#+end_example
+其中，${timestamp}代表存储Checkpoint这个时刻的时间戳。
+
+传输流Checkpoint的本地存储相关的过程有：
++ 获取某日志的Checkpoint
++ 存储某日志的Checkpoint
++ 删除某日志的Checkpoint
+
+**** 多版本Checkpoint
+多版本Checkpoint的的意义不仅在于存储多版本，还能提高容错性。当磁盘故障或其他故障
+导致某个Checkpoint坏掉时，MinosMeta还能读取其他版本的Checkpoint并从中恢复。
+
+默认情况下，会存储三个版本的Checkpoint，这个配置项是可以修改的（最小可以改成1）。
+但是，这个配置项是针对整个Master，而不能针对某个传输流单独配置。本期Master不支持
+为每个传输流配置Checkpoint存储的版本数的特性，因为这样做会增加复杂性，且没有明显
+的收益。
+
+**** 获取某日志的Checkpoint
+MinosMeta会根据传入的log_module_id拼装出该日志的Checkpoint的目录，如下：
+*/path/to/log-flow/${log_module_id}* ，然后调用LocalMetaDataAccessor的
+GetMetaData接口。
+
+GetMetaData的过程如下：
+1. 判断路径是否存在，不存在则返回false；
+2. 获取路径下面的所有文件，如果文件数目为空，则返回false；
+3. 通过文件名中的时间戳来为这些文件排序，选择第i个文件，读取内容返回给调用者；
+
+当调用者获取第i版本的Checkpoint之后，发现该Checkpoint不可用，则它会尝试调用第i+1版
+本Checkpoint。如果所有版本的Checkpoint都不可用，则这个传输流就初始化失败。
+
+**** 存储某日志的Checkpoint
+拼装Checkpoint存储目录仍然由MinosMeta负责，然后调用LocalMetaDataAccessor的
+UpdateMetaData/AddMetaData接口。
+
+UpdateMetaData/AddMetaData的过程如下：
+1. 判断目录是否存在，不存在则创建目录；
+2. 以当前时间戳作为文件名，在目录下创建文件，将Checkpoint存储到这个文件中。如果该
+   文件已经存在，则覆盖写；
+3. 获取路径下面的所有文件，按照文件名中的时间戳排序。如果Checkpoint文件数目超过
+   Checkpoint版本的最大数目，则删除较老的Checkpoint文件；
+
+**** 删除某日志的Checkpoint
+拼装Checkpoint存储目录还是由MinosMeta负责，然后调用LocalMetaDataAccessor的
+DeleteMetaData接口。
+
+DeleteMetaData的过程如下：
+1. 判断目录是否存在，不存在则返回false；
+2. 递归删除该目录；
+** 规模和限制
+每个传输流的Checkpoint按照平均1M来算，存储三个版本，就是每个日志需要3M。每个
+Master管理的
+* 传输流管理
+** BNS同步
+** 为慢节点调用Fallback
+** 为MA选择MC
+* 通知模块
 ** 通知模块的职责
 Minos的通知模块的职责是在数据分片传输就位时，通知下游的数据系统该数据分片
 （DataSlice）可用了。
@@ -24,8 +109,8 @@ LogFlowMessage）作为参数，调用Notifier类的 *Notify()* 接口。
 通知模块有一个static的函数，专门用来判断某传输流的某数据分片是否已经就绪。函数原型如下：
 
 #+BEGIN_SRC C++
-static bool IsDataSliceReady(const LogFlowMessage& log_flow, 
-                             const DataSlice& data_slice);    
+static bool IsDataSliceReady(const LogFlowMessage& log_flow,
+                             const DataSlice& data_slice);
 #+END_SRC
 
 *** 执行通知
@@ -43,8 +128,7 @@ Notifier会调用LogFlowManager的GetLogFlow()接口来获取DataSlice的LogFlow
 ** 通知条件
 获取传输流中所有 *没有被disabled* 的节点的synced的log_time列表，如果全部log_time
 均大于待通知的DataSlice的timestamp_end，则认为可以通知，否则，不能通知。
-
-* Alarmer
+* 报警模块
 ** 报警模块的职责
 + 判断传输流是否发生了需要报警的异常
 + 向指定用户或组发送短信报警和邮件报警
@@ -105,76 +189,6 @@ data_id和baseTime共同构成了这种表的主键，所以两条记录这两�
 
 ** 报警逻辑抽取
 ** 报警逻辑详细设计
-* 元信息管理
-** 元信息压缩
-使用Snappy压缩。
-** 传输流Checkpoint的存储
-
-之前传输流的Checkpoint是和日志配置一起存储在Zookeeper上面的，但是最近发现几份日志的Checkpoint暴涨，
-超过ZK的1M限制，导致Master频繁出core。现在要寻求一种更好的存储方式。
-
-备选方案如下：
-| 序号 | 方案           | 优点                                                 | 缺点                                        |
-|------+----------------+------------------------------------------------------+---------------------------------------------|
-|    1 | HDFS           | HDFS应用广泛，且能满足应用场景                       | 需要依赖libhdfs和libjvm，且受集群可用性限制 |
-|    2 | Mola           | 上一个项目用Mola，效果很好，且应用场景完全匹配（KV） | Mola的Value大小有限制，是4M                 |
-|    3 | NFS            | 通过fuse能像本地Filesystem一样来用NFS                | NFS刚面世，稳定性还未知                      |
-|    4 | 本地Filesystem | 方便易用，且能满足易用场景                           | 单机存储，受磁盘故障影响                    |
-
-决定本期先使用本地Filesystem存储，并以循环写入的方式为每个传输流存储多个版本的
-Checkpoint。未来会考虑NFS，也可能继续用本地Filesystem，继续用的话就要作更多的容错
-性考虑（可以研究下HDFS的元数据本地化存储方案）。
-
-*** Checkpoint本地化
-目前，传输流的Checkpoint的存储是由MinosMeta来负责存储到ZK。升级为本地化存储之后，
-需要在MinosMeta模块到本地Filesystem之间新加一层，相关类叫做
-*LocalMetaDataAccessor* 。
-
-LocalMetaDataAccessor会为每份日志维护三个版本的Checkpoint，这些Checkpoint的存储路
-径如下：
-#+begin_example
-/path/to/log-flow/${log_module_id}/${timestamp}
-#+end_example
-其中，${timestamp}代表存储Checkpoint这个时刻的时间戳。
-
-传输流Checkpoint的本地存储相关的过程有：
-+ 获取某日志的Checkpoint
-+ 存储某日志的Checkpoint
-+ 删除某日志的Checkpoint
-
-**** 获取某日志的Checkpoint
-MinosMeta会根据传入的log_module_id拼装出该日志的Checkpoint的目录，如下：
-*/path/to/log-flow/${log_module_id}* ，然后调用LocalMetaDataAccessor的
-GetMetaData接口。
-
-GetMetaData的过程如下：
-1. 判断路径是否存在，不存在则返回false；
-2. 获取路径下面的所有文件，如果文件数目为空，则返回false；
-3. 通过文件名中的时间戳来为这些文件排序，选择最新的那个文件，读取内容返回给调用者；
-
-**** 存储某日志的Checkpoint
-拼装Checkpoint存储目录仍然由MinosMeta负责，然后调用LocalMetaDataAccessor的
-UpdateMetaData/AddMetaData接口。
-
-UpdateMetaData/AddMetaData的过程如下：
-1. 判断目录是否存在，不存在则创建目录；
-2. 以当前时间戳作为文件名，在目录下创建文件，将Checkpoint存储到这个文件中。如果该
-   文件已经存在，则覆盖写；
-3. 获取路径下面的所有文件，按照文件名中的时间戳排序。如果Checkpoint文件数目超过
-   Checkpoint版本的最大数目，则删除较老的Checkpoint文件；
-
-**** 删除某日志的Checkpoint
-拼装Checkpoint存储目录还是由MinosMeta负责，然后调用LocalMetaDataAccessor的
-DeleteMetaData接口。
-
-DeleteMetaData的过程如下：
-1. 判断目录是否存在，不存在则返回false；
-2. 递归删除该目录；
-
-* 传输流管理
-** BNS同步
-** 为慢节点调用Fallback
-** 为MA选择MC
 * 监控与统计
 ** 全局counter
 在Master内，维护者一批全局的Counter，通过监控这些Counter及其变化，可以监控系统的整体运行情况。
@@ -198,6 +212,146 @@ DeleteMetaData的过程如下：
 | 集群             | QA线下集群                       |
 | HDFS路径         | 规则不变                         |
 
+* Master多机化方案
+** 背景
+Minos未来会替代LDM和LBI，成为DT唯一的日志传输系统。目前，LBI上的日志有250份，而
+LDM上的日志已经超过了4000份，而其中有一些日志的机器台数超过了1000台。Minos的
+Master是比较重的Master，未来单Master必然会遇到性能瓶颈，因此需要设计一个Master多
+机化的方案来使Master拥有可伸缩的特性，让它可以从容迎接即将到来的挑战。
+*** 前期设想
+准备使用Zookeeper来实现Master多机化。下面是一些初步想法：
+1. 多个Master互作主备，放在一个BNS里面。
+2. 每个Node启动时，根据BNS来随机找寻一个Master，询问它自己的log_module_id该被那个
+   Master管理。
+3. 这些Master中有且只有一个Master为中央Master，当这个中央Master挂掉之后，这批
+   Master中会有一个Master自动升级为中央Master。
+4. 中央Master主要负责Minos系统核心元数据（LogConfig）的管理，其他Master任务的分配，
+   以及各传输流信息的汇总。当然，中央Master也可以拥有传输流管理的功能。当中央
+   Master负载较轻或者系统只有一台Master时，中央Master也会承担传输流管理。
+** 设计目标
+功能目标：
++ 支持Master根据业务规模方便地扩容和缩容，同时不影响现有业务
++ 分布式情况下，实现Minos元信息管理的一致性
++ Master主从切换
++ Master故障迁移
++ Master负载均衡（自动+手动）
++ 也提供手工执行Master的主从切换的接口
 
-* 多Master方案
+性能目标：
++ Master能支持10万份日志，20万台机器的日志传输
++ 主Master挂掉后，1分钟内新的Master升级为主Master
++ 新建日志传输后，30秒后传输流创建好传输生效
+** Zookeeper目录结构
+*** 根节点
+#+begin_example
+/minos
+/minos/log-config
+/minos/master
+/minos/config-manager
+#+end_example
+
+*** log-config节点
+该节点是个目录，下面存储各个日志的传输配置。
+#+begin_example
+/minos/log-config/1
+/minos/log-config/2
+#+end_example
+
+*** config-manager节点
+它是个临时节点，各个Master在启动时，均会抢占这个节点，抢占后，在节点上写入自己的
+ip。只有一个Master会成功地抢到节点，然后这个Master就成为整个Minos系统的主Master，
+除了一般Master职责外，它会负责管理日志配置（Minos系统核心元数据）。
+#+begin_example
+/minos/config-manager
+#+end_example
+
+*** master节点
+它是个目录，各个Master在启动时，都会在这个目录下创建临时节点，节点名字是自己的ip。
+#+begin_example
+/minos/master/10.10.14.0
+/minos/master/10.10.14.1
+#+end_example
+
+** Master的主要过程
+*** Master启动，抢占主Master
+各个Master启动后，首先会在 */minos/master* 目录下面创建名为自己ip的节点，告诉
+Minos系统自己的存在。
+
+然后各个Master会启动线程来通过在Zookeeper上创建临时节点 */minos/config-manager* 来抢主
+Master。如果该节点已经存在，则抢主失败，该线程仍然会定时判断该节点是否存在（也可
+以watch这个节点），一旦不存在，则继续尝试创建临时节点来抢主。
+
+*当抢主成功后，该Master会升级为主Master* ，并启动LogConfigService，负责Minos系统的日
+志配置的管理工作（Add/Delete/Update/Get)，同时还负责为各个从Master分配传输管理任
+务，以及故障迁移，负载均衡等。
+
+*** 主Master为各个Master分配传输任务
+主Master监控着 */minos/log-config* 目录的变化，并在内存中实时维护着日志模块id的列
+表。同时，主Master还监控着 */minos/master* 目录的变化，并在内存中实时维护着Minos
+系统所有Master的列表。
+
+主Master会遍历所有 *没有被分配给某个Master的日志模块id* ，然后依次将它们分配给
+Minos系统中负载较轻的Master。所有已经分配好的日志模块id及其所属的Master的ip都会以
+map的形式被主Master维护，同时，主Master会要将某Master负责的日志模块id的列表写入到
+各Master自己的临时ZK节点上面，来告诉各Master自己所负责的日志模块id列表。
+
+各个Master（包括主Master）会监控着/minos/master下面自己的临时节点。 *如果发现该节
+点变化，则会重新获取节点上的日志模块id的列表* ，然后根据自己正在管理的传输流的的
+列表的diff情况判断是否有要新建日志传输流，删除日志传输流，以及重建日传输流（这个过
+程发生在LogFlowManager的UpdateAllLogFlows()这个函数里面）。
+
+*** 主Master的切换（主从切换）
+当主Master挂掉之后，supervise会立刻把它拉起来，然后该Master会立刻尝试去抢主。由于
+临时节点一定的生存期，故该Master会发现/minos/config-manager节点已经存在，但是它通
+过节点内容知道自己在挂之前（前生）是主Master，这时它会删掉该临时节点。
+
+如果主Master挂掉后起不来了（由于机器故障等原因），由于它是/minos/config-manager是
+临时节点，故过一段时间（一般是10s左右），节点会自动消失。
+
+当/minos/config-manager节点不存在后，就进入了各Master抢主的阶段。谁抢到了，谁就
+是新的主Master，谁就会履行Master的职责，开始做日志配置管理，Master故障迁移，负载
+均衡等工作。
+
+**** TODO 临时节点是否支持续弦？
+*** Master故障迁移
+当一台Master挂掉后，supervise会立刻把它拉起来。它起来后，会删除掉自己再
+/minos/master下面的临时节点，并重新创建一个空的临时节点。这时候，主Master会感知到
+/minos/master的变化，这是它会先sleep 1秒，等新的临时节点创建完毕，然后它会轮训
+/minos/master下面的所有Master的节点，并更新内部的<Master, Log module id list>这个
+map。
+
+然后主Master会计算出那些日志模块id没有被分配，它会启动分配循环，每次将一个未分配
+的日志模块id分配给最空闲的Master（一般上就是分配给那个故障重启后的Master）。
+
+如果这台Master挂掉后起不来了，它的临时节点过一段时间后也会消失，然后主Master也感
+知到/minos/master节点下面的变化，其他步骤跟用supervise拉起Master的情景是一样的。
+
+**** TODO 临时节点是否支持续弦？
+*** TODO Master负载均衡
+Master的负载均衡包括两方面，一种是主Master在分配日志模块id给各个Master时，选择最
+空闲的Master，另外一种是主Master探测到某台Master负载过重时，将其负责的日志模块分
+给其他较闲的Master。
+
+这里设计到一个评价Master当前负载的函数。
+
+*** TODO 如何评价Master的当期负载
+*** 将负载策略抽取出来
+
+** 与Node相关的主要过程
+*** 询问任意Master自己所属的Master
+每个Minos Agent初始化时，都会传入Minos Master的BNS，BNS下面挂有所有的Master。为了
+负载均衡，每个Node会从中随机选择一个Master来查询自己所属的Master。
+
+每个Master都会开一个RPC接口，Node以日志模块id为参数调用此接口即可得到自己所属的
+Master。
+
+在Master那边，该查询接口的实现是：Master先查询到主Master的地址，然后向主Master询
+问该日志模块id是被那个Master管理的，最终，Master会将结果（该Node所属的Master的ip）
+返回给Node。
+
+** 技术调研
+*** Zookeeper的进阶使用调研
+*** 负载均衡的框架
+*** 策略的抽取
+** 设计图
 

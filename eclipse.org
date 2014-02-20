@@ -36,6 +36,7 @@ ivy: 一种用来管理项目外部依赖的工具。它是Apache Ant的子项�
 点击"Run As" -> "Ant Build"，开始编译hadoop-1.0.0。然后就是漫长的编译，我的机器
 花了4分半才把它编译好。编译的产出物放在源码目录下的 *build* 目录。
 
+更多的关于Hadoop的笔记：[[file:./hadoop-hdfs.org][Hadoop HDFS]]
 * 编辑器改进
 默认情况下，Eclipse的编辑器的功能是很弱的。还好，Eclipse提供了Emacs风格的按键绑定，
 这个设置项位于Preferences->General->Key里面。我们将Schema设为Emacs之后，Eclipse仿
@@ -99,7 +100,7 @@ Eclipse提供了 *Marketplace* 来让用户方便地安装插件，类似于苹�
 
 [[./img/eclipse-5.png]]
 
-搜索一下，找到了两种解法：
+搜索一下，找到了解法：
 1. [[http://www.scottdstrader.com/blog/ether_archives/000921.html][Resolving spurious project errors in Eclipse]]
 2. [[http://stackoverflow.com/questions/3632632/the-project-cannot-be-built-until-the-build-path-errors-are-resolved][the-project-cannot-be-built(Stackoverflow)]]
 
@@ -117,6 +118,17 @@ git clone https://github.com/antirez/redis.git
 建好后，点击"Build All"（快捷键 *command + b* ），然后Eclipse会调用Redis自己的
 Makefile来编译。
 
+阅读Redis代码时，发现一些系统的头文件（如sys/time.h）找不到，通过F3也无法跳转。这
+个问题很好解决，打开本项目的Properties，设置C/C++ Build -> Tool Chain Editor
+->Current toolchain为你的系统支持的构建工具链。由于我的系统是Mac OS X，所以我选择
+了MacOSX GCC。设置好后， *需要重启Eclipse* （这点是Eclipse做得不好，一个优秀的
+Mac OS X程序需要做到动态更新配置）
+
+准备妥当之后，就可以在Eclipse下欢快地阅读代码了，一些技巧列在本笔记的"Eclipse常用
+操作及其快捷键"章节。
+
+更多的关于Redis的笔记：[[file:./redis.org][Redis]]
+
 * Eclipse与版本管理
 右击文件，"Compare With" -> "History.."，然后可以选择将该文件与其任一历史版本进行
 diff。Eclipse的diff窗口也是挺别致的。
@@ -127,6 +139,11 @@ diff。Eclipse的diff窗口也是挺别致的。
 + [[http://wiki.apache.org/hadoop/Hbase/EclipseEnvironment][Working with HBase under Eclipse]]
 + [[http://xbgd.iteye.com/blog/1259544][利用Eclipse CDT 阅读C/C++代码]]
 
+* 小贴土
+** 修改字体
+依次点开Preferences -> General -> Appearance -> Colors and Fonts -> Basic ->
+Text Font，点Edit...，然后就可以设置字体了。我使用的是深受码农喜爱的Monaco字体，
+字号是13。
 * 学习回顾
 ** 初步感受Eclipse <2014-02-15 六>
 今天我通过搭建Hadoop项目来熟悉Eclipse，并通过《Hadoop技术内幕》一书来了解Eclipse
@@ -140,4 +157,4 @@ diff。Eclipse的diff窗口也是挺别致的。
 ** 成功地使用CDT编译Redis <2014-02-18 二>
 本来是准备周末搞一下CDT插件的，但是忍不住给弄了，因为我太想要一个良好的C++代码阅
 读环境了。今天我可以用Eclipse编译Redis，并能很好地阅读了Redis的代码了。但是还遗留
-一个问题：系统头文件无法识别，也无法跳转。看来是没有include进去。
+一个问题： +系统头文件无法识别，也无法跳转。看来是没有include进去+  （Fixed）

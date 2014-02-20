@@ -1,0 +1,57 @@
+* Emacs的几个编辑循环
+在了解Emacs的基本快捷键之后，我对于Emacs还是疑惑重重，这时候，就需要通过Emacs的基
+本使用场景来学习Emacs。
+
+打开文件 -> 修改文件 -> 保存文件
+
+打开文件 -> 打开buffer -> 关闭buffer（buffer/window分为两种，一种可以用q来关闭，
+一种只能用 C-x K或C-x 0）
+
+执行操作 -> 撤销操作
+
+执行操作 -> 中止操作
+
+
+
+
+* Emacs的排查/调试（当使用emacs遇到问题时）
+我们执行一个命令，但是Emacs并没有按照我们预期的方式来执行，而且也没有告诉我们哪里
+出问题了，这时候，我们就得要进行排查/调试了。
+
+我们执行的每一个命令，在Emacs内部其实都是对应这一个emacs lisp函数。这些函数的运行
+日志是输出在一个名为 *message* 的buffer中，我们打开这个名为 *message* 的buffer就
+可以查看emacs lisp函数的运行日志，然后就能对Emacs就进行更进一步的排查了。
+
+打开 *message* 这个buffer的操作的方式是： M-x switch-to-buffer 回车，然后在下图的
+buffer列表中选择 *message* 。
+
+[[./img/emacs-1.png]]
+
+补充一下，当用Emacs打开一个文件时，Emacs默认会打开 *1* 个窗口（window）和 *3* 个
+   缓冲区（buffer）。三个buffer分别为：
+1. 当前文件的buffer
+2. Emacs lisp的运行日志buffer。名为 *message*
+3. 临时buffer，相当于草稿。名为 *scratch* 
+
+* Emacs/Vim的吐槽文
++ [[http://www.cr173.com/html/11113_1.html][Emacs作为IDE编程环境的不足]]
+
+* 学习回顾
+** 成为Emacs用户 <2014-02-20 四>
+我从13年12月31日开始学习Emacs，断断续续学到现在，已经是Emacs入门了。我已经掌握
+了：
+1. 基本编辑
+2. 修改~/.emacs配置
+3. 安装Emacs插件
+4. 调试Emacs，排查问题
+5. Org-mode
+
+我已经成功地吧我除了代码之外的所有笔记和文档的编辑从Vim/Sublime Text/Evernote上全
+部切换到Emacs上来了，并且感受到了 *工具升级带来的巨大便利* 。
+
+对于Emacs附带的编辑器，我觉得它相对Vim来说非常的原始，只提供有限的移动和编辑指令。
+但即便如此，也比Evernote等工具附带的编辑器要方便很多。下一步我会尝试viper/evil插
+件，让Vim之魂附身于Emacs，同时也是解放我的 *氪金左小指* 。
+
+
+

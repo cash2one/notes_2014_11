@@ -1,17 +1,12 @@
 #+TITLE: gtd.org - 我对于GTD的第一次实践
 
 * Life
+** TODO 报名驾校
+   SCHEDULED: <2014-02-26 三>
 ** TODO 搞美股
 *** TODO 网上证劵开户
     SCHEDULED: <2014-02-18 二>
-** TODO 整理iTune里的歌曲
-   SCHEDULED: <2014-02-17 一>
-** TODO 招行信用卡
-*** TODO 办支持双币支付的招行信用卡
-   SCHEDULED: <2014-02-15 六>
-
-*** TODO 销毁掉老的WOW卡
-    SCHEDULED: <2014-02-16 日>
+*** TODO 境外汇款
 ** TODO 剃头
    SCHEDULED: <2014-02-22 六>
 ** TODO 春季买衣服
@@ -23,9 +18,14 @@
    SCHEDULED: <2014-02-22 六>
 ** TODO 提2月份的报销
    SCHEDULED: <2014-02-21 五>
-** TODO 多看（小米）账号修改绑定的手机号
+** DONE 整理iTune里的歌曲
+   SCHEDULED: <2014-02-17 一>
+** DONE 招行信用卡
+*** DONE 办支持双币支付的招行信用卡
    SCHEDULED: <2014-02-15 六>
-*** 给小米客服发了一封吐槽的邮件
+
+*** DONE 销毁掉老的WOW卡
+    SCHEDULED: <2014-02-16 日>
 ** DONE 交（大量）发票
    SCHEDULED: <2014-02-17 一>
 ** DONE 给妈妈买一个微波炉
@@ -46,14 +46,26 @@
 ** DONE 爬百望山，从后面下山
    SCHEDULED: <2014-02-16 日>
    花了3个半小时
+** CANCELLED 多看（小米）账号修改绑定的手机号			  :CANCELLED:
+   SCHEDULED: <2014-02-15 六>
+   - State "CANCELLED"  from "DONE"       [2014-02-19 三 11:30]
+*** 给小米客服发了一封吐槽的邮件
 ** CANCELLED 将存单上的钱转出到招行				  :CANCELLED:
    SCHEDULED: <2014-02-09 日>
    - State "CANCELLED"  from "TODO"       [2014-02-10 一 00:23]
 * Work
+** TODO Master对于调用UpdateNodeStatus且在Master中不存在的节点执行DeleteNode
+   SCHEDULED: <2014-02-21 五>
+** TODO 与李伟和小丰沟通自定义Index key的问题
+   SCHEDULED: <2014-02-20 四>
+** TODO 帮晓璇Review代码
+   SCHEDULED: <2014-02-20 四>
+** TODO 加入定制集群文件名的日志配置项
+   SCHEDULED: <2014-02-20 四>
 ** TODO 搞定不带年份日志的历史日志排查（特别是tieba）
    SCHEDULED: <2014-02-21 五>
 ** TODO Minos报警模块开发
-   SCHEDULED: <2014-02-17 一>
+   SCHEDULED: <2014-02-24 一>
 ** TODO LSP 通知的代码美化
    SCHEDULED: <2014-02-17 一>
 ** TODO DtMeta 通知的代码美化
@@ -67,6 +79,8 @@
 ** TODO 新建日志时，判断日志名是否重复
 ** TODO 完成Checkpoint存储的改造
    SCHEDULED: <2014-02-18 二>
+** DONE 职称评定Review（与菁辉）
+   SCHEDULED: <2014-02-19 三>
 ** DONE Minos测试方案Review
    SCHEDULED: <2014-02-17 一>
 ** DONE Minos通知模块三种下游的整合
@@ -119,7 +133,7 @@
     SCHEDULED: <2014-02-15 六>
 *** 看《Hadoop技术内幕》的Common和HDFS分册
 *** 顺带学习Eclipse的使用
-** TODO 基于Eclipse搭建一个C/C++代码阅读环境
+** DONE 基于Eclipse搭建一个C/C++代码阅读环境
    SCHEDULED: <2014-02-23 日>
 ** TODO 系统学习GDB
    SCHEDULED: <2014-02-22 六>
@@ -134,3 +148,7 @@
 ** TODO 学习tmux
 *** DONE 第一轮学习
     SCHEDULED: <2014-02-16 日>
+** TODO 研究Redis
+***  
+** TODO 研究uuap认证
+   SCHEDULED: <2014-02-21 五>
