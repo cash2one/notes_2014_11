@@ -1,4 +1,4 @@
-地址是：[[http://orgmode.org/manual/index.html][The Org Manual]]。这份文档制作很精良，而且（显然）是用Org-mode写的。
+q地址是：[[http://orgmode.org/manual/index.html][The Org Manual]]。这份文档制作很精良，而且（显然）是用Org-mode写的。
 * 学习Org-mode的官方手册
 
 ** Wiki式的Inner link

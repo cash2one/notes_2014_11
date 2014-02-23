@@ -1,31 +1,192 @@
-#+TITLE: Chromium工程代码base库和net库的研究
+#+TITLE: Chromium项目的base库
 
+* 前言
 在晓明的介绍下，我再次开始研究了Chromium的base库，结果发现下面的东西又全又好，弥
 补了我对toft库的缺憾。我严重怀疑： *这个base库跟Google内部的base库相差无几！*
 
 + [[http://src.chromium.org/viewvc/chrome/trunk/src/base/][Chromium base库]]
 + [[http://src.chromium.org/viewvc/chrome/trunk/src/net/][Chromium net库]]
 
-在net库中，包含了对socket的封装，以及基于tcp/ip的各种协议的封装。
+* Checkout base库源码
+整个Chrominum项目的Git库列表[[https://chromium.googlesource.com/][在这里]] ，单独检出base库的代码的的指令是：
+#+begin_src sh
+git clone https://chromium.googlesource.com/chromium/src/base 
+#+end_src
 
-关于event（事件循环）库，我没有在base/net中找到，只是在third_party下面找到
-libevent。看来，chromium自己并没有实现一套event库。但是在base库中有message_loop，
-它是消息循环的封装，支持DEFAULT/UI/IO/GPU/JAVA/CUSTOM等各种“event”。看来，我刚
-才的论断可能是错误的，base库里面有event库，而且是比一般event库更加高档的message
-loop库。
+* TODO base库总览
+为了分析base库的外部依赖，我用下面指令把源码中include语句grep出来。
+#+begin_src sh
+grep "#include" -R base > include.txt
+#+end_src
 
-到目前为止，我在base/net库中找到的好东西有：
-1. 完整的stack_trace，跟踪函数调用
-2. logging，从此不需要再额外依赖glog
-3. message_loop，我得好好研究，看能够借助它实现一个事件循环
-4. stringprintf支持将std::string直接传给%s
-5. file_util中有ReadFileToString，还有一系列处理软硬链的函数
-6. 还有一个生成GUID的函数！
-7. 比C下面的原生rand函数好用N多的RandXxx系列函数
-8. 获取系统信息的系列函数，在sys_info.h里面
-9. 自带json库，接口和jsoncpp类似，但是功能强大。其中Value定义在base下面，更通用化，而不是base/json下面
-10. 专门用来将文件map到内存的MemoryMappedFile（位于base/file里面）
-11. 专门用来处理request url的库，位于net/url_request下面
+然后用vim打开include.txt，并通过 *include "[^b]* 来搜索所有非base库的头文件。初步
+观察，发现base库的外部依赖很少，这点很好，减少了我的构建难度。
 
-先到此为止吧（2014-01-29 22:58:29），base/net库（以及整个Chromium项目）的好东西太
-多太多了，再看下去估计没法睡觉了）
+#+begin_src sh
+git clone https://chromium.googlesource.com/chromium/src/build
+git clone https://chromium.googlesource.com/chromium/testing/gtest
+#+end_src
+
+** 初步裁剪
+我根据base库的外部依赖，来对base进行初步裁剪。裁掉多余自子目录后，base库的外部依赖将会大量减少。
+| 子目录             | 作用           |
+|--------------------+----------------|
+| base/i18n          | 国际化相关     |
+| base/android       | Android OS相关 |
+| base/ios           | iOS相关        |
+| base/x11           | X Window相关   |
+| base/mac           | Mac OS相关     |
+| base/win           | Windows OS相关 |
+| base/power_monitor | 电源管理       |
+
+还有一些相关文件要删除掉：
++ base_paths_win.cc
++ base_paths_android.cc
++ debug/debugger_win.cc
++ debug/stack_trace_win.cc
++ debug/stack_trace_android.cc
++ debug/trace_event_android.cc
++ debug/trace_event_win.cc
++ debug/debug_on_start_win.cc
++ file_util_win.cc
++ file_version_info_win.cc
++ file_version_info_mac.mm
++ files/file_enumerator_win.cc
++ files/file_path_watcher_kqueue.cc
++ files/file_path_watcher_win.cc
++ files/file_win.cc
++ guid_win.cc
++ files/memory_mapped_file_win.cc
++ logging_win.cc
++ memory/discardable_memory_android.cc
++ memory/discardable_memory_allocator_android.cc
++ memory/discardable_memory_mac.cc
++ memory/discardable_memory_win.cc
++ memory/shared_memory_android.cc
++ memory/shared_memory_win.cc
++ message_loop/message_pump_android.cc
++ message_loop/message_pump_io_ios.cc
++ message_loop/message_pump_win.cc
++ message_loop/message_pump_x11.cc
++ message_loop/message_pump_gtk.cc
++ message_loop/message_pump_glib.cc
++ message_loop/message_pump_ozone.cc
++ native_library_win.cc
++ os_compat_android.cc
++ platform_file_win.cc
++ process/kill_mac.cc
++ process/kill_win.cc
++ openbsd/freebsd ......
++ nacl (rand_util_nacl.cc)
++ timer/hi_res_timer_manager_posix.cc （电源管理相关）
+
+
+有一些临时删除掉：
++ base64.cc
++ files/file_path_watcher_linux.cc
++ message_loop/message_pump_libevent.cc
++ logging.cc
++ cpu.cc
++ metrics/stats_table.cc
++ posix/file_descriptor_shuffle.y （这个是什么东东？）
++ synchronization/condition_variable_posix.cc
++ vlog.cc
++ at_exit.cc
+
+
+
+* 兼容问题
+** 缺少linux/magic.h
+解法：从网上拷贝一个下来用。https://raw.github.com/josteink/twrp_kernel_asus_tf101/master/include/linux/magic.h
+** 公司内核版本过低没有inotify
+先不编译 *base/files/file_path_watcher_linux.cc*
+** logging.cc与glog库冲突
+不编译 *base/logging.cc* ，并把logging.h重定向到thirdparty/glog/logging.h
+** glog库不支持DPLOG/NOTREACHED/NOTIMPLEMENTED等宏
+用Chromium base库中的logging.h替代我们thirdparty下面的logging.h
+** 找不到_xgetbv函数
+这个函数是 [[http://software.intel.com/sites/products/documentation/studio/composer/en-us/2011Update/compiler_c/intref_cls/common/intref_manextxgetbv.htm][Intel]] 提供的获取CPU信息的函数，我暂时不编译 *cpu.cc* 来跳过这个错误。
+** base/metrics/stats_table.cc:20:33: ipc/ipc_descriptors.h: No such file or directory
+临时删掉 *base/metrics/stats_table.cc*
+** base/process/process_linux.cc:116: error: `RLIMIT_NICE' was not declared in this scope
+原因：公司版本的Linux内核的bits/resource.h中没有nice值相关的定义。
+解法：注释掉 *process/process_linux.cc* 文件中的相关语句并让其直接返回true。如下：
+#+begin_src cpp
+CheckForNicePermission() : can_reraise_priority(false) {
+    // We won't be able to raise the priority if we don't have the right rlimit.
+    // The limit may be adjusted in /etc/security/limits.conf for PAM systems.
+    // struct rlimit rlim;
+    // if ((getrlimit(RLIMIT_NICE, &rlim) == 0) &&
+        // (20 - kForegroundPriority) <= static_cast<int>(rlim.rlim_cur)) {
+        // can_reraise_priority = true;
+    // }
+    can_reraise_priority = true;
+}
+#+end_src
+** base/synchronization/condition_variable_posix.cc:33: error: `pthread_condattr_setclock' was not declared in this scope
+原因：公司的pthread.h里面没有pthread_condattr_setclock接口。解法：暂时不编译
+*synchronization/condition_variable_posix.cc*
+** RAW_CHECK接口与glog冲突
+解法：RAW_CHECK改成CHECK。
+#+begin_src sh
+sed -i 's/RAW_CHECK/CHECK/g' `grep CHECK -Rrl .`
+#+end_src
+** DPLOG与PLOG
+解法：为了快速解决，先全部改成LOG。
+#+begin_src sh
+sed -i 's/DPLOG/PLOG/g' `grep DPLOG -Rrl .`
+sed -i 's/DLOG/LOG/g' `grep DLOG -Rrl .`
+sed -i 's/DPCHECK/PCHECK/g' `grep CHECK -Rrl .`
+#+end_src
+** process/launch_posix.cc 165行报错：无法将函数指针转化为void*
+解法：用C风格的强转
+#+begin_src cpp
+// act.k_sa_handler = reinterpret_cast<void*>(SIG_DFL);
+act.k_sa_handler = (void*)(SIG_DFL);
+#+end_src
+** variable `std::istringstream iss' has initializer but incomplete type
+解法：#include <sstream>。[[http://stackoverflow.com/questions/13428164/c-compile-error-has-initializer-but-incomplete-type][参考]]
+
+** base/threading/platform_thread_linux.cc:64: error: `PR_SET_NAME' was not declared in this scope
+原因：公司版本的 *linux/prctl.h* 里面没有PR_SET_NAME。解法：先注释掉
+*threading/platform_thread_linux.cc* 三行代码（这样Thread的SetName无法生效了）
+#+begin_src cpp
+  int err = prctl(PR_SET_NAME, name);
+  // We expect EPERM failures in sandboxed processes, just ignore those.
+  if (err < 0 && errno != EPERM)
+    LOG(ERROR) << "prctl(PR_SET_NAME)";
+#+end_src
+
+附正常的 [[http://lxr.free-electrons.com/source/include/uapi/linux/prctl.h][linux/prctl.h]]。
+
+** threading/sequenced_worker_pool.h中的私有变量被访问
+解法：将137行的private改成public。
+
+** threading/thread_restrictions.h的私有变量备份访问
+解法：在230行的ScopedAllowWait类的定义前面加上public:
+
+** DCHECK不支持<<
+#+begin_src cpp
+// DCHECK(IsStringASCII(wide)) << wide;
+DCHECK(IsStringASCII(wide));
+#+end_src
+
+** glog不支持LOG_ERRNO
+#+begin_src cpp
+// LOG_ERRNO(ERROR) << "Call to gettimeofday failed.";
+LOG(ERROR) << "Call to gettimeofday failed.";
+#+end_src
+
+** at_exit.cc先不编译
+
+* 学习回顾
+** 这个活不好干，鉴定完毕 <2014-02-23 日>
+关机睡觉
+** 第一次构建成功 <2014-02-23 日>
+改得伤痕累累，但至少能把libbase.a给编译粗来了。
+#+begin_src sh
+[zhongyi01@cq01-rdqa-dev071.cq01.baidu.com base]$ ll
+drwxrwxr-x  20 zhongyi01 zhongyi01     4096 Feb 23 17:07 base.objs
+-rw-rw-r--   1 zhongyi01 zhongyi01 47712618 Feb 23 17:07 libbase.a
+#+end_src
+

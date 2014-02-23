@@ -1,23 +1,20 @@
 #+TITLE: gtd.org - 我对于GTD的第一次实践
 
 * Life
-** TODO 报名驾校
+** TODO 报名驾校，带上身份证复印件，9张一寸照片，周三14点大厦食堂
    SCHEDULED: <2014-02-26 三>
+** TODO 完成2013年度回顾
+   SCHEDULED: <2014-02-22 六>
 ** TODO 搞美股
 *** TODO 网上证劵开户
     SCHEDULED: <2014-02-18 二>
 *** TODO 境外汇款
-** TODO 剃头
-   SCHEDULED: <2014-02-22 六>
-** TODO 春季买衣服
-*** TODO 买条牛仔裤
-    SCHEDULED: <2014-02-22 六>
-*** DONE 新买的外套要收货
+** DONE 新买的外套要收货
     SCHEDULED: <2014-02-15 六>
-** TODO 完成2013年度回顾
-   SCHEDULED: <2014-02-22 六>
-** TODO 提2月份的报销
+** DONE 提2月份的报销
    SCHEDULED: <2014-02-21 五>
+** DONE 剃头
+   SCHEDULED: <2014-02-22 六>
 ** DONE 整理iTune里的歌曲
    SCHEDULED: <2014-02-17 一>
 ** DONE 招行信用卡
@@ -54,10 +51,17 @@
    SCHEDULED: <2014-02-09 日>
    - State "CANCELLED"  from "TODO"       [2014-02-10 一 00:23]
 * Work
+** TODO 工作周报
+** TODO [BugFix]BNS同步时没有对节点进行disable
+   SCHEDULED: <2014-02-24 一>
+** TODO Chrominum代码抽取出来，用Blade构建（海波要求）
+   SCHEDULED: <2014-02-21 五>
+** TODO 搞BDG的图书馆主页（文锋安排，微微需求）
+   DEADLINE: <2014-03-28 五>
+** TODO 按照产品线改良监控页面（文锋要求）
+   SCHEDULED: <2014-02-25 二>
 ** TODO Master对于调用UpdateNodeStatus且在Master中不存在的节点执行DeleteNode
    SCHEDULED: <2014-02-21 五>
-** TODO 与李伟和小丰沟通自定义Index key的问题
-   SCHEDULED: <2014-02-20 四>
 ** TODO 帮晓璇Review代码
    SCHEDULED: <2014-02-20 四>
 ** TODO 加入定制集群文件名的日志配置项
@@ -70,7 +74,6 @@
    SCHEDULED: <2014-02-17 一>
 ** TODO DtMeta 通知的代码美化
    SCHEDULED: <2014-02-20 四>
-** TODO 线下端口（9998）与线上端口（425）的处理
 ** TODO 帮张力将三份app日志通知到线上的dt-meta
    SCHEDULED: <2014-02-21 五>
 ** TODO 开始多Master的开发
@@ -79,6 +82,9 @@
 ** TODO 新建日志时，判断日志名是否重复
 ** TODO 完成Checkpoint存储的改造
    SCHEDULED: <2014-02-18 二>
+** DONE 线下端口（9998）与线上端口（425）的处理
+** DONE 与李伟和小丰沟通自定义Index key的问题
+   SCHEDULED: <2014-02-20 四>
 ** DONE 职称评定Review（与菁辉）
    SCHEDULED: <2014-02-19 三>
 ** DONE Minos测试方案Review
@@ -122,8 +128,8 @@
 *** 从折腾别人的工程开始入手。例如：[[http://code4app.net/category/cocos2d][Cocos2d source code examples]]
 *** 突然没兴趣了，先挂着，有兴趣了继续学习Cocos2D
 ** TODO 阅读CTCI
-*** TODO 第一部分
-    SCHEDULED: <2014-02-16 日>
+*** TODO CTCI第一部分
+    SCHEDULED: <2014-02-22 六>
 ** TODO 写一个用Vim打开b2log日志的插件（参考/user/local/share/vim/vim73下面的gzip.vim）
 ** TODO 完成声韵输入法以及Trie树是介绍
 ** TODO 学习Ruby on Rails
@@ -136,7 +142,7 @@
 ** DONE 基于Eclipse搭建一个C/C++代码阅读环境
    SCHEDULED: <2014-02-23 日>
 ** TODO 系统学习GDB
-   SCHEDULED: <2014-02-22 六>
+   SCHEDULED: <2014-03-08 六>
 ** TODO 学习org-mode
 *** CANCELLED 尝试一下支持org-mode的博客生成器			  :CANCELLED:
     SCHEDULED: <2014-02-15 六>
@@ -152,3 +158,12 @@
 ***  
 ** TODO 研究uuap认证
    SCHEDULED: <2014-02-21 五>
+** TODO 研究Chromium
+   SCHEDULED: <2014-02-21 五>
+** TODO 完成一篇在VPS上搭建PPTP的笔记
+   SCHEDULED: <2014-03-21 五>
+* Play
+** 看《绝命毒师》
+*** DONE 1-4集
+    SCHEDULED: <2014-02-22 六>
+** 看《1984》
