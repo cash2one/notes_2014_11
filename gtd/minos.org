@@ -84,6 +84,12 @@ DeleteMetaData的过程如下：
 Master管理的
 * 传输流管理
 ** BNS同步
+Master根据BNS来获取状态正常（状态码为0）的机器ip列表，相当于在shell下执行下面的指令：
+#+begin_src sh
+get_instance_by_service -si group.bigpipe-vpui-odp.WISE.cn | grep ' 0' | awk '{print  $2}'
+#+end_src
+
+
 ** 为慢节点调用Fallback
 ** 为MA选择MC
 * 通知模块

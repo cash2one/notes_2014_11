@@ -1,0 +1,23 @@
+#+TITLE: Python之再学习
+
+* 前言
+在浏览Google的一些网页之后，突然再次涌起了学习Python的热情。于是我无限期停止了学
+习Ruby的进程，开始系统习学习Python。
+
+我第一次接触Python是在2011年，那时我在阅读《集体智慧编程》，并照着书敲完了上面是
+所有Python代码。之后在工作中也经常会用到Python写脚本，每次用的时候，基础语法还好，
+但是一旦用到函数库，我就不得不通过搜索，非常的没效率。我一直想找个机会来进行几轮
+系统的学习。
+
+* 资料搜集
+** 文档
++ [[http://docs.python.org/2/][Python 2.7文档]]
++ [[http://docs.python.org/2/library/index.html][Python标准库]]
+
+** 书籍
++ [[http://woodpecker.org.cn/diveintopython/][深入 Python :Dive Into Python 中文版（啄木鸟社区）]]
++ [[http://book.douban.com/subject/3117898/][Python源码剖析]]
+
+* 学习回顾 
+** 或许我需要的只是背诵一下api，以及一个能自动提示的IDE <2014-02-23 日>
+翻几本Python书，发现都眼熟的很，可看的不多。

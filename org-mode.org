@@ -36,6 +36,9 @@ Gnuplot，Plantuml等复杂的绘图语言，非常的强大。这是[[http://or
 自己的.emacs。
 *** TODO 有时间，我会深入了解一下refile
 
+* Clock
+C-c C-x C-i来Clock in
+
 * 升级Org-mode版本
 我机器上的org-mode版本较低，无法支持批量（Project）地导出为HTML，所以我尝试将其升级为最新的 *Stable version 8.2.5h (Jan. 2014)*
 

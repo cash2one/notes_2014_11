@@ -93,8 +93,6 @@ git clone https://chromium.googlesource.com/chromium/testing/gtest
 + vlog.cc
 + at_exit.cc
 
-
-
 * 兼容问题
 ** 缺少linux/magic.h
 解法：从网上拷贝一个下来用。https://raw.github.com/josteink/twrp_kernel_asus_tf101/master/include/linux/magic.h

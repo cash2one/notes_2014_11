@@ -1,0 +1,14 @@
+
+* SQL实践经验
+** 字符串替换（REPLACE)
+具体问题：修改数据库里的一批记录，将其中的报警人字段中的指定人去掉（该报警人字段的值是由多个人组成，用分号间隔）
+
+解决方法：利用SQL中的内置的replace函数。如下：
+#+begin_src sql
+update download_config set mailList = replace(mailList, "lixxx11@baidu.com;", "") where nodeId = 200006912;
+update download_config set mailList = replace(mailList, "lixxx11@baidu.com", "") where nodeId = 200006912;
+#+end_src
+
+
+
+
