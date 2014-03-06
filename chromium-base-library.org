@@ -13,6 +13,27 @@
 git clone https://chromium.googlesource.com/chromium/src/base 
 #+end_src
 
+* base的各模块简介
+** at_exit.h
+| 类/方法       | 功能                                       | 应用                            |
+|---------------+--------------------------------------------+---------------------------------|
+| AtExitManager | 可以注册回调函数，当该对象离开作用域时调用 | 可用于Singleton模式的内存回收。 |
+
+** rand_util.h
+| 方法     | 功能                     | 应用 |
+|-----------+--------------------------+------|
+| RandInt   | 生成指定范围内的随机整数 |      |
+| RandBytes | 用随机bit填充一段buffer  |      |
+
+** json目录与values.h
+| 类         | 功能                                     | 应用 |
+| JSONWriter | JSON序列化为字符串                       |      |
+| JSONReader | 字符串反序列化为JSON                     |      |
+| Values     | 一个树形递归的数据结构，可以用来表示JSON |      |
+
+说明：json目录提供的功能类似于流行的jsoncpp。但根据我的使用经验，base库下的json用
+法比jsoncpp复杂。
+
 * TODO base库总览
 为了分析base库的外部依赖，我用下面指令把源码中include语句grep出来。
 #+begin_src sh
@@ -93,6 +114,24 @@ git clone https://chromium.googlesource.com/chromium/testing/gtest
 + vlog.cc
 + at_exit.cc
 
+** 进一步裁剪，以干净地入库
+*** 删掉所有gyp文件
+GYP是Chromium的项目构建工具，而gyp文件则是GYP的构建脚本，相当于Blade的BUILD文件。
+我要删掉它。[[http://blog.xiaogaozi.org/2011/10/29/introduction-to-gyp/][GYP简介]]
+#+begin_src sh
+find base/ -name "*.gyp" | xargs rm
+#+end_src
+*** 将build/build_config.h替换为build_config.h
+首先，用find和sed -n来查看哪些文件带有 *build/build_config.h* ：
+#+begin_src sh
+find . -type f | xargs sed -n "/build\/build_config.h/p"
+#+end_src
+
+然后，再用find和sed -i对这些文件进行替换：
+#+begin_src sh
+find . -type f | xargs sed -i "s/build\/build_config.h/base\/build_config.h/"
+#+end_src
+
 * 兼容问题
 ** 缺少linux/magic.h
 解法：从网上拷贝一个下来用。https://raw.github.com/josteink/twrp_kernel_asus_tf101/master/include/linux/magic.h
@@ -122,7 +161,21 @@ CheckForNicePermission() : can_reraise_priority(false) {
 }
 #+end_src
 ** base/synchronization/condition_variable_posix.cc:33: error: `pthread_condattr_setclock' was not declared in this scope
-原因：公司的pthread.h里面没有pthread_condattr_setclock接口。解法：暂时不编译
+原因：公司的pthread.h里面没有pthread_condattr_setclock接口。解法：直接使用pthread_cond_init()。如下：
+#+begin_src cpp
+// #if !defined(OS_MACOSX) && !defined(OS_NACL) && !defined(OS_ANDROID)
+#if !defined(OS_MACOSX) && !defined(OS_NACL) && !defined(OS_ANDROID) && !defined(OS_LINUX)
+  pthread_condattr_t attrs;
+  rv = pthread_condattr_init(&attrs);
+  DCHECK_EQ(0, rv);
+  pthread_condattr_setclock(&attrs, CLOCK_MONOTONIC);
+  rv = pthread_cond_init(&condition_, &attrs);
+  pthread_condattr_destroy(&attrs);
+#else
+  rv = pthread_cond_init(&condition_, NULL);
+#endif
+#+end_src
+
 *synchronization/condition_variable_posix.cc*
 ** RAW_CHECK接口与glog冲突
 解法：RAW_CHECK改成CHECK。
@@ -174,8 +227,6 @@ DCHECK(IsStringASCII(wide));
 // LOG_ERRNO(ERROR) << "Call to gettimeofday failed.";
 LOG(ERROR) << "Call to gettimeofday failed.";
 #+end_src
-
-** at_exit.cc先不编译
 
 * 学习回顾
 ** 这个活不好干，鉴定完毕 <2014-02-23 日>

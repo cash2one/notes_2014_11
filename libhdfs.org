@@ -1,0 +1,24 @@
+
+* hdfsFileInfo
+#+begin_src cpp
+typedef struct  {
+    tObjectKind mKind;   /* file or directory */
+    char *mName;         /* the name of the file */
+    tTime mLastMod;      /* the last modification time for the file in seconds */
+    tOffset mSize;       /* the size of the file in bytes */
+    short mReplication;    /* the count of replicas */
+    tOffset mBlockSize;  /* the block size for the file */
+    char *mOwner;        /* the owner of the file */
+    char *mGroup;        /* the group associated with the file */
+    short mPermissions;  /* the permissions associated with the file */
+    tTime mLastAccess;    /* the last access time for the file in seconds */
+} hdfsFileInfo;
+#+end_src
+* 删除文件和目录：hdfsDelete
+#+begin_src cpp
+int hdfsDelete(hdfsFS fs, const char* path)
+#+end_src
+
+hdfsDelete不仅可以删除文件，当path是目录是，它还可以 *递归删除* 整个目录。另外，
+hdfsDelete是libhdfs提供的唯一一个删除相关的接口。
+

@@ -1,0 +1,672 @@
+** Table of Contents
+
+-  [[#sec-1][1. Master总览]]
+-  [[#sec-2][2. 元信息管理]]
+
+   -  [[#sec-2-1][2.1. 元信息压缩]]
+   -  [[#sec-2-2][2.2. 传输流Checkpoint的存储]]
+
+      -  [[#sec-2-2-1][2.2.1. Checkpoint本地化]]
+
+         -  [[#sec-2-2-1-1][2.2.1.1. 多版本Checkpoint]]
+         -  [[#sec-2-2-1-2][2.2.1.2. 获取某日志的Checkpoint]]
+         -  [[#sec-2-2-1-3][2.2.1.3. 存储某日志的Checkpoint]]
+         -  [[#sec-2-2-1-4][2.2.1.4. 删除某日志的Checkpoint]]
+
+   -  [[#sec-2-3][2.3. 规模和限制]]
+
+-  [[#sec-3][3. 传输流管理]]
+
+   -  [[#sec-3-1][3.1. BNS同步]]
+   -  [[#sec-3-2][3.2. 为慢节点调用Fallback]]
+   -  [[#sec-3-3][3.3. 为MA选择MC]]
+
+-  [[#sec-4][4. 通知模块]]
+
+   -  [[#sec-4-1][4.1. 通知模块的职责]]
+   -  [[#sec-4-2][4.2. 模块过程]]
+
+      -  [[#sec-4-2-1][4.2.1. 为各个传输流调用通知接口]]
+      -  [[#sec-4-2-2][4.2.2. 获取传输流未通知的DataSlice]]
+      -  [[#sec-4-2-3][4.2.3. 判断数据分片是否准备就绪]]
+      -  [[#sec-4-2-4][4.2.4. 执行通知]]
+      -  [[#sec-4-2-5][4.2.5. 通知成功后，将通知进度写回到传输流]]
+
+   -  [[#sec-4-3][4.3. 通知条件]]
+
+-  [[#sec-5][5. 报警模块]]
+
+   -  [[#sec-5-1][5.1. 报警模块的职责]]
+   -  [[#sec-5-2][5.2. 主要过程]]
+   -  [[#sec-5-3][5.3. 传输流状态与报警条件]]
+   -  [[#sec-5-4][5.4. 短信报警]]
+
+      -  [[#sec-5-4-1][5.4.1. 短信报警表的结构]]
+      -  [[#sec-5-4-2][5.4.2. 向表中插入记录以触发报警]]
+
+   -  [[#sec-5-5][5.5. 邮件报警]]
+   -  [[#sec-5-6][5.6. 报警逻辑抽取]]
+   -  [[#sec-5-7][5.7. 报警逻辑详细设计]]
+
+-  [[#sec-6][6. 监控与统计]]
+
+   -  [[#sec-6-1][6.1. 全局counter]]
+   -  [[#sec-6-2][6.2. 单个传输流状态的实时统计FlowStatus]]
+
+      -  [[#sec-6-2-1][6.2.1. FlowStatus的功能]]
+      -  [[#sec-6-2-2][6.2.2. FlowStatus数据结构]]
+      -  [[#sec-6-2-3][6.2.3. FlowStatus接口列表]]
+      -  [[#sec-6-2-4][6.2.4. 关键接口：UpdateStatus]]
+      -  [[#sec-6-2-5][6.2.5. 与Master的集成]]
+
+-  [[#sec-7][7. 线下环境]]
+-  [[#sec-8][8. Master多机化方案]]
+
+   -  [[#sec-8-1][8.1. 背景]]
+
+      -  [[#sec-8-1-1][8.1.1. 前期设想]]
+
+   -  [[#sec-8-2][8.2. 设计目标]]
+   -  [[#sec-8-3][8.3. Zookeeper目录结构]]
+
+      -  [[#sec-8-3-1][8.3.1. 根节点]]
+      -  [[#sec-8-3-2][8.3.2. log-config节点]]
+      -  [[#sec-8-3-3][8.3.3. config-manager节点]]
+      -  [[#sec-8-3-4][8.3.4. master节点]]
+
+   -  [[#sec-8-4][8.4. Master的主要过程]]
+
+      -  [[#sec-8-4-1][8.4.1. Master启动，抢占主Master]]
+      -  [[#sec-8-4-2][8.4.2. 主Master为各个Master分配传输任务]]
+      -  [[#sec-8-4-3][8.4.3. 主Master的切换（主从切换）]]
+
+         -  [[#sec-8-4-3-1][8.4.3.1. TODO 临时节点是否支持续弦？]]
+
+      -  [[#sec-8-4-4][8.4.4. Master故障迁移]]
+
+         -  [[#sec-8-4-4-1][8.4.4.1. TODO 临时节点是否支持续弦？]]
+
+      -  [[#sec-8-4-5][8.4.5. TODO Master负载均衡]]
+      -  [[#sec-8-4-6][8.4.6. TODO 如何评价Master的当期负载]]
+      -  [[#sec-8-4-7][8.4.7. 将负载策略抽取出来]]
+
+   -  [[#sec-8-5][8.5. 与Node相关的主要过程]]
+
+      -  [[#sec-8-5-1][8.5.1. 询问任意Master自己所属的Master]]
+
+   -  [[#sec-8-6][8.6. 技术调研]]
+
+      -  [[#sec-8-6-1][8.6.1. Zookeeper的进阶使用调研]]
+      -  [[#sec-8-6-2][8.6.2. 负载均衡的框架]]
+      -  [[#sec-8-6-3][8.6.3. 策略的抽取]]
+
+   -  [[#sec-8-7][8.7. 设计图]]
+
+-  [[#sec-9][9. Master支持LogFormat]]
+
+** 1 Master总览
+
+** 2 元信息管理
+
+*** 2.1 元信息压缩
+
+使用Snappy压缩。
+
+*** 2.2 传输流Checkpoint的存储
+
+之前传输流的Checkpoint是和日志配置一起存储在Zookeeper上面的，但是最近发现几份日志
+的Checkpoint暴涨，超过ZK的1M限制，导致Master频繁出core。现在要寻求一种更好的存储
+方式。
+
+备选方案如下：
+
+| 序号   | 方案             | 优点                                                   | 缺点                                          |
+|--------+------------------+--------------------------------------------------------+-----------------------------------------------|
+| 1      | HDFS             | HDFS应用广泛，且能满足应用场景                         | 需要依赖libhdfs和libjvm，且受集群可用性限制   |
+| 2      | Mola             | 上一个项目用Mola，效果很好，且应用场景完全匹配（KV）   | Mola的Value大小有限制，是4M                   |
+| 3      | NFS              | 通过fuse能像本地Filesystem一样来用NFS                  | NFS刚面世，稳定性还未知                       |
+| 4      | 本地Filesystem   | 方便易用，且能满足易用场景                             | 单机存储，受磁盘故障影响，故障迁移麻烦        |
+
+决定本期先使用本地Filesystem存储，并以循环写入的方式为每个传输流存储多个版本的
+Checkpoint。未来会考虑NFS，也可能继续用本地Filesystem，继续用的话就要作更多的容错
+性考虑（可以研究下HDFS的元数据本地化存储方案）。
+
+**** 2.2.1 Checkpoint本地化
+
+目前，传输流的Checkpoint的存储是由MinosMeta来负责存储到ZK。升级为本地化存储之后，
+需要在MinosMeta模块到本地Filesystem之间新加一层，相关类叫做
+*LocalMetaDataAccessor* 。
+
+LocalMetaDataAccessor会为每份日志维护多个版本的Checkpoint，这些Checkpoint的存储路
+径如下：
+
+#+BEGIN_EXAMPLE
+    /path/to/log-flow/${log_module_id}/${timestamp}
+#+END_EXAMPLE
+
+其中，${timestamp}代表存储Checkpoint这个时刻的时间戳。
+
+传输流Checkpoint的本地存储相关的过程有：
+
+-  获取某日志的Checkpoint
+-  存储某日志的Checkpoint
+-  删除某日志的Checkpoint
+
+***** 2.2.1.1 多版本Checkpoint
+
+多版本Checkpoint的的意义不仅在于存储多版本，还能提高容错性。当磁盘故障或其他故障
+导致某个Checkpoint坏掉时，MinosMeta还能读取其他版本的Checkpoint并从中恢复。
+
+默认情况下，会存储三个版本的Checkpoint，这个配置项是可以修改的（最小可以改成1）。
+但是，这个配置项是针对整个Master，而不能针对某个传输流单独配置。本期Master不支持
+为每个传输流配置Checkpoint存储的版本数的特性，因为这样做会增加复杂性，且没有明显
+的收益。
+
+***** 2.2.1.2 获取某日志的Checkpoint
+
+MinosMeta会根据传入的log\_module\_id拼装出该日志的Checkpoint的目录，如下：
+*/path/to/log-flow/${log\_module\_id}* ，然后调用LocalMetaDataAccessor的
+GetMetaData接口。
+
+GetMetaData的过程如下：
+
+1. 判断路径是否存在，不存在则返回false；
+2. 获取路径下面的所有文件，如果文件数目为空，则返回false；
+3. 通过文件名中的时间戳来为这些文件排序，选择第i个文件，读取内容返回给调用者；
+
+当调用者获取第i版本的Checkpoint之后，发现该Checkpoint不可用，则它会尝试调用第i+1版
+本Checkpoint。如果所有版本的Checkpoint都不可用，则这个传输流就初始化失败。
+
+***** 2.2.1.3 存储某日志的Checkpoint
+
+拼装Checkpoint存储目录仍然由MinosMeta负责，然后调用LocalMetaDataAccessor的
+UpdateMetaData/AddMetaData接口。
+
+UpdateMetaData/AddMetaData的过程如下：
+
+1. 判断目录是否存在，不存在则创建目录；
+2. 以当前时间戳作为文件名，在目录下创建文件，将Checkpoint存储到这个文件中。如果该
+   文件已经存在，则覆盖写；
+3. 获取路径下面的所有文件，按照文件名中的时间戳排序。如果Checkpoint文件数目超过
+   Checkpoint版本的最大数目，则删除较老的Checkpoint文件；
+
+***** 2.2.1.4 删除某日志的Checkpoint
+
+拼装Checkpoint存储目录还是由MinosMeta负责，然后调用LocalMetaDataAccessor的
+DeleteMetaData接口。
+
+DeleteMetaData的过程如下：
+
+1. 判断目录是否存在，不存在则返回false；
+2. 递归删除该目录；
+
+*** 2.3 规模和限制
+
+每个传输流的Checkpoint按照平均1M来算，存储三个版本，就是每个日志需要3M。每个
+Master管理的
+
+** 3 传输流管理
+
+*** 3.1 BNS同步
+
+Master根据BNS来获取状态正常（状态码为0）的机器ip列表，相当于在shell下执行下面的指令：
+
+#+BEGIN_EXAMPLE
+    get_instance_by_service -si group.bigpipe-vpui-odp.WISE.cn | grep ' 0' | awk '{print  $2}'
+#+END_EXAMPLE
+
+*** 3.2 为慢节点调用Fallback
+
+*** 3.3 为MA选择MC
+
+** 4 通知模块
+
+*** 4.1 通知模块的职责
+
+Minos的通知模块的职责是在数据分片传输就位时，通知下游的数据系统该数据分片
+（DataSlice）可用了。
+
+拿通知云图（CloudAtlas）来说，通知模块具体职责包括：
+
+1. 获取上次通知的时间点，以及通知间隔，获得一个有待通知的数据分片列表；
+2. 判断待通知的数据分片是否传输就位；
+3. 调用云图client的AddSlice接口，来对已就位的数据分片执行通知；
+4. 当成功为某个数据分片执行通知后，保存通知进度；
+
+*** 4.2 模块过程
+
+**** 4.2.1 为各个传输流调用通知接口
+
+Monitor类 *定期轮询* 所有的传输流，并以传输流的当前Checkpoint（类型为
+LogFlowMessage）作为参数，调用Notifier类的 *Notify()* 接口。
+
+**** 4.2.2 获取传输流未通知的DataSlice
+
+在Notifier的Notify()函数中，会
+
+**** 4.2.3 判断数据分片是否准备就绪
+
+通知模块有一个static的函数，专门用来判断某传输流的某数据分片是否已经就绪。函数原型如下：
+
+#+BEGIN_EXAMPLE
+    static bool IsDataSliceReady(const LogFlowMessage& log_flow,
+                                 const DataSlice& data_slice);
+#+END_EXAMPLE
+
+**** 4.2.4 执行通知
+
+为了不阻塞调用线程，Notifier的Notifier()接口的工作其实只是讲DataSlice添加到
+Notifier内部的通知队列中，然后立刻返回。有一个内部通知线程负责从通知队列中取
+DataSlice，然后执行真正的通知下游的过程。
+
+**** 4.2.5 通知成功后，将通知进度写回到传输流
+
+内部通知线程为某DataSlice通知成功后，会主动将通知进度写回传输流，传输流会把通知进
+度作为原信息定期保存起来。
+
+Notifier会调用LogFlowManager的GetLogFlow()接口来获取DataSlice的LogFlow。LogFlow提
+供了 *UpdateLatestNotifiedSlice()* 的接口，来供Notifier写回通知进度。
+
+*** 4.3 通知条件
+
+获取传输流中所有 *没有被disabled*
+的节点的synced的log\_time列表，如果全部log\_time
+均大于待通知的DataSlice的timestamp\_end，则认为可以通知，否则，不能通知。
+
+** 5 报警模块
+
+*** 5.1 报警模块的职责
+
+-  判断传输流是否发生了需要报警的异常
+-  向指定用户或组发送短信报警和邮件报警
+
+*** 5.2 主要过程
+
+1. 判断传输流是否发生了异常
+2. 根据预定义的报警策略，判断本次是否需要报警
+3. 发报警
+
+*** 5.3 传输流状态与报警条件
+
+Minos将数据传输到集群后，Master通过定期向下游计算系统执行 *通知*
+来让下游使用这部 分数据。所以说， *通知进度*
+是传输流状态的最主要的标记，也是Master进行报警的最主
+要依据（目前是唯一依据。2014-02-12）
+
+*** 5.4 短信报警
+
+用户在新建Minos日志传输时，填写的是用户邮箱前缀（如zhongyi01），Master为了达成报
+警，有两个难点：
+
+1. 根据邮箱前缀来获取其对应的手机号
+2. 在程序中向指定手机号发短信
+
+对于第一点，可以用公司提供了一个用soap实现的公共服务来实现。不过这会为Master引入
+soap client。对于第二点，可以调用公司每台机器的gsmsend脚本。例子如下：
+
+#+BEGIN_EXAMPLE
+    gsmsend -s emp01.baidu.com:15003 -s emp02.baidu.com:15003 18810001881@"I'm zhongyi"
+#+END_EXAMPLE
+
+幸运的是，我们组的OP自己开发了一个专门的报警工具。我只需要向指定的数据库表insert一
+条记录（包含邮箱前缀和报警内容），该报警工具就会触发报警。
+
+**** 5.4.1 短信报警表的结构
+
+#+BEGIN_EXAMPLE
+    mysql> desc t_alarm_info;
+    +-----------+----------------+------+-----+---------+-------+
+    | Field     | Type           | Null | Key | Default | Extra |
+    +-----------+----------------+------+-----+---------+-------+
+    | data_id   | bigint(20)     | NO   | PRI | NULL    |       |
+    | baseTime  | datetime       | NO   | PRI | NULL    |       |
+    | mail_to   | varchar(10240) | YES  |     | NULL    |       |
+    | mail_text | text           | YES  |     | NULL    |       |
+    | gsm_to    | varchar(10240) | YES  |     | NULL    |       |
+    | gsm_text  | text           | YES  |     | NULL    |       |
+    | sendTime  | datetime       | YES  |     | NULL    |       |
+    | is_send   | smallint(6)    | NO   | MUL | 0       |       |
+    +-----------+----------------+------+-----+---------+-------+
+#+END_EXAMPLE
+
+**** 5.4.2 向表中插入记录以触发报警
+
+向表中插入一条记录，就会触发报警。SQL语句如下：
+
+#+BEGIN_EXAMPLE
+    insert into t_alarm_info (data_id, baseTime, gsm_to, gsm_text) values (7881, NOW(), "zhongyi01", "hehehehehe");
+#+END_EXAMPLE
+
+data\_id对应于LDM中的logid\_id\_\_plan，如果是Minos的话，则对应于log\_module。由于
+data\_id和baseTime共同构成了这种表的主键，所以两条记录这两个字段相同的话，第二条记
+录将会插入失败。
+
+*** 5.5 邮件报警
+
+*** 5.6 报警逻辑抽取
+
+*** 5.7 报警逻辑详细设计
+
+** 6 监控与统计
+
+*** 6.1 全局counter
+
+在Master内，维护者一批全局的Counter，通过监控这些Counter及其变化，可以监控系统的整体运行情况。
+
+| Counter                    |     |
+|----------------------------+-----|
+| 节点更新状态的次数         |     |
+| 对节点执行Fallback的次数   |     |
+| 短信报警的次数             |     |
+| 邮件报警的次数             |     |
+|                            |     |
+
+*** 6.2 单个传输流状态的实时统计FlowStatus
+
+传输流状态的实时统计需要细化，如实时统计 *整个传输流和单个节点*
+昨天/今天/上个小
+时/上五分钟传输的数据量和传输速度等数据。因此需要开发一个类来
+干这事，这个类名就叫 *FlowStatus* 。
+
+**** 6.2.1 FlowStatus的功能
+
+该类的功能：
+
+1. 缓存传输流各节点当前状态和各个历史关键点的状态
+2. 使用节点的最新Checkpoint来更新当前节点和各个历史关键点的传输流状态
+3. 对外提供访问传输流/节点各状态的接口
+4. 内部数据要作为LogFlowMessage的一个字段，以能持久化
+
+**** 6.2.2 FlowStatus数据结构
+
+为了保存传输流的这些关键点的状态，并能够方便地扩展（增加更多的关键点），
+FlowStatus的数据结构可能会比较复杂。
+
+先假设只要传输流存取一个状态，比如说五分钟前。由于传输流的各个节点的id是连续的，
+所以我们用vector就能进行方便地存取了，但由于各节点向FlowStatus更新状态的顺序未定，
+所以用map会更好一点。同时，由于NodeStatusMessage名字已经被占用了，我们用
+*SimpleNodeStatus* 来保存节点状态，并表达
+*我是NodeStatusMessage的简化版* 之意。
+
+于是，我们得到了如下的数据结构：
+
+#+BEGIN_EXAMPLE
+    typedef std::map<int, SimpleNodeStatus> NodeStatusMap;
+    NodeStatusMap m_node_status_5_min_ago;
+#+END_EXAMPLE
+
+然后，我们在此基础上考虑如何支持更多的关键点。我们关注的关键点其实是很有限的，这
+时我考虑是否可以不作抽象？直接在FlowStatus里面为每个关键点分配一个map来作状态存储？
+于是，我得出了下面几个数据结构：
+
+#+BEGIN_EXAMPLE
+    NodeStatusMap m_node_status_latest;
+    NodeStatusMap m_node_status_1_hour_ago;
+    NodeStatusMap m_node_status_1_day_ago;
+    NodeStatusMap m_node_status_2_day_ago;
+    NodeStatusMap m_node_status_7_day_ago;
+#+END_EXAMPLE
+
+如果我们想要扩展，则需要新增一个NodeStatusMap，如：
+
+#+BEGIN_EXAMPLE
+    NodeStatusMap m_node_status_1_year_ago;
+#+END_EXAMPLE
+
+这样看，扩展性确实不大好（也不太差），但我们应该意识到，上述5个关键点已经很够用了，
+其他的需求不应该由Master的实时统计来满足，而是应该由Minos的下游 *PB平台*
+来满足。
+
+**** 6.2.3 FlowStatus接口列表
+
+| 接口              | 作用   | 备注   |
+|-------------------+--------+--------|
+| Init              |        |        |
+| Merge             |        |        |
+| UpdateStatus      |        |        |
+| GetLogFlowSpeed   |        |        |
+| GetNodeSpeed      |        |        |
+
+**** 6.2.4 关键接口：UpdateStatus
+
+FlowStatus里，最核心的函数是UpdateStatus。每执行一遍，它就会 *尝试更新*
+FlowStatus内部各个关键点的节点状态。
+
+#+BEGIN_EXAMPLE
+    bool UpdateStatus(int node_id, const NodeCheckpointMessage& checkpoint);
+#+END_EXAMPLE
+
+它的大概流程如下：
+
+1. 用传入的checkpoint来构造SimpleNodeStatus，并作为最新的node status
+2. 直接用最新的node status更新m\_nodelatest\_\_staus
+3. 假如其他某个关键点的节点状态为空，则直接用最新的node status更新它
+4. 假如其他某个关键点的上次更新时间与当前时间的差值已经超过它的基准时间（如
+   5-min, 1-hour）或者两个时间点在日期上已经相隔1/2天，则用最新的node
+   status更新 它
+
+**** 6.2.5 与Master的集成
+
+当节点调用LogFlow的UpdateNodeStatus这个RPC时，就会触发FlowStatus的更新，而且这是
+*唯一的入口* 。
+
+** 7 线下环境
+
+为线下Master的特殊配置：
+
+| 配置项               | 值                                 |
+|----------------------+------------------------------------|
+| FLAGS\_is\_offline   | 设为true                           |
+| CloudAtlas           | 线下（在加好白名单之前，先禁掉）   |
+| 旧DtMeta             | 线下                               |
+| LSP                  | 线下                               |
+| 集群                 | QA线下集群                         |
+| HDFS路径             | 规则不变                           |
+
+** 8 Master多机化方案
+
+*** 8.1 背景
+
+Minos未来会替代LDM和LBI，成为DT唯一的日志传输系统。目前，LBI上的日志有250份，而
+LDM上的日志已经超过了4000份，而其中有一些日志的机器台数超过了1000台。Minos的
+Master是比较重的Master，未来单Master必然会遇到性能瓶颈，因此需要设计一个Master多
+机化的方案来使Master拥有可伸缩的特性，让它可以从容迎接即将到来的挑战。
+
+**** 8.1.1 前期设想
+
+准备使用Zookeeper来实现Master多机化。下面是一些初步想法：
+
+1. 多个Master互作主备，放在一个BNS里面。
+2. 每个Node启动时，根据BNS来随机找寻一个Master，询问它自己的log\_module\_id该被那个
+   Master管理。
+3. 这些Master中有且只有一个Master为中央Master，当这个中央Master挂掉之后，这批
+   Master中会有一个Master自动升级为中央Master。
+4. 中央Master主要负责Minos系统核心元数据（LogConfig）的管理，其他Master任务的分配，
+   以及各传输流信息的汇总。当然，中央Master也可以拥有传输流管理的功能。当中央
+   Master负载较轻或者系统只有一台Master时，中央Master也会承担传输流管理。
+
+*** 8.2 设计目标
+
+功能目标：
+
+-  支持Master根据业务规模方便地扩容和缩容，同时不影响现有业务
+-  分布式情况下，实现Minos元信息管理的一致性
+-  Master主从切换
+-  Master故障迁移
+-  Master负载均衡（自动+手动）
+-  也提供手工执行Master的主从切换的接口
+
+性能目标：
+
+-  Master能支持10万份日志，20万台机器的日志传输
+-  主Master挂掉后，1分钟内新的Master升级为主Master
+-  新建日志传输后，30秒后传输流创建好传输生效
+
+*** 8.3 Zookeeper目录结构
+
+**** 8.3.1 根节点
+
+#+BEGIN_EXAMPLE
+    /minos
+    /minos/log-config
+    /minos/master
+    /minos/config-manager
+#+END_EXAMPLE
+
+**** 8.3.2 log-config节点
+
+该节点是个目录，下面存储各个日志的传输配置。
+
+#+BEGIN_EXAMPLE
+    /minos/log-config/1
+    /minos/log-config/2
+#+END_EXAMPLE
+
+**** 8.3.3 config-manager节点
+
+它是个临时节点，各个Master在启动时，均会抢占这个节点，抢占后，在节点上写入自己的
+ip。只有一个Master会成功地抢到节点，然后这个Master就成为整个Minos系统的主Master，
+除了一般Master职责外，它会负责管理日志配置（Minos系统核心元数据）。
+
+#+BEGIN_EXAMPLE
+    /minos/config-manager
+#+END_EXAMPLE
+
+**** 8.3.4 master节点
+
+它是个目录，各个Master在启动时，都会在这个目录下创建临时节点，节点名字是自己的ip。
+
+#+BEGIN_EXAMPLE
+    /minos/master/10.10.14.0
+    /minos/master/10.10.14.1
+#+END_EXAMPLE
+
+*** 8.4 Master的主要过程
+
+**** 8.4.1 Master启动，抢占主Master
+
+各个Master启动后，首先会在 */minos/master*
+目录下面创建名为自己ip的节点，告诉 Minos系统自己的存在。
+
+然后各个Master会启动线程来通过在Zookeeper上创建临时节点
+*/minos/config-manager* 来抢主
+Master。如果该节点已经存在，则抢主失败，该线程仍然会定时判断该节点是否存在（也可
+以watch这个节点），一旦不存在，则继续尝试创建临时节点来抢主。
+
+*当抢主成功后，该Master会升级为主Master*
+，并启动LogConfigService，负责Minos系统的日
+志配置的管理工作（Add/Delete/Update/Get)，同时还负责为各个从Master分配传输管理任
+务，以及故障迁移，负载均衡等。
+
+**** 8.4.2 主Master为各个Master分配传输任务
+
+主Master监控着 */minos/log-config*
+目录的变化，并在内存中实时维护着日志模块id的列
+表。同时，主Master还监控着 */minos/master*
+目录的变化，并在内存中实时维护着Minos 系统所有Master的列表。
+
+主Master会遍历所有 *没有被分配给某个Master的日志模块id*
+，然后依次将它们分配给
+Minos系统中负载较轻的Master。所有已经分配好的日志模块id及其所属的Master的ip都会以
+map的形式被主Master维护，同时，主Master会要将某Master负责的日志模块id的列表写入到
+各Master自己的临时ZK节点上面，来告诉各Master自己所负责的日志模块id列表。
+
+各个Master（包括主Master）会监控着/minos/master下面自己的临时节点。
+*如果发现该节 点变化，则会重新获取节点上的日志模块id的列表*
+，然后根据自己正在管理的传输流的的
+列表的diff情况判断是否有要新建日志传输流，删除日志传输流，以及重建日传输流（这个过
+程发生在LogFlowManager的UpdateAllLogFlows()这个函数里面）。
+
+**** 8.4.3 主Master的切换（主从切换）
+
+当主Master挂掉之后，supervise会立刻把它拉起来，然后该Master会立刻尝试去抢主。由于
+临时节点一定的生存期，故该Master会发现/minos/config-manager节点已经存在，但是它通
+过节点内容知道自己在挂之前（前生）是主Master，这时它会删掉该临时节点。
+
+如果主Master挂掉后起不来了（由于机器故障等原因），由于它是/minos/config-manager是
+临时节点，故过一段时间（一般是10s左右），节点会自动消失。
+
+当/minos/config-manager节点不存在后，就进入了各Master抢主的阶段。谁抢到了，谁就
+是新的主Master，谁就会履行Master的职责，开始做日志配置管理，Master故障迁移，负载
+均衡等工作。
+
+***** 8.4.3.1 TODO 临时节点是否支持续弦？
+
+**** 8.4.4 Master故障迁移
+
+当一台Master挂掉后，supervise会立刻把它拉起来。它起来后，会删除掉自己再
+/minos/master下面的临时节点，并重新创建一个空的临时节点。这时候，主Master会感知到
+/minos/master的变化，这是它会先sleep
+1秒，等新的临时节点创建完毕，然后它会轮训
+/minos/master下面的所有Master的节点，并更新内部的<Master, Log module id
+list>这个 map。
+
+然后主Master会计算出那些日志模块id没有被分配，它会启动分配循环，每次将一个未分配
+的日志模块id分配给最空闲的Master（一般上就是分配给那个故障重启后的Master）。
+
+如果这台Master挂掉后起不来了，它的临时节点过一段时间后也会消失，然后主Master也感
+知到/minos/master节点下面的变化，其他步骤跟用supervise拉起Master的情景是一样的。
+
+***** 8.4.4.1 TODO 临时节点是否支持续弦？
+
+**** 8.4.5 TODO Master负载均衡
+
+Master的负载均衡包括两方面，一种是主Master在分配日志模块id给各个Master时，选择最
+空闲的Master，另外一种是主Master探测到某台Master负载过重时，将其负责的日志模块分
+给其他较闲的Master。
+
+这里设计到一个评价Master当前负载的函数。
+
+**** 8.4.6 TODO 如何评价Master的当期负载
+
+**** 8.4.7 将负载策略抽取出来
+
+*** 8.5 与Node相关的主要过程
+
+**** 8.5.1 询问任意Master自己所属的Master
+
+每个Minos Agent初始化时，都会传入Minos
+Master的BNS，BNS下面挂有所有的Master。为了
+负载均衡，每个Node会从中随机选择一个Master来查询自己所属的Master。
+
+每个Master都会开一个RPC接口，Node以日志模块id为参数调用此接口即可得到自己所属的
+Master。
+
+在Master那边，该查询接口的实现是：Master先查询到主Master的地址，然后向主Master询
+问该日志模块id是被那个Master管理的，最终，Master会将结果（该Node所属的Master的ip）
+返回给Node。
+
+*** 8.6 技术调研
+
+**** 8.6.1 Zookeeper的进阶使用调研
+
+**** 8.6.2 负载均衡的框架
+
+**** 8.6.3 策略的抽取
+
+*** 8.7 设计图
+
+** 9 Master支持LogFormat
+
+需要新增的配置项为：
+
+| 配置项                    | 意义                                 |
+|---------------------------+--------------------------------------|
+| is\_open\_logformat       | 是否开启日志格式化                   |
+| logformat\_time\_format   | 经过logformat之后的时间字段的格式    |
+| logformat\_department     | 部门，即logformat zk路径的第一层     |
+| logformat\_product        | 产品线，即logformat zk路径的第二层   |
+
+当is\_open\_logformat置为true，则Master认为该日志是需要格式化处理。这时
+Master在生成NodeConfig时，需要设置logformat相关的LogProcess。
+
+注意：当打开格式化时，日志类型就不能为pb。
+
+Author: elvestar
+
+Created: 2014-03-06 四 21:38
+
+[[http://www.gnu.org/software/emacs/][Emacs]] 24.3.1
+([[http://orgmode.org][Org]] mode 8.2.5h)
+
+[[http://validator.w3.org/check?uri=referer][Validate]]

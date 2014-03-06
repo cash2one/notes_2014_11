@@ -1,0 +1,6 @@
+
+* 页面设计
+一个Bootstrap风格的页面经常包括标题栏，侧边栏和主体，并且使用容器和栅格等元素来作
+管理。下面文章手把手教导我们构建Bootstrap风格的页面：
++ [[http://www.revillweb.com/tutorials/twitter-bootstrap-tutorial/][Twitter Bootstrap Tutorial – Up and running with Twitter Bootstrap in 20 Minutes]]
++ [[http://django-china.cn/topic/212/][上文的中文版]]

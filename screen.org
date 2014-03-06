@@ -24,12 +24,12 @@ screen状态行（标签行），还有按键映射，自动创建的session名�
 * 按键映射：
 可以自由地在~/.screenrc文件里面设定按键映射。下面是例子：
 
-#+BEGIN_SRC shell
+#+begin_src sh
   #bind F10 to rename current screen window                                                
   bindkey -k k; title                                         
   #bind F11 to move to the previous window                                                 
   bindkey -k F1 prev  
-#+END_SRC
+#+end_src
 
 其中 k; 和 F1为F10和F11的按键代码，其他所有的按键代码在这里：
  [[http://www.gnu.org/software/screen/manual/html_node/Input-Translation.html#Input-Translation][http://www.gnu.org/software/screen/manual/html\_node/Input-Translation.html#Input-Translation]] 

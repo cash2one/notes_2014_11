@@ -54,10 +54,24 @@
    SCHEDULED: <2014-02-09 日>
    - State "CANCELLED"  from "TODO"       [2014-02-10 一 00:23]
 * Work
-** TODO 新版Logagent的全流量部署
-   SCHEDULED: <2014-03-10 一> DEADLINE: <2014-03-14 五>
-** TODO 紧急升级上线新版Logagent（毛畅）
-   SCHEDULED: <2014-02-25 二>
+** TODO 天级别通知的取整问题
+** DONE 去微微那里取书
+** TODO Checkpoint集群存储的优化
+** TODO 迁移pb_access日志
+   SCHEDULED: <2014-03-05 三>
+** TODO 监控页面改进
+*** TODO 监控页面加入Minos业务统计
+*** TODO This Day以及Last Day的传输量统计
+   SCHEDULED: <2014-03-07 五>
+** TODO Logagent开发和上线
+*** TODO 搞定空文件相关的删除问题
+*** TODO 机器磁盘满发心跳包
+*** TODO 新版Logagent的全流量部署
+    SCHEDULED: <2014-03-10 一> DEADLINE: <2014-03-14 五>
+*** TODO 为merge修复漏传日志的代码（彭亮）
+    SCHEDULED: <2014-03-10 一>
+*** DONE 紧急升级上线新版Logagent（毛畅）
+    SCHEDULED: <2014-02-25 二>
 ** TODO Chrominum代码抽取出来，用Blade构建（海波要求）
    SCHEDULED: <2014-02-21 五>
 ** TODO 搞BDG的图书馆主页（文锋安排，微微需求）
@@ -78,8 +92,14 @@
    SCHEDULED: <2014-02-17 一>
 ** TODO Master通知时要兼容带log_module_id和不带log_module_id这两种情况
 ** TODO 新建日志时，判断日志名是否重复
-** TODO 完成Checkpoint存储的改造
+** DONE 修复通知模块的两个bug
+   SCHEDULED: <2014-03-06 四>
+** DONE 完成Checkpoint存储的改造
    SCHEDULED: <2014-02-18 二>
+** DONE 针对Bigpipe日志的hdfs ugi处理
+   SCHEDULED: <2014-02-28 五>
+** DONE Master支持自定义agent port
+   SCHEDULED: <2014-02-27 四>
 ** DONE Minos报警模块开发
    SCHEDULED: <2014-02-24 一>
 ** CANCELLED 帮晓璇Review代码					  :CANCELLED:
@@ -139,14 +159,11 @@
    - State "DONE"       from "WAITING"    [2014-02-17 一 23:16]
    - State "WAITING"    from "TODO"       [2014-02-12 三 20:50]
 * Learn
-** CANCELLED 学习Cocos2D					  :CANCELLED:
-   - State "CANCELLED"  from "TODO"       [2014-02-15 六 00:49]
-*** DONE CocosD-x环境搭建
-    SCHEDULED: <2014-02-13 四>
-*** 从折腾别人的工程开始入手。例如：[[http://code4app.net/category/cocos2d][Cocos2d source code examples]]
-*** 突然没兴趣了，先挂着，有兴趣了继续学习Cocos2D
+** TODO 学习Golang
 ** TODO 学习Python
 ** TODO 学习Django
+** TODO 研究Discuz
+   SCHEDULED: <2014-03-01 六>
 ** TODO 阅读CTCI
 *** TODO CTCI第一部分
     SCHEDULED: <2014-02-22 六>
@@ -179,6 +196,12 @@
    SCHEDULED: <2014-03-21 五>
 ** DONE 基于Eclipse搭建一个C/C++代码阅读环境
    SCHEDULED: <2014-02-23 日>
+** CANCELLED 学习Cocos2D					  :CANCELLED:
+   - State "CANCELLED"  from "TODO"       [2014-02-15 六 00:49]
+*** DONE CocosD-x环境搭建
+    SCHEDULED: <2014-02-13 四>
+*** 从折腾别人的工程开始入手。例如：[[http://code4app.net/category/cocos2d][Cocos2d source code examples]]
+*** 突然没兴趣了，先挂着，有兴趣了继续学习Cocos2D
 ** CANCELLED 学习Ruby on Rails					  :CANCELLED:
    - State "CANCELLED"  from "TODO"       [2014-02-23 日 22:24]
 *** DONE 完成 Getting Started with Rails 的学习
@@ -186,10 +209,11 @@
 ** 看《绝命毒师》
 *** DONE 1-4集
     SCHEDULED: <2014-02-22 六>
-*** TODO 看完第二季
+*** DONE 看完第二季
     SCHEDULED: <2014-03-02 日>
 ** 看《1984》
-*** TODO 看完第二部
+*** DONE 看完第二部
     SCHEDULED: <2014-02-27 四>
-*** TODO 看完整书
+*** DONE 看完整书
     SCHEDULED: <2014-03-02 日>
+** 看《番茄工作法图解》

@@ -1,0 +1,164 @@
+
+* 前言
+今年过年在家学了一轮Ruby on Rails，后来由于兴趣转移，决定专精Python，于是顺手学了
+一下Django（顺便帮我表弟完成大作业）
+
+* Django简介
+Django官网的描述：
+#+begin_example
+Django is a high-level Python Web framework that encourages rapid development and clean, pragmatic design.
+#+end_example
+
+Django的特性
++ Object-relational mapper （对象关系映射）
++ Automatic admin interface （自动生成管理员界面）
++ Elegant URL design （优雅的URL设计）
++ Template system （模板系统）
++ Cache system （缓存系统）
++ Internationalization （国际化支持）
+
+* 安装Django
+看了下Django的[[https://docs.djangoproject.com/en/1.6/intro/install/][官方安装指南]] ，发现Django的安装非常简易（至少在Mac下如此）。我执行:
+#+begin_src sh
+sudo pip install Django
+#+end_src
+
+安装完毕，然后在Python解释器下验证安装结果。如下：
+#+begin_src python
+>>> import django
+>>> print (django.get_version())
+1.6.2
+#+end_src
+
+于是，Django已经安装好了
+
+* 部署Django应用
+参考：
++ [[https://docs.djangoproject.com/en/1.6/howto/deployment/wsgi/][How to deploy with WSGI]]
++ [[https://docs.djangoproject.com/en/1.6/howto/deployment/wsgi/modwsgi/][How to use Django with Apache and mod_wsgi]]
++ [[https://library.linode.com/frameworks/django-apache-mod-wsgi/ubuntu-10.04-lucid][Django, Apache and mod_wsgi on Ubuntu 10.04 (Lucid)]]
++ [[https://www.digitalocean.com/community/articles/how-to-configure-the-apache-web-server-on-an-ubuntu-or-debian-vps][How To Configure the Apache Web Server on an Ubuntu or Debian VPS]]
++ [[http://stackoverflow.com/questions/1020390/how-do-i-run-django-and-php-together-on-one-apache-server][How do I run Django and PHP together on one Apache server?]]
+
+我选择了mod_wsgi。Apache2的配置文件是 */etc/apache2/sites-available/default* ，
+log目录为 */var/log/apache2* 。重启Apache2的指令是：
+#+begin_src sh
+/etc/init.d/apache2 restarto
+#+end_src
+
+对于Apache的module和配置，我很不熟悉，还好最后搞出来了。
+
+* Writing your my Django app
+[[https://docs.djangoproject.com/en/1.6/][Django documentation]]
+
+执行下面几步后，一个Django app就已经运行并拥有自己的admin界面了。
+#+begin_src sh
+django-admin.py startproject mysite
+cd mysite
+python manage.py syncdb
+python manage.py runserver
+#+end_src
+
+** Part 1: Start a project and ORM
+本章讲述了如何创建一个project，如何创建一个app，如何创建modle。有两个要点：
++ Projects vs. apps
++ Philosophy (of model)
+
+每个model都与数据库中的某张表相关，Django的 *对象关系映射（ORM）* 特性让我们可以通过调用
+对象来操纵数据库，例如调用对象的save()就代表将该对象以一条记录的形式插入到数据库。
+
+** Part 2: Admin interface
+本章给我们秀了Django的 *管理员界面* ，用户不需要一行特别的代码，就能拥有良好的管
+理员界面。它还特别提到，管理员界面是用Django自身来实现的。用户可以定制管理员界面，
+通过修改自己的app下面的admin.py文件。
+
+本章后面提到了Django的 *模板系统* ，建议我们将Django默认的模块拷贝到自己项目里然
+后更改。
+
+** Part 3: Views and template system
+本章开始将Django的views了。Django的url设计得很优雅，它通过一些机制来将url来分发给
+相应的view。
+
+project的url.py负责将请求根据url来分发给各个app，而app的url.py则负责将请求根据
+url开分发给各个view。Django是根据预设的url正则表达式来进行请求分发的。
+
+*** Django的views可以做什么？
+Django的views的主要职责是生成网页内容，并通过HttpResponse对象来返回给浏览器。如果
+异常了，它还得返回一个404页面(Http404对象）啥的。
+
+Django的views具体可以做：
++ 从数据库读取记录
++ 调用Django或第三方的模板系统
++ 生成PDF文件，或输出XML
++ 生成ZIP文件来供下载
++ 以及其他任何Python能干的事情
+
+*** Django的模板系统
+Django的模板系统看起来非常眼熟，跟我去年研究过的Jinja2语法几乎一样，但是Django的
+模板的语法据说很薄弱。
+
+view调用模板渲染函数时，Django提供了两个捷径：
++ [[https://docs.djangoproject.com/en/1.6/topics/http/shortcuts/#django.shortcuts.render][django.shortcuts.render]]
++ [[https://docs.djangoproject.com/en/1.6/topics/http/shortcuts/#django.shortcuts.get_object_or_404][django.shortcut.get_object_or_404]]
+
+使用它们可以减少好几行代码和去掉异常分支，赞！
+
+模板中可以使用url变量来避免硬编码，但这样做可能会带来命名冲突，因为一个project下
+可能会有几十个app，这些app下的view的命名极可能重复。为了解决这个问题，Django提供
+了 *Namespacing URL names* 机制。
+
+** Part 4: Action in view and generic views
+本章继续将模板和view，实现了vote（投票）和result（查看投票结果）功能。最后提到了
+*generic views* ，它们是Django提供通用view，用来快速满足web开发中一些通用场景。例如：
++ generic.ListView
++ generic.DetailView
+
+用户需要在views.py中集成这些类，然后告诉它model是啥，template是啥，剩下的交割这些
+*generic views* 就好了。
+
+这章我看得不仔细，以后遇到问题了再翻翻。
+
+** TODO Part 5: Testing
+这章讲如何在Django下进行测试，以及自动化测试相关的内容。暂时用不着，以后看。
+
+** Part 6
+这一章很简短，介绍如何修改style.css来定制app的外观。重点是如何组织app的statis文件
+的目录。
+
+* 用Django为小亮开发网站
+Models:
+| Model |   |   |   |   |
+|-------+---+---+---+---|
+| Car   |   |   |   |   | 
+
+Views:  
+| View        |   |   |   |   |
+|-------------+---+---+---+---|
+| admin       |   |   |   |   |
+| cars.index  |   |   |   |   |
+| cars.detail |   |   |   |   |
+| cars.admin  |   |   |   |   |
+
+先搞出个Model: Car，再搞出cars/index.html，设置好cars.index的url，放好
+bootstrap.min.css，剩下的工作就是完善cars/index.html这个Django template了。
+
+在完善cars/index.html之前，我决定先把project部署到vps。我准备通过git来进行部署，
+这个项目的github地址是： 
+#+begin_src sh
+git clone https://github.com/elvestar/sunliang.git
+#+end_src
+
+* 问题汇总
+** css文件有时候需要重启server才能生效
+例如：bootstrap.min.css
+
+** TODO 线上部署时是static文件寻址
+解法：临时先把static目录一股脑拷贝到/var/www目录下。
+** WSGIPythonPath cannot occur within <VirtualHost> section
+解法：换用WSGIDaemonProcess来设置python-path
+** OperationalError: unable to open database file
+Django在读写sqlite时会在project目录下产生临时文件，所以不仅要对db.sqlite3执行chmod 777，还要对整个project目录执行chmod 777 -R。
+* 学习回顾
+** 看完了官方Tutorial <2014-03-01 六>
+Django的官方Tutorial写得确实很赞，我照着它很流畅地学完了Django。下一步我会寻求
+Django与Bootstrap的集成。
