@@ -13,14 +13,14 @@
 备选方案如下：
 | 序号 | 方案           | 优点                                                 | 缺点                                        |
 |------+----------------+------------------------------------------------------+---------------------------------------------|
-|    1 | HDFS           | HDFS应用广泛，且能满足应用场景                       | 需要依赖libhdfs和libjvm，且受集群可用性限制 |
+|    1 | HDFS           | HDFS应用广泛，且能满足应用场景，可用性高             | 需要依赖libhdfs和libjvm，且受集群可用性限制 |
 |    2 | Mola           | 上一个项目用Mola，效果很好，且应用场景完全匹配（KV） | Mola的Value大小有限制，是4M                 |
-|    3 | NFS            | 通过fuse能像本地Filesystem一样来用NFS                | NFS刚面世，稳定性还未知                      |
-|    4 | 本地Filesystem | 方便易用，且能满足易用场景                           | 单机存储，受磁盘故障影响，故障迁移麻烦             |
+|    3 | NFS            | 通过fuse能像本地Filesystem一样来用NFS                | NFS刚面世，稳定性还未知                     |
+|    4 | 本地Filesystem | 方便易用，且能满足易用场景                           | 单机存储，受磁盘故障影响，故障迁移麻烦      |
 
 决定本期先使用本地Filesystem存储，并以循环写入的方式为每个传输流存储多个版本的
-Checkpoint。未来会考虑NFS，也可能继续用本地Filesystem，继续用的话就要作更多的容错
-性考虑（可以研究下HDFS的元数据本地化存储方案）。
+Checkpoint。下一期会考虑将Checkpoint存储在HDFS，并考虑通过双写HDFS集群来解决单
+HDFS集群的可用性问题。
 
 *** Checkpoint本地化
 目前，传输流的Checkpoint的存储是由MinosMeta来负责存储到ZK。升级为本地化存储之后，
@@ -79,6 +79,62 @@ DeleteMetaData接口。
 DeleteMetaData的过程如下：
 1. 判断目录是否存在，不存在则返回false；
 2. 递归删除该目录；
+*** Checkpoint存储在HDFS
+考虑到本地Filesystem存储的各种限制，尤其是故障迁移时的种种麻烦，设计了Checkpoint
+双写HDFS的方案。相关类名叫做： *CheckpointAccessor* 。
+
+该方案设计上与 *Checkpoint本地化* 方案非常类似，只不过把本地Filesystem换成了HDFS，
+且做了双HDFS的冗余。相似的部分不再赘述，下面描述各个典型场景（包括Master多机化改
+造后带来的变化）。
+
+**** Master初始化时通过Checkpoint重新加载所有传输流
+先获取本Master管理的日志模块id列表，然后调用CheckpointAccessor依次获取各日志模块
+的Checkpoint：
+1. 获取成功，则根据Checkpoint来Reload传输流；
+2. 获取失败，则说明它 *可能* 是新建立的日志传输，这时自增一下加载失败counter，并
+   开始新建传输流；
+
+当Reload完全部传输流后，通过加载失败的counter来计算加载失败率，如果超过某个阈值
+（比如说25%），则认为系统存在问题， *这时候Master初始化失败* 。
+
+**** 删除Checkpoint的时机
+当一份日志配置在MinosMeta上被删除后，其对应的Checkpoint也要应当被删除。在目前的单
+机版Master里面，删除Checkpoint是在Master的LogFlowManager的 *UpdateAllLogFlows()*
+函数内部完成的。
+
+当Master完成多机化改造后，每个Master管理的日志传输会动态更新，当某个日志传输不再
+由一个Master管理后，这并不意味着这个日志传输被删除了，而可能是中央Master将该日志
+传输的管理分配给另外一个Master。所以说， *Master的LogFlowManager将无权删除
+Checkpoint* 。
+
+为了保证一致性，日志传输删除后的 *Checkpoint删除工作将由中央Master统一负责* ，这
+是一个异步的过程，删除过程如下：
+1. 中央Master在MinosMeta上删除该日志传输的配置
+2. 中央Master获取该日志传输由那个Master管理
+3. 中央Master通过重写该Master相应飞ZK节点上的日志模块id列表来告知该Master *无需管理
+   该日志传输*
+4. 该Master调用 *UpdateAllLogFlows()* 来在内存删除该LogFlow（但是并不删除其
+   Checkpoint，因为自己并不知道该日志是被删除了还是被迁移到其他Master了）
+
+真正删除Checkpoint发生在 *中央Master的垃圾回收线程里* 。该垃圾回收线程定期拿
+MinosMeta里面的日志模块id列表与HDFS上的日志模块id列表做diff，然后删除HDFS上多出来
+的Checkpoint（当然，删除Checkpoint只是垃圾回收线程的工作之一）
+
+**** 更新Checkpoint到HDFS（持久化）
+这一块没啥变化，还有由每个Master的LogFlowManager负责调用 *SaveAllLogFlows()* 来定
+期将当前最新的Checkpoint更新到HDFS。由于之前是将Checkpoint更新到ZK的，速度非常快，
+现在是更新到HDFS，速度比较慢，这里是个风险点，以后会考虑用多进程。
+
+为了防止Checkpoint不及时带来的问题，需要为每个LogFlow记录一个last_save_time，用来
+记录上一次更新Checkpoint的时间，如果超过一定时间，则会触发报警（发给Minos OP/RD，
+而不是发给Users）。
+
+*** Checkpoint写HDFS的潜在问题
+1. 文件太多太碎，且大部分文件比较小，与HDFS的存储模型不匹配
+2. 实践经验表明，HDFS访问速度很慢，远小于ZK
+3. 频繁创建，频繁删除，导致更新一轮Checkpoint耗时太久
+4. 写双HDFS，导致访问访问速度进一步减半
+
 ** 规模和限制
 每个传输流的Checkpoint按照平均1M来算，存储三个版本，就是每个日志需要3M。每个
 Master管理的
@@ -88,7 +144,6 @@ Master根据BNS来获取状态正常（状态码为0）的机器ip列表，相�
 #+begin_src sh
 get_instance_by_service -si group.bigpipe-vpui-odp.WISE.cn | grep ' 0' | awk '{print  $2}'
 #+end_src
-
 
 ** 为慢节点调用Fallback
 ** 为MA选择MC

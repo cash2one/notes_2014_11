@@ -54,14 +54,25 @@
    SCHEDULED: <2014-02-09 日>
    - State "CANCELLED"  from "TODO"       [2014-02-10 一 00:23]
 * Work
-** TODO 天级别通知的取整问题
-** DONE 去微微那里取书
-** TODO Checkpoint集群存储的优化
+** DONE SaveAllLogFlows拆锁
+   SCHEDULED: <2014-03-11 二>
+** TODO Http rpc性能优化
+   SCHEDULED: <2014-03-11 二>
+** DONE SaveAllLogFlows与UpdateAllLogFlows分为两个线程
+   SCHEDULED: <2014-03-09 日>
+** DONE Checkpoint更新太慢导致一启动Master就会集体fallback
+   SCHEDULED: <2014-03-11 二>
+** TODO （ClusterInfoManager）Minos支持木兰集群（韩超）
+   SCHEDULED: <2014-03-10 一>
+** TODO 开发出故障节点/日志列表页面（海波）
+** TODO Master安全性改进（如命名重复，通知集群路径判断等）
+*** TODO 新建日志时，判断日志名是否重复
+*** TODO 通知时判断HDFS路径是否存在
 ** TODO 迁移pb_access日志
    SCHEDULED: <2014-03-05 三>
 ** TODO 监控页面改进
 *** TODO 监控页面加入Minos业务统计
-*** TODO This Day以及Last Day的传输量统计
+*** DONE This Day以及Last Day的传输量统计
    SCHEDULED: <2014-03-07 五>
 ** TODO Logagent开发和上线
 *** TODO 搞定空文件相关的删除问题
@@ -78,20 +89,30 @@
    SCHEDULED: <2014-03-10 一> DEADLINE: <2014-03-28 五>
 ** TODO 按照产品线改良监控页面（文锋要求）
    SCHEDULED: <2014-02-25 二>
-** TODO Master对于调用UpdateNodeStatus且在Master中不存在的节点执行DeleteNode
-   SCHEDULED: <2014-02-21 五>
 ** TODO 搞定不带年份日志的历史日志排查（特别是tieba）
    SCHEDULED: <2014-02-21 五>
 ** TODO LSP 通知的代码美化
    SCHEDULED: <2014-02-17 一>
 ** TODO DtMeta 通知的代码美化
    SCHEDULED: <2014-02-20 四>
-** TODO 帮张力将三份app日志通知到线上的dt-meta
-   SCHEDULED: <2014-02-21 五>
 ** TODO 开始多Master的开发
    SCHEDULED: <2014-02-17 一>
 ** TODO Master通知时要兼容带log_module_id和不带log_module_id这两种情况
-** TODO 新建日志时，判断日志名是否重复
+** DONE 监控Checkpoint是否及时更新
+   SCHEDULED: <2014-03-09 日>
+** DONE Master对于调用UpdateNodeStatus且在Master中不存在的节点执行DeleteNode
+   SCHEDULED: <2014-02-21 五>
+** DONE 天级别通知的取整问题
+   SCHEDULED: <2014-03-09 日>
+** DONE Checkpoint集群存储的优化
+** DONE Checkpoint集群存储的压缩
+   SCHEDULED: <2014-03-09 日>
+** CANCELLED 帮张力将三份app日志通知到线上的dt-meta		  :CANCELLED:
+   SCHEDULED: <2014-02-21 五>
+   - State "CANCELLED"  from "TODO"       [2014-03-07 五 20:25]
+** DONE 去微微那里取书
+** DONE Minos支持Logformat（佳捷）
+   SCHEDULED: <2014-03-07 五>
 ** DONE 修复通知模块的两个bug
    SCHEDULED: <2014-03-06 四>
 ** DONE 完成Checkpoint存储的改造
@@ -159,6 +180,7 @@
    - State "DONE"       from "WAITING"    [2014-02-17 一 23:16]
    - State "WAITING"    from "TODO"       [2014-02-12 三 20:50]
 * Learn
+** TODO 学习DataTable
 ** TODO 学习Golang
 ** TODO 学习Python
 ** TODO 学习Django

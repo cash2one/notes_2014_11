@@ -1,4 +1,13 @@
+#+TITLE: Zookeeper - 分布式系统的协调者
 
+* 前言
++ [[http://zookeeper.apache.org/doc/trunk/][ZooKeeper Documentation（最新）]]
+* 基础知识
+** ZooKeeper Watches
+ZK的Watch具有下面特性：
+1. One-time triger. 即：一次Watch最会触发一个Watch event，若想多次触发，只能多次Watch。
+2. 
+ 
 * 使用问题记录
 ** ZNode数据过大导致出core
 Zookeeper一般被用来存储系统的核心元数据，而不该被用来作为一个普通的分布式存储系统。
@@ -17,7 +26,8 @@ core。
 方法1直接否定，太龌蹉，而且要找OP改配置重启，麻烦。方法2可行，根据测试，用Google
 的Snappy能将这些数据压缩4倍，能支撑一会。方法3是真正的解决之道，但是升级需要时间。
 
-* 参考文章
-+ [[http://www.cnblogs.com/gpcuster/archive/2010/12/29/1921213.html][Zookeeper解惑]]
-+ 
+** 超时参数设得太小（可能）会导致访问失败
 
+* 学习回顾
+** 看一眼ZK官方文档 <2014-03-08 六>
+发现文档很糟糕，可能是非英语国家人士撰写的。
