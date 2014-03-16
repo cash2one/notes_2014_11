@@ -138,6 +138,13 @@ MinosMeta里面的日志模块id列表与HDFS上的日志模块id列表做diff�
 ** 规模和限制
 每个传输流的Checkpoint按照平均1M来算，存储三个版本，就是每个日志需要3M。每个
 Master管理的
+** 集群信息管理
+Minos的集群在信息管理上有点繁琐，主要原因是：
+1. Minos要向各个集群传输日志（好几十个）
+2. Minos要兼容以前的LDM/Bigpipe的传输，读写账号也要用以前的
+3. Minos的下游计算系统（CloudAtlas/DtMeta/LSP）对于各个系统的命名各不相同，非常混乱
+
+
 * 传输流管理
 ** BNS同步
 Master根据BNS来获取状态正常（状态码为0）的机器ip列表，相当于在shell下执行下面的指令：

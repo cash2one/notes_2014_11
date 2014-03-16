@@ -12,8 +12,6 @@
 执行操作 -> 中止操作
 
 
-
-
 * Emacs的排查/调试（当使用emacs遇到问题时）
 我们执行一个命令，但是Emacs并没有按照我们预期的方式来执行，而且也没有告诉我们哪里
 出问题了，这时候，我们就得要进行排查/调试了。
@@ -32,6 +30,25 @@ buffer列表中选择 *message* 。
 1. 当前文件的buffer
 2. Emacs lisp的运行日志buffer。名为 *message*
 3. 临时buffer，相当于草稿。名为 *scratch* 
+
+* Emacs的备份功能（自动产生的*~文件）
+当我们执行保存（如C-x C-s），Emacs在保存时发现目录下有同名文件，这时它会使用 *原
+文件名后面缀上~* 作为为新名字来保存到原目录，这就是Emacs的备份功能。Emacs的这个功
+能会导致目录下文件凌乱，我们需要稍稍地配置一下，让我们能更好地享受Emacs的备份功能。
+
+#+begin_src emacs-lisp
+;;; Backup                                                                                             
+(setq                                                                                                  
+  backup-by-copying t ; 自动备份                                                                       
+  backup-directory-alist                                                                               
+  '(("." . "~/.backup")) ; 自动备份在目录"~/.backup"下                                                 
+  delete-old-versions t ; 自动删除旧的备份文件                                                         
+  kept-new-versions 6 ; 保留最近的6个备份文件                                                          
+  kept-old-versions 2 ; 保留最早的2个备份文件                                                          
+  version-control t) ; 多次备份        
+#+end_src
+
+[[http://www.cnblogs.com/samael/articles/2033644.html][参考文章]]
 
 * Emacs/Vim的吐槽文
 + [[http://www.cr173.com/html/11113_1.html][Emacs作为IDE编程环境的不足]]

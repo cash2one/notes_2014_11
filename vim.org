@@ -10,3 +10,9 @@
 | 跳转到下一处            | C-i               | Vim本身支持                           |
 | 跳转到变量/函数的定义处 | C-]/:cs find g    | ctags/cscope工具，我用得还不够好 TODO |
 | 跳到指定文件（通用） | 我要继续改进 TODO | NERD_tree.vim/lookupfiles.vim         |
+* 小贴土
+** 禁止鼠标选中时自动转换为选择模式
+#+begin_example
+" Mouse, please leave terminal alone.                                                                  
+set mouse=
+#+end_example

@@ -1,0 +1,140 @@
+#+TITLE: Master多机化的开发
+
+* 前言
+Master多机化预计于今天（<2014-03-10 一>）开始正式进入开发阶段，比预期推迟了两周。
+我计划在两周后完成开发并上线单台机器。
+
+本篇日志按照开发进展来组织，记录下开发过程中的思考和开发进度，留作以后用（我不再
+使用Evernote来记录这种 *开发进展类的笔记* 了，而是和其他笔记一样和使用Emacs
+org-mode）。
+
+* Master多机化的升级路线
+Master多机化的新增特性非常多，如支持扩容缩容，分配传输任务，主从切换，负载均衡，
+故障迁移，多Master下日志元信息的管理以及监控信息的汇总和展示等。所以， *必须要设
+计好一个合理稳妥的升级路线* ，否则项目风险极大。制定升级路线以及做升级开发时应遵
+循三个原则：
+1. 稳步迭代
+2. 持续发布和部署
+3. 这是个 *重构* 原有代码和原有单测的好机会
+
+** 第一步：抽取ConfigManager和FlowManager
+从当前Master中抽取出ConfigManager和FlowManager来。让ConfigManager接管所有日志的新
+增/修改/删除，以及为FlowManager分配日志传输任务的功能。让FlowManager只管理被
+ConfigManager分配的日志模块。有几点要注意：
+1. ConfigManager通过写FlowManager所在机器再ZK上的节点（以ip:port命名）来告知其管
+   理的日志模块id列表
+1. FlowManager任然可以获取日志配置，但是它只能获取它所管理的日志的配置
+2. MinosMeta要提供一个新接口，能获取ConfigManager分配给某个FlowManager的日志模块
+   的id列表
+3. FlowManager的各种管理操作：包括Update（传输流的新建/修改/销毁），Save（更新
+   Checkpoint到HDFS），Fallback（处理故障节点），Notify（通知下游数据系统），报警
+   （传输延时的报警）都只调用FlowManager暴露出来的获取日志模块id的列表
+
+这样改造后，能将Master的大部分针对传输流的管理操作做到与Master多机化无关，从而降
+低风险。改造后，Master的架构大致如下：
+
+#+begin_src ditaa :file multi-master-1.png
+	     +---------------+	             +--------------+
+       	     | ConfigManager |  read/write   |   ZooKeeper  |
+             | cBLU	     +<------------->+	 c707       |
+             |               |               |              |
+             +---------------+ 	             +------+-------+
+	    			       	       	    ^
+	    			   	       	    | read/write
+	      			   		    v
+       	     +--------------------------------------+-------------------------+
+  	     | 		       	        FlowManager    	       	       	      |
+  	     | 				cGRE   	       	       	       	      |
+       	     | +-------+ +-----+ +----------+ +--------+ +-------+ +--------+ |
+  	     | |Updater| |Saver| |Fallbacker| |Notifier| |Alarmer| |....    | |
+             | |cGRE   | |cGRE | |cGRE      | |cGRE    | |cGRE   | |cGRE    | |
+       	     | +-------+ +-----+ +----------+ +--------+ +-------+ +--------+ |
+       	     +----------------------------------------------------------------+
+#+end_src
+
+** 第二步：CentralMaster初现，支持静态分配日志传输任务，初步实现Master多机化
+完成将ConfigManager与FlowManager从Master中的抽取后，下面的工作可以不再与
+FlowManager耦合，而是只与ConfigManager耦合。下面要使CentralMaster的设计在Minos系
+统中成型。
+
+本期会初步实现Master的多机化，但是 *只支持静态分配传输任务* ，即分配传输任务只发
+生在新建日志传输的时候。同时，本期会支持简单的 *负载均衡策略* 。
+
+CentralMaster在整个Minos系统中是唯一的，并且只有它才又权限管理日志配置，以及分配
+传输任务。需要要保证它的唯一性（通过在ZK节点上写入自己的ip:port），以及高可用性
+（通过主从切换）。
+
+相应地，普通Master也要做好随时升级为CentralMaster的准备。
+
+* 抽取ConfigManager和FlowManager
+MinosMeta需要增加下面接口：
+#+begin_src cpp
+  RegisterMaster();        // 在ZK上创建临时节点，告知系统自己的存在。先定期
+                           // Register，防止异常导致session过期而导致节点消失
+  ListAllAliveMaster();    // 返回系统所有存活的Master的列表
+  UpdateIdListForMaster(); //
+  GetIdListByMaster();     // 获取本Master
+
+#+end_src
+
+** 将CheckpointAccessor从MinosMeta中抽取出去
+   SCHEDULED: <2014-03-13 四>
+在编码之前，我要先把CheckpointAccessor从MinosMeta中抽取出去，让FlowManager直接调
+用CheckpointAccessor来管理传输流的Checkpoint，而不是通过MinosMeta。从此后，
+Checkpoint将不再是Minos元数据了，MinosMeta中LogFlow相关的接口也一并删除。
+
+我调查了一下，发现改造代价很小，因为之前我将传输流Checkpoint相关的处理全部封装在
+FlowManager的三个函数里面：
+#+begin_src cpp
+bool ReloadLogFlow(int log_module_id);
+bool SaveLogFlow(int log_module_id, bool is_new) const;
+bool DestroyLogFlow(int log_module_id);
+#+end_src
+
+代码相关耦合仅仅是这三个函数里的四处MinosMeta的方法调用，将它们替换为
+CheckpointAccessor的方法调用就可以了。
+
+完成开发和上线。 <2014-03-13 四>
+
+*** TODO 重构FlowManager的单测
+处理FlowManager单测耦合就麻烦多了，要修改多处单侧，很繁琐。但是没关系，这是个重构
+代码和单测的契机。
+
+简要地评估一下，最好的重构方式是 *完全重写FlowManager的单测* 。我决定将这个工作的
+开始时间推迟到本期的末尾。
+
+** 获取Master的唯一标识
+Master要在ZK上写一个带标识的临时来表明自己的存在，而其ip:port端口号称为了最理想的
+表示，故现在要写一个获取该标志的函数。考虑到获取ip挺麻烦的，涉及到多网卡的问题，
+故获取其hostname。Linux本身提供了 *gethostname(2)* 来获取hostname。我实现的函数接
+口如下：
+#+begin_src cpp
+static bool GetLocalMasterId(std::string* master_id);
+#+end_src
+
+** Master通过在ZK上写临时节点来注册自己
+需要实现的接口如下：
+#+begin_src cpp
+bool MinosMeta::RegisterMaster();
+#+end_src
+
+该函数会先判断Master的ZK临时节点是否存在，如果存在，直接删掉。然后再创建一个临时
+节点，节点名称为Master的host:port。
+
+*** TODO 定期轮询或者Watch
+关键是调用此接口的时机。目前只是在初始化Master时注册自己，以后会加入一个定期轮询
+或者Watch节点的机制，来防止节点网络异常而消失。
+
+** 获取所有当前存活的Master的列表
+#+begin_src cpp
+  bool MinosMeta::ListAllAliveMasters(std::vector<std::string>* master_id_list);
+#+end_src
+
+该函数会根据/minos/master下面的节点列表来返回一个当前存活Master的列表。它是供
+ConfigManager来调用，好根据现存的Master来对日志传输任务进行分配。
+
+* CentralMaster与Master的现形
+MinosMeta需要增加下面接口：
+#+begin_src cpp
+  RegisterCentralMaster(); // 定期Register，先不使用Watch机制
+#+end_src

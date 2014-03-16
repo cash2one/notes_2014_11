@@ -54,6 +54,9 @@
    SCHEDULED: <2014-02-09 日>
    - State "CANCELLED"  from "TODO"       [2014-02-10 一 00:23]
 * Work
+** TODO 提供CloudAtlas的一系列工具，能够灵活地补通知
+** TODO Alarmer使用MySQL Connector C++来向报警数据库写记录
+** TODO Notifier通过SubProcess来调用MetaService_Util
 ** DONE SaveAllLogFlows拆锁
    SCHEDULED: <2014-03-11 二>
 ** TODO Http rpc性能优化
@@ -233,6 +236,8 @@
     SCHEDULED: <2014-02-22 六>
 *** DONE 看完第二季
     SCHEDULED: <2014-03-02 日>
+*** DONE 看完前四季
+    SCHEDULED: <2014-03-16 日>
 ** 看《1984》
 *** DONE 看完第二部
     SCHEDULED: <2014-02-27 四>
