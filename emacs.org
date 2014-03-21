@@ -11,7 +11,6 @@
 
 执行操作 -> 中止操作
 
-
 * Emacs的排查/调试（当使用emacs遇到问题时）
 我们执行一个命令，但是Emacs并没有按照我们预期的方式来执行，而且也没有告诉我们哪里
 出问题了，这时候，我们就得要进行排查/调试了。
@@ -30,6 +29,16 @@ buffer列表中选择 *message* 。
 1. 当前文件的buffer
 2. Emacs lisp的运行日志buffer。名为 *message*
 3. 临时buffer，相当于草稿。名为 *scratch* 
+
+** 进阶：打印出backtrace
+Emacs的message buffer中只有粗略的信息，有时候无法精确地定位问题。这时候，就该拿出
+杀手锏 *debug-on-error* 了。执行：
+#+begin_src emacs-lisp
+M-x toggle-debug-on-error
+#+end_src
+
+打开 *debug-on-error* ，然后执行一个命令（emacs lisp）函数，再按 *C-g* 就能打印出
+函数调用栈（[[http://stackoverflow.com/questions/14067524/how-to-show-backtrace-for-emacs][参考此文]]）。
 
 * Emacs的备份功能（自动产生的*~文件）
 当我们执行保存（如C-x C-s），Emacs在保存时发现目录下有同名文件，这时它会使用 *原

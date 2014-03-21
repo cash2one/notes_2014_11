@@ -66,6 +66,8 @@ CentralMaster在整个Minos系统中是唯一的，并且只有它才又权限�
 
 相应地，普通Master也要做好随时升级为CentralMaster的准备。
 
+** 第三步：
+
 * 抽取ConfigManager和FlowManager
 MinosMeta需要增加下面接口：
 #+begin_src cpp

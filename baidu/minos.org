@@ -2,6 +2,12 @@
 
 * Master总览
 * 元信息管理
+** 日志模块id
+几条规则：
++ 迁移自LDM或者Bigpipe的日志的id需要指定而不是Master生成，且id范围是[10000000, 10020000)
++ 迁移自LDM的日志的集群写账号用ns-lsp，迁移自Bigpipe的日志的集群写账号用dt-minos
++ 其他所有在Minos上创立的日志的集群写账号全部用dt-minos
+
 ** 元信息压缩
 使用Snappy压缩。
 ** 传输流Checkpoint的存储
@@ -144,6 +150,37 @@ Minos的集群在信息管理上有点繁琐，主要原因是：
 2. Minos要兼容以前的LDM/Bigpipe的传输，读写账号也要用以前的
 3. Minos的下游计算系统（CloudAtlas/DtMeta/LSP）对于各个系统的命名各不相同，非常混乱
 
+需要开发一个类 *ClusterInfoManager* 来处理这些繁琐。百度的集群很多，为了保证灵活，
+该类应该提供从某个地方 *动态加载配置* 的功能。我准备在MinosMeta提供一个获取集群信
+息的接口，而ClusterInfoManager通过：
+#+BEGIN_SRC cpp
+  bool SyncWithMinosMeta();
+#+END_SRC
+来从Minos加载配置并更新自己。
+
+后来与OP荣讯沟通，得知百度常用的集群现在只有不到个，且变动频率不大。它们是：
+#+BEGIN_SRC sql
++-----------+------+-------------------+--------+----------------------------------------------------+-------+
+| clusterid | type | name              | status | namenode                                           | extra |
++-----------+------+-------------------+--------+----------------------------------------------------+-------+
+|         1 |    1 | WG-STON           |      0 | hdfs://szwg-ston-hdfs.dmop.baidu.com:54310         | 1     |
+|         4 |    1 | WG-ECOMON         |      0 | hdfs://szwg-ecomon-hdfs.dmop.baidu.com:54310       | 1     |
+|         6 |    1 | HY-ECOMOFF        |      0 | hdfs://hy-ecomoff-hdfs.dmop.baidu.com:54310        | 1     |
+|        10 |    1 | STOFF Cluster     |      0 | hdfs://szwg-stoff-hdfs.dmop.baidu.com:54310        | 1     |
+|        13 |    1 | WG-ECOMRT         |      0 | hdfs://szwg-ecomrt-hdfs.dmop.baidu.com:54310       | 1     |
+|        14 |    1 | RP online cluster |      0 | unknow                                             | 1     |
+|        15 |    1 | HK-LOG            |      0 | hdfs://hk-log-hdfs.dmop.baidu.com:54310            | 1     |
+|        20 |    1 | SZWG-KUN          |      0 | hdfs://szwg-kun-hdfs.dmop.baidu.com:54310          | 1     |
+|        21 |    1 | SZWG-RANK         |      0 | hdfs://szwg-rank-hdfs.dmop.baidu.com:54310         | 1     |
+|        22 |    1 | NJ01_YULONG       |      0 | hdfs://nj01-yulong-hdfs.dmop.baidu.com:54310       | 1     |
+|        23 |    1 | HK-DLB            |      0 | hdfs://hk-dlb-hdfs.dmop.baidu.com:54310            | 1     |
+|        24 |    1 | NJ01_INF          |      0 | hdfs://nj01-inf-hadoop069.nj01.baidu.com:35363     | 1     |
+|        25 |    1 | HY-XIANGSHAN      |      0 | hdfs://hy-xiangshan-hdfs.dmop.baidu.com:54310      | 1     |
+|        27 |    1 | SZWG-LOG          |      0 | hdfs://szwg-log-hdfs.dmop.baidu.com:54310          | 1     |
+|        28 |    1 | NJ01_NANLING      |      0 | hdfs://nj01-nanling-namespace.dmop.baidu.com:54310 | 1     |
+|        29 |    1 | NMG01_KHAN        |      0 | hdfs://nmg01-khan-hdfs.dmop.baidu.com:54310        | 1     |
+|        30 |    1 | NMG01_MULAN       |      0 | hdfs://nmg01-mulan-hdfs.dmop.baidu.com:54310       | 1     | 
+#+END_SRC
 
 * 传输流管理
 ** BNS同步

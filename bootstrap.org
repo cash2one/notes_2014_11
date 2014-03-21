@@ -4,3 +4,13 @@
 管理。下面文章手把手教导我们构建Bootstrap风格的页面：
 + [[http://www.revillweb.com/tutorials/twitter-bootstrap-tutorial/][Twitter Bootstrap Tutorial – Up and running with Twitter Bootstrap in 20 Minutes]]
 + [[http://django-china.cn/topic/212/][上文的中文版]]
+
+* 通过Open CDN来加速
+如果将Bootstrap放在自己的空间里面，速度可能比较慢，这回延迟整个页面的渲染。我发现
+了有一个雷锋网站提供了常用的前端开源库的加速获取：http://open.bootcss.com/ ，赞！
+
+只需要在HTML里面加上：
+#+BEGIN_SRC html
+<link href="http://cdn.bootcss.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
+#+END_SRC
+就可以方便地调用Bootstrap的css文件了。
