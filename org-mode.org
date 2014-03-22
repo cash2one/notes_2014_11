@@ -74,6 +74,32 @@ org.css用着也挺好的，毕竟得之简朴嘛。
 
 [[./img/org-mode-1.png]]
 
+** 附加分享按钮
+我用的是JiaThis。
+#+BEGIN_SRC emacs-lisp
+  (setq org-html-postamble-format                                                                        
+  '(("en"                                                                                                        
+     "
+      <!-- JiaThis Button BEGIN -->                                                                      
+      <div class='jiathis_style'>                                                                        
+      <span class='jiathis_txt'>分享到：</span>                                                          
+      <a class='jiathis_button_tsina'>新浪微博</a>                                                       
+      <a class='jiathis_button_douban'>豆瓣</a>                                                          
+      <a class='jiathis_button_weixin'>微信</a>                                                          
+      <a class='jiathis_button_evernote'>EverNote</a>                                                    
+      <a class='jiathis_button_googleplus'>Google+</a>                                                   
+                                                                                                         
+      <a href='http://www.jiathis.com/share?uid=1891272'
+      class='jiathis jiathis_txt jiathis_separator jtico
+      jtico_jiathis' target='_blank'>更多</a> <a
+      class='jiathis_counter_style'></a> </div> <script
+      type='text/javascript' > var jiathis_config={
+      data_track_clickback:true, summary:'', shortUrl:false,
+      hideMore:false } </script> <script type='text/javascript'
+      src='http://v3.jiathis.com/code/jia.js?uid=1891272'
+      charset='utf-8'></script> <!-- JiaThis Button END -->
+     ")))
+#+END_SRC
 ** 集成Google Analytics
 这个也很简单，跟 *附加评论框* 的方法几乎一样。我们首先要在Google Analytics上注册
 一个账户，获取跟踪ID，然后将跟踪JS代码附加到 *org-html-postamble-format* 上。
@@ -120,7 +146,7 @@ C-u M-x org-publish
 + [[http://orgmode.org/worg/org-tutorials/org-jekyll.html][Using org to Blog with Jekyll]]
 + [[http://dayigu.github.io/WhyUseOrgModeToWriteBlog.html][为什么用 org-mode 写 blog？]]
 
-* 阅读"Org Mode - Organize Your Life In Plain Text!"
+* Organize Your Life In Plain Text!
 这篇文章据说非常经典，但确实非常长。地址是：[[http://doc.norang.ca/org-mode.html]]
 
 ** 前六章读完
@@ -184,8 +210,6 @@ C-u M-x org-publish
 * 代码着色（语法高亮）
 在我的机器上，/usr/local/Cellar/emacs/24.3/share/emacs/24.3/lisp/org目录下面的
 *htmlize.el* 文件负责做代码的着色。如果没找到，则需要下载并拷贝到这下面。
-
-
 
 * 相关文章搜集
 + [[http://www.cnblogs.com/bamanzi/archive/2012/05/12/org-mode-so-powerful.html][为什么说org-mode是个神器]]

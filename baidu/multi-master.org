@@ -69,6 +69,7 @@ CentralMaster在整个Minos系统中是唯一的，并且只有它才又权限�
 ** 第三步：
 
 * 抽取ConfigManager和FlowManager
+** MinosMeta的修改
 MinosMeta需要增加下面接口：
 #+begin_src cpp
   RegisterMaster();        // 在ZK上创建临时节点，告知系统自己的存在。先定期
@@ -76,10 +77,9 @@ MinosMeta需要增加下面接口：
   ListAllAliveMaster();    // 返回系统所有存活的Master的列表
   UpdateIdListForMaster(); //
   GetIdListByMaster();     // 获取本Master
-
 #+end_src
 
-** 将CheckpointAccessor从MinosMeta中抽取出去
+*** 将CheckpointAccessor从MinosMeta中抽取出去
    SCHEDULED: <2014-03-13 四>
 在编码之前，我要先把CheckpointAccessor从MinosMeta中抽取出去，让FlowManager直接调
 用CheckpointAccessor来管理传输流的Checkpoint，而不是通过MinosMeta。从此后，
@@ -105,7 +105,7 @@ CheckpointAccessor的方法调用就可以了。
 简要地评估一下，最好的重构方式是 *完全重写FlowManager的单测* 。我决定将这个工作的
 开始时间推迟到本期的末尾。
 
-** 获取Master的唯一标识
+*** 获取Master的唯一标识
 Master要在ZK上写一个带标识的临时来表明自己的存在，而其ip:port端口号称为了最理想的
 表示，故现在要写一个获取该标志的函数。考虑到获取ip挺麻烦的，涉及到多网卡的问题，
 故获取其hostname。Linux本身提供了 *gethostname(2)* 来获取hostname。我实现的函数接
@@ -114,7 +114,7 @@ Master要在ZK上写一个带标识的临时来表明自己的存在，而其ip:
 static bool GetLocalMasterId(std::string* master_id);
 #+end_src
 
-** Master通过在ZK上写临时节点来注册自己
+*** Master通过在ZK上写临时节点来注册自己
 需要实现的接口如下：
 #+begin_src cpp
 bool MinosMeta::RegisterMaster();
@@ -127,7 +127,7 @@ bool MinosMeta::RegisterMaster();
 关键是调用此接口的时机。目前只是在初始化Master时注册自己，以后会加入一个定期轮询
 或者Watch节点的机制，来防止节点网络异常而消失。
 
-** 获取所有当前存活的Master的列表
+*** 遍历ZK的/minos/master节点，获取所有当前存活的Master的列表
 #+begin_src cpp
   bool MinosMeta::ListAllAliveMasters(std::vector<std::string>* master_id_list);
 #+end_src
@@ -135,7 +135,29 @@ bool MinosMeta::RegisterMaster();
 该函数会根据/minos/master下面的节点列表来返回一个当前存活Master的列表。它是供
 ConfigManager来调用，好根据现存的Master来对日志传输任务进行分配。
 
-* CentralMaster与Master的现形
+*** ConfigManager操作/minos/allocation目录
+ConfigManager对/minos/allocation目录会进行两种操作：
++ ConfigManager为通过在/minos/allocation目录下相应节点写入日志模块id列表来为各个
+  Master分配传输任务
++ 当某Master挂掉后，ConfigManager要将它在/minos/allocation下的节点删除掉
+
+所以，MinosMeta还要提供这些接口：
+#+BEGIN_SRC cpp
+  bool AllocateIdListForMaster(std::string& master_id,                                               
+                               const std::vector<std::string>& log_module_id_list);                  
+  bool DeallocateIdListForMaster(std::string& master_id);                                            
+#+END_SRC
+
+*** FlowManager访问/minos/allocation目录
+多机化之前，FlowManager通过 *GetIdListOfLogConfig()* 来获取 *当前系统所有日志模块
+的id列表* 。多机化之后，各FlowManager只关注自己管理的那部分id，通过访问
+/minos/allocation目录下的对应节点来获取id列表。所以需要MinosMeta提供如下的接口：
+#+BEGIN_SRC cpp
+  bool GetIdListByMaster(std::string master_id, std::vector<int>* log_module_id_list);               
+  bool GetIdListOfLocalMaster(std::vector<int>* log_module_id_list);     
+#+END_SRC
+
+* CentralMaster与Master
 MinosMeta需要增加下面接口：
 #+begin_src cpp
   RegisterCentralMaster(); // 定期Register，先不使用Watch机制

@@ -4,3 +4,8 @@
 #+BEGIN_SRC sh
 git st *.org */*.org 
 #+END_SRC
+* 远程分支
+** 列出远程分支
+git branch -r
+** Checkout远程分支
+git checkout -r origin/xxx

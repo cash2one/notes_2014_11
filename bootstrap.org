@@ -1,4 +1,3 @@
-
 * 页面设计
 一个Bootstrap风格的页面经常包括标题栏，侧边栏和主体，并且使用容器和栅格等元素来作
 管理。下面文章手把手教导我们构建Bootstrap风格的页面：
@@ -14,3 +13,7 @@
 <link href="http://cdn.bootcss.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
 #+END_SRC
 就可以方便地调用Bootstrap的css文件了。
+* Bootstrap扩展插件
++ [[http://www.oschina.net/news/43645/30-amazing-plugins-extend-twitter-bootstrap][30 个惊艳的 Bootstrap 扩展插件]]
+
+我看中了 [[https://github.com/gfranko/jquery.tocify.js][jquery.tocify.js]] 和 [[http://www.datatables.net/blog/Twitter_Bootstrap_2][jquery.dataTables.js]] 。

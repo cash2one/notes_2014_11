@@ -54,6 +54,7 @@
    SCHEDULED: <2014-02-09 日>
    - State "CANCELLED"  from "TODO"       [2014-02-10 一 00:23]
 * Work
+** TODO 写Checkpoint的双HDFS中的stoff改成log集群
 ** TODO 写双HDFS采用主备读写频率差异化的机制，即每写N次主后才写一次备
 ** TODO 提供CloudAtlas的一系列工具，能够灵活地补通知
 ** TODO Alarmer使用MySQL Connector C++来向报警数据库写记录

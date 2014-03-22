@@ -1,3 +1,4 @@
+#+TITLE: Eclipse：一个强力的IDE
 
 * 前言
 大学时，上Java课时用过Eclipse，研究Android和写声韵输入法也是在Eclipse上进行的，但迄

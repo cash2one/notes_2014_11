@@ -1,0 +1,21 @@
+#+TITLE: Tc2_front日志的PB化
+
+| 业务方接口人 | 李斌(libin02) |
+| DT接口人     | 仲毅(zhongyi01) |
+
+* 审核Proto
+审核链接：
+http://szwg-dt-pb02.szwg01.baidu.com/?m=Protobuf&a=Diff&from=approval&approval_id=307
+
+本周五 <2014-03-21 五> 审核完了李斌的proto，但由于这份日志很重要，所以准备下周
+一再给李斌最终结果。这份proto写得还是比较认真的，虽然有一些无伤大雅小问题：
+1. 一些int32字段（如hit_cache）可以用bool类型
+2. 一些string字段（如method）可以用enum类型
+
+
+
+
+
+
+
+

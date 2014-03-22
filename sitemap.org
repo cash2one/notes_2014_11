@@ -23,6 +23,7 @@
      + [[file:gtd/refile.org][refile]]
    + [[file:hadoop-hdfs.org][hadoop-hdfs]]
    + [[file:index.org][index]]
+   + [[file:javascript-dom.org][javascript-dom]]
    + [[file:libhdfs.org][libhdfs]]
    + life
      + [[file:life/festival-2014.org][2014年春节回家记]]
@@ -33,6 +34,7 @@
      + [[file:life/stock.org][stock]]
      + [[file:life/buy-microwave-oven.org][买个微波炉（2014-02-14）]]
      + [[file:life/review-2013.org][仲毅的2013年度回顾]]
+   + [[file:lock.org][lock]]
    + [[file:mailing-lists.org][mailing-lists]]
    + [[file:org-mode.org][org-mode]]
    + [[file:redis.org][redis]]
@@ -41,6 +43,7 @@
    + [[file:smart-pointer.org][smart-pointer]]
    + [[file:sql.org][sql]]
    + [[file:sublime-text.org][sublime-text]]
+   + [[file:test.org][test]]
    + [[file:vim.org][vim]]
    + [[file:protobuf.org][深入分析Protobuf]]
    + [[file:algorithm-tree.org][算法]]
