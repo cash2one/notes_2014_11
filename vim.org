@@ -10,6 +10,21 @@
 | 跳转到下一处            | C-i               | Vim本身支持                           |
 | 跳转到变量/函数的定义处 | C-]/:cs find g    | ctags/cscope工具，我用得还不够好 TODO |
 | 跳到指定文件（通用） | 我要继续改进 TODO | NERD_tree.vim/lookupfiles.vim         |
+* Vim文本对象
+使用 *:help text-objects* ，查看帮助，发现了Vim的这个强大功能。Vim对于 *文本编
+辑* 这个领域的问题模型做了很完善的抽象，所以它如此的锋利。
+
+** 用法示例
+清空括号内的所有内容：
+#+BEGIN_EXAMPLE
+di) 
+#+END_EXAMPLE
+
+选中光标所在的单词：
+#+BEGIN_EXAMPLE
+viw
+#+END_EXAMPLE
+
 * 小贴土
 ** 禁止鼠标选中时自动转换为选择模式
 #+begin_example

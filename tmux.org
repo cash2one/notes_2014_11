@@ -18,17 +18,17 @@
 这里画了一张表格，列出screen的常用操作及其快捷键，同时还列出了tmux相应的快捷键。
 另外，我决定在上手之前，先不改默认的快捷键。
 
-| 操作            | screen            | tmux                     |
-|-----------------+-------------------+--------------------------|
-| 新建session     | screen -S xxx     | tmux new -s xxx          |
-| 断开session     | C-a d             | C-b d                    |
-| 连接session     | screen -dr xxx    | tmux attach -d -t xxx    |
+| 操作            | screen               | tmux                     |
+|-----------------+----------------------+--------------------------|
+| 新建session     | screen -S xxx        | tmux new -s xxx          |
+| 断开session     | C-a d                | C-b d                    |
+| 连接session     | screen -dr xxx       | tmux attach -d -t xxx    |
 | 删除session     | 连续C-d（shell指令） | tmux kill-session -t xxx |
-| 列出全部session | screen -ls        | tmux ls                  |
-| 新建窗口        | C-a c             | C-b c                    |
-| 删除窗口        | C-d （shell指令） | C-d                      |
-| 下一个窗口      | C-a n             | C-b n                    |
-| 上一个窗口      | C-a p             | C-b p                    |
+| 列出全部session | screen -ls           | tmux ls                  |
+| 新建窗口        | C-a c                | C-b c                    |
+| 删除窗口        | C-d （shell指令）    | C-d 或 kill-window -t x  |
+| 下一个窗口      | C-a n                | C-b n                    |
+| 上一个窗口      | C-a p                | C-b p                    |
 
 可以看出，tmux的快捷键大体上与screen保持了一致。只不过在命令行中使用的话，相对
 screen语句比较繁琐。

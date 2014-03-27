@@ -82,7 +82,7 @@ h1 {
 }
 
 h2 {
-    font-size: 2em;
+    font-size: 2.0em;
     /* font-size: 180%; */
     border-bottom: 1px solid #ccc;
     /* padding: 0.2em; */
@@ -91,14 +91,14 @@ h2 {
 
 h3 {
     /* font-size: 120%; */
-    font-size: 1.8em;;
+    font-size: 1.6em;;
     border-bottom: 1px solid #eee;
     margin-top: 1.0em;
 }
 
 h4 {
     /* font-size: 110%; */
-    font-size: 1.5em;;
+    font-size: 1.4em;;
     border-bottom: 1px solid #eee;
     margin-top: 1.0em;
 }
@@ -801,14 +801,19 @@ td, th {
     margin-left: -3%
 }
 
+.tocify {
+    border: 0px;
+    border-radius: 0px;
+}
+
 div#content {
-    margin-left: -8%;
-    margin-right: -4%;
+    margin-left: -6%;
+    margin-right : -2%;
 }
 
 div#postamble {
-    margin-left: -8%;
-    margin-right: -4%;
+    margin-left: -6%;
+    margin-right : -2%;
 }
 
 p {
@@ -817,4 +822,12 @@ p {
 
 li {
     margin-top: 0.2em;
+}
+
+blockquote {
+    margin: 20px 0px 20px 0px
+}
+
+blockquote p {
+    font-size: 16px;
 }

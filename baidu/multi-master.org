@@ -33,7 +33,7 @@ ConfigManager分配的日志模块。有几点要注意：
 这样改造后，能将Master的大部分针对传输流的管理操作做到与Master多机化无关，从而降
 低风险。改造后，Master的架构大致如下：
 
-#+begin_src ditaa :file multi-master-1.png
+##+begin_src ditaa :file multi-master-1.png
 	     +---------------+	             +--------------+
        	     | ConfigManager |  read/write   |   ZooKeeper  |
              | cBLU	     +<------------->+	 c707       |
@@ -50,7 +50,7 @@ ConfigManager分配的日志模块。有几点要注意：
              | |cGRE   | |cGRE | |cGRE      | |cGRE    | |cGRE   | |cGRE    | |
        	     | +-------+ +-----+ +----------+ +--------+ +-------+ +--------+ |
        	     +----------------------------------------------------------------+
-#+end_src
+##+end_src
 
 ** 第二步：CentralMaster初现，支持静态分配日志传输任务，初步实现Master多机化
 完成将ConfigManager与FlowManager从Master中的抽取后，下面的工作可以不再与
@@ -157,8 +157,221 @@ ConfigManager对/minos/allocation目录会进行两种操作：
   bool GetIdListOfLocalMaster(std::vector<int>* log_module_id_list);     
 #+END_SRC
 
-* CentralMaster与Master
-MinosMeta需要增加下面接口：
-#+begin_src cpp
-  RegisterCentralMaster(); // 定期Register，先不使用Watch机制
-#+end_src
+** ConfigService先放在每个Master里面
+在原来的设计中，只有CentralMaster才能启动ConfigService，提供日志配置的增删改查操
+作。这样的好处是能够让元信息的管理更统一，只有ContralMaster才有权利操纵元数据，坏
+处是有一定的改造代价。
+
+于是我在想，是否能让每个Master都启动ConfigService，并提供日志的增删改查操作？这样
+可能带来的元信息不一致的问题，思考下面场景：
+1. *新增* 。两个Master通知创建一份日志，它们都会尝试获取了系统中最大的
+   log_module_id并加1作为新日志的log_module_id，然后它们获得了相等的
+   log_module_id。这时候，先执行AddLogConfig成功的日志创建成功，而另外一份会创建
+   失败。
+2. *删除* 。两个Master同时删除一份日志，但是只有一个删除成功，另外一个删除失败。
+3. *修改* 。两个Master同时修改一份日志，两个都会成功，但以最后一次修改为准。
+
+从上面的场景可以看到： *修改* 不会有问题。 *删除* 的话，我修改下删除逻辑，当日志
+不存在时直接返回true后也不存在问题。只有 *新建* ，会导致有个Master新建失败，但这
+*也不会带来元信息不一致的问题* ，只不过会有几率影响用户体验。考虑到，一个只有一个
+Master对外提供HTTP Service服务，所以说， *新建* 问题也不大。
+
+所以说，将ConfigService在每个Master里面启动是完全可行的。
+#+BEGIN_EXAMPLE
+One Master, One ConfigService.
+#+END_EXAMPLE
+
+所以说，目前ConfigManager先不承担ConfigService，而只承担传输任务分配的工作。
+
+* 调整开发计划
+** 概述
+由于日志数/机器数/节点数原来越多，这周可能要上300份，单Master的随时都可能扛不住。
+所以我要加快多Master的开发。我下午想了一下，优化了一下多Master的设计，并于韩超讨
+论了一下。优化点包括：
+1. 将Master分为三大块：Master本体/ConfigManager/FlowManager（各块的功能下面讲）。
+2. 各个Master不在ZK的/minos/master下注册临时节点，而是载下面注册永久节点，并定期
+   更新节点内容。节点内容里包括当前时间戳，该Master的负载等（相当于各Master向ZK写
+   心跳信息）
+3. CentralMaster从/minos/master下获取各Master的状态，然后 *根据时间戳挑出存活的
+   Master节点* 以及它们的负载信息，然后进行任务的分配。
+
+Master的三大块：
+1. *Master本体* 启动了各个Service以及ConfigManager/FlowManager之后，
+   就进入了一个无限循环，在该循环内定时向ZK更新自己的当前状态和更新时间戳。
+2. *ConfigManager* 在启动之后，会进入抢主过程，抢到之后成为CentralMaster，负责为
+   各个Master分配传输任务。
+3. *FlowManager* 从ZK上读取CentralMaster给自己分配的传输任务，开始进行传输流的管
+   理，包括新建/删除/更新传输流，通知和报警等等。
+
+
+我下一步要开发：
+1. Master通过ZK汇报状态的接口
+2. CentralMaster读取ZK获取当前存活的Master的接口
+3. FlowManager只管理ConfigManager分配给它的日志模块（关键性改动，好好测试，今晚上
+   线）
+
+这一步开发完后，剩下的任务就是：
+1. Allocator的开发
+2. 提供给Minos Agent一个QueryMasterAddress的接口
+
+** 第一轮改造
+*** 基础接口
+先完成基础接口的开发/改造和单测。这些接口包括：
+#+BEGIN_SRC cpp
+bool UpdateMasterStatusById(const std::string& master_id, const MasterStatus& master_status); 
+bool ListAllAliveMasters(std::vector<std::string>* master_id_list); 
+bool AllocateIdListForMaster(std::string& master_id,                                            
+                             const std::vector<int>& log_module_id_list);  
+bool GetIdListByMasterId(std::string master_id, std::vector<int>* log_module_id_list); 
+bool UpdataMetaDataNotCareExistence(); 
+bool DeleteMetaDataNotCareExistence();
+#+END_SRC
+
+预计要2小时。
+
+*** Master定期汇报状态
+Master中要启动线程定期调用UpdateMasterStatus，目前MasterStatus中只包含当前时间戳。
+
+预计要0.5小时
+
+*** ConfigManager为FlowManager分配任务
+再开发ConfigManager。ConfigManager做的事情就是获取或者的Master列表（目前只有1台），
+然后为它分配日志模块id（目前所有日志模块id都分配给这单独的一台Master），然后
+Master中多启动一个线程来运行ConfigManager，然后上线。
+
+这一轮中，需要简单实现Allocator的框架。
+
+预计要0.5小时
+
+*** 让FlowManager只care自己的传输任务
+检测无误后，开始下一轮的开发，这一轮的开发工作是让FlowManager只是在
+/minos/allocation下面读取自己的管理的日志模块id（目前看来，改造内容就是将
+GetIdListOfLogConfig换成GetIdListOfLocalMaster），然后把Master中除了
+ConfigManager外所有使用GetIdListOfLogConfig的地方都换成GetIdListOfLocalMaster。然
+后上线。
+
+预计要0.5小时
+
+*** ConfigManager抢注节点
+上线检测无误后，开始开发ConfigManager抢注节点的功能。ConfigManager会先抢注
+/minos/config-manager节点，抢注成功后，开始工作。
+
+预计要0.5小时
+*** 总体时间预估
+看来，第一轮改造需要四个小时。我22点开始开发，预计凌晨2点开发完毕。<2014-03-25 二>
+
+** 第二轮：ConfigManager设计
+*** TODO ConfigManager的唯一性保证
+ConfigManager还要单独开一个线程专门来判断自己是不是/minos/config-manager节点的主人：
+1. 如果是，则要确保自己在工作。如果不在工作，则说明自己非常非常的异常，这时立刻退
+   出进程。
+2. 如果不是或者节点不存在， *则说明发生了网络异常* 。这时要确保自己不在工作。如果
+   还在工作，则会退出工作，并进入抢注节点的无限循环。
+#+BEGIN_EXAMPLE
+要开一个专门的线程
+#+END_EXAMPLE
+
+*** 在ConfigManager中维护着所有的LogConfig
+要达成高性能地管理LogConfig，就需要在内存中维护着所有的LogConfig（具体地说，是由
+ConfigManager管理），这样就不必每次都访问ZK了。
+
+这样，就需要有一种机制来讲ZK中的/minos/log-config给及时同步到ConfigManager中。很
+显然，ZK的Event Watch机制就是用来干这事情的，不过为了达成 *敏捷* ，先用定期轮询
+/minos/log-config节点来实现，轮询的时间间隔先设为15秒。
+#+BEGIN_EXAMPLE
+要开一个专门的同步线程。
+#+END_EXAMPLE
+
+用啥数据结构存储这所有的LogConfig？考虑到有查询需求，且日志模块id不连续，故
+std::vector不合适，于是使用 *std::map<int, LogConfigMessage>* 来存储，key是日志模
+块id。
+#+BEGIN_SRC cpp
+std::map<int, baidu::minos::LogConfigMessage>
+#+END_SRC
+
+*** 各个Master与其管理的日志模块id列表的对应关系
+这个对应关系其实就是传输任务分配的结果，会被写到zk的/minos/allocation节点下面，以
+让各个Master能获取自己的传输任务。
+
+用map来存储对应关系，如下：
+#+BEGIN_SRC cpp
+std::map<std::string, std::vector<int> >
+#+END_SRC
+
+*** 各个Master与其管理的日志的机器列表全集的对应关系
+由于目前每个Minos Agent下面的各个节点只会向单个Master更新状态，所以说，传输任务分
+配结果必须满足下面的约束：
+#+BEGIN_EXAMPLE
+单台机器上的所有日志模块必须同时被一个Master管理。
+#+END_EXAMPLE
+
+故需要存储对应关系，让Allocator分配新日志时能 *快速判断* 能否分配给某个Master。
+
+用map来存储对应关系，如下：
+#+BEGIN_SRC cpp
+std::map<std::string, std::set<std::string> >
+#+END_SRC
+
+**** 点分十进制还是长整型？
+这里用std::string以 *点分十进制* 的方式存储机器ip，而没有用 *长整型* 的方式来存储。
+考虑一下Minos系统机器的极限，假设是10W台，每个ip的占12个字节，一共需要120W字节，
+一换算，得到 *120K* ，这点内存占用可以接受。
+
+*** 各个noah_node_id与其下面的日志模块id列表中的关系
+Minos用户在使用上有个特点，就是按照Noah运维节点的id来查看日志列表，所以
+ConfigManager需要维护着noah_node_id与其下面所有日志模块id的对应关系，以方便快速查
+询。
+
+用map来存储对应关系，如下：
+#+BEGIN_SRC cpp
+std::map<int, std::vector<int> >
+#+END_SRC
+
+后续会以noah_node_id为key，将该节点下所有日志的状态信息写入到缓存服务器上，以提高
+Minos前端页面的反应速度。
+
+*** 传输任务分配规则
+*传输任务分配* 是ConfigManager的最主要职责。先列出分配的目的：
+#+BEGIN_EXAMPLE
+将指定的日志模块id分配最合适的某个Master来管理，并能实现系统的负载均衡。
+#+END_EXAMPLE
+
+ConfigManager的可选的Master列表是通过调用 *ListAllAliveMaster()* 接口来获取的，那
+么该如何从中为指定日志选择一个合适的Master呢？需要遵循下面规则：
+1. 所管理的日志模块id最少的Master优先
+2. 所管理的节点数目最少的Master优先
+3. CPU占用/内存占用最轻的Master优先
+4. 一个带log_tag的日志相当于10份平台的日志
+3. 除了被选中的Master外的所有Master下面的节点的机器列表中均不包含该日志的BNS下面的任何一台机器。
+
+*** ConfigManager的主循环
+在当前的定期轮询模式下的主循环设计：
+1. 获取日志模块id的全集（直接从ConfigManager维护的map中取）
+2. 获取各Master管理的日志模块id列表
+3. 做一轮diff，找出新增和删除的日志模块id
+4. 将被删除的日志模块id从该Master的id列表中删除
+5. 依次为新增的日志模块id分配一个Master
+   1) 判断该日志的机器列表是否有机器是否有所属Master
+      - 如果机器列表中有机器属于某Master且只属于这一个Master，则直接将id分配给这个Master，并返回
+      - 如果机器列表中的机器属于两台或两台以上的Master，则分配失败，并返回；
+      - 如果它们不属于任何一个Master，则进入下一步；
+   2) 将这些Master按照负载情况排序
+   3) 将id分给负载最轻的Master
+   4) 更新Master的负载情况
+6. 将Master的分配情况重新写入ZK（只写分配发生改变的Master）
+
+
+	
+
+      
+
+	     
+	     
+    +---------------+
+    |     〇  	    |
+    |  	      	    |
+    |	       	    |
+    +---------------+
+		   
+		   
+    

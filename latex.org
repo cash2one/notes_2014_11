@@ -1,0 +1,6 @@
+* 文章搜集
++ [[http://cs2.swfu.edu.cn/~wx672/lecture_notes/linux/latex/latex_tutorial.html][Emacs + LaTeX 快速上手]]
+
+hehehehehehe``i
+* MacTex
+在主页： http://tug.org/mactex/ 下载，安装后大小为4.33G，这个有点太大了。

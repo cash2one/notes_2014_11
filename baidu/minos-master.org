@@ -1,15 +1,144 @@
 #+TITLE: Minos Master 详细设计
 
 * Master总览
-* 元信息管理
-** 日志模块id
-几条规则：
-+ 迁移自LDM或者Bigpipe的日志的id需要指定而不是Master生成，且id范围是[10000000, 10020000)
-+ 迁移自LDM的日志的集群写账号用ns-lsp，迁移自Bigpipe的日志的集群写账号用dt-minos
-+ 其他所有在Minos上创立的日志的集群写账号全部用dt-minos
+Minos Master的功能包括：
+1. 日志元信息管理（包括日志的增删改查）
+2. 传输流管理
+3. 通知下游计算系统
+4. 报警
+5. 监控和统计
 
-** 元信息压缩
-使用Snappy压缩。
+* 元信息管理
+每份日志在Minos系统中都有唯一的标识，就是日志模块id（log_module_id）。每份日志的
+其他重要信息还包括日志名，产品名，Noah节点id，BNS，日志格式等。这些元信息用
+Protobuf定义在LogConfigMessage中。如下：
+#+BEGIN_SRC cpp
+message LogConfigMessage {                                                                             
+    // Basic info                                                                                      
+    required int32 log_module_id = 1;                                                                  
+    required string product = 2;                                                                       
+    required string name = 3;                                                                          
+    optional string bns_name = 4;                                                                      
+    optional int32 noah_node_id = 5;                                                                   
+    optional string log_format = 6;                                                                    
+    optional string log_class = 7;                                                                     
+    optional bool is_log_tag_enabled = 9 [default = false];                                            
+                                                                                                       
+    // Create info                                                                                     
+    optional string creator = 101;                                                                     
+    optional int64 create_time = 102;                                                                  
+    optional string description = 103;                                                                 
+    enum LogStatus {                                                                                   
+        kEnabled = 1;                                                                                  
+        kDisabled = 2;                                                                                 
+    }                                                                                                  
+    optional LogStatus log_status = 104 [default = kEnabled];                                          
+    optional bool is_migrated_from_ldm = 105 [default = false];                                        
+    optional bool is_migrated_from_bigpipe= 106 [default = false];                                     
+                                                                                                       
+    // Alarm                                                                                           
+    optional string alarm_mail_receiver = 201;                                                         
+    optional string alarm_gsm_receiver = 202;                                                          
+    optional int32 alarm_interval = 203;                                                               
+    optional int32 max_transmission_delay = 204;                                                       
+    optional int32 speed_limit = 205;                                                                  
+    optional int32 tolerance_miss_num = 206;                                                           
+    optional int64 fallback_interval = 207 [default = 10];                                             
+    optional int64 max_delay_before_fallback = 208 [default = 300];
+    optional int64 min_speed_before_fallback = 209 [default = 10];                                  
+                                                                                                    
+    // Cluster info                                                                                 
+    optional string cluster_name = 301;                                                             
+    optional string cluster_path = 302;                                                             
+    optional int32 notify_interval = 303;                                                           
+    optional int32 retention_days_num = 304;                                                        
+    optional string table_uri = 305;                                                                
+    optional bool is_open_notify = 306 [default = false];                                           
+    optional bool is_notify_lsp = 307 [default = false];                                            
+    optional bool is_notify_dtmeta = 308 [default = false];                                         
+                                                                                                    
+    // Minos agent                                                                                  
+    optional string source_path = 401;                                                              
+    optional string file_match_pattern = 402;                                                       
+    optional string pipename = 403;                                                                 
+    optional int32 collector_nodes_num = 404;                                                       
+    optional int64 start_time = 405;                                                                
+    optional int64 end_time = 406;                                                                  
+    optional bool text_with_time = 407 [default = false];                                           
+    optional string time_format = 408;                                                              
+    optional int32 max_read_size = 409 [default = 102400];                                          
+    optional int64 max_queue_size = 410 [default = 15728640];                                       
+    optional int32 minos_agent_port = 411 [default = 425];                                          
+                                                                                                    
+    // Log format                                                                                   
+    optional bool is_open_logformat = 501 [default = false];                                        
+    optional string logformat_department = 502;                                                     
+    optional string logformat_product = 503;                                                        
+    optional string logformat_time_format = 504; 
+
+    // Compress                                                                                     
+    optional bool is_open_hdfs_compress = 601 [default = false];    
+#+END_SRC
+** 日志模块id
+| id范围              | 日志类型                | id是否由Master自动生成 | 备注                                               |
+|---------------------+-------------------------+------------------------+----------------------------------------------------|
+| 0 ~ 10000000        | PB日志                  | 否                     | id与PB平台的日志id一一对应                         |
+| 10000000 ~ 10020000 | 迁移自LDM/Bigpipe的日志 | 否                     | id减去一千万后，即与LDM数据库的log_plan_id一一对应 |
+| 大于10020000        | Minos原生的文本日志     | 是                     | id递增生成                                         |
+
+额外说明： *有部分PB日志是用Bigpipe传输* ，并且在LDM数据库中有log_plan_id。迁移之
+后，还是用其在PB平台的日志id作为日志模块id，而不是用其在LDM数据库中的log_plan_id。
+
+** 集群读写账号
+Master为Minos Agent生成配置中包括一个集群账号和密码，Minos Agent使用这个账号来读
+写HDFS。
+| 日志类型                 | 集群读写账号 | 备注                                                                                                  |
+|--------------------------+--------------+-------------------------------------------------------------------------------------------------------|
+| Minos原生日志（PB/Text） | dt-minos     | OP会负责为dt-minos在各大集群开通账号和Quota                                                           |
+| 迁移自Bigpipe            | dt-minos     | OP会负责开通dt-minos在各集群的bigpipe目录开通写权限，使用的仍是bigpipe账号的Quota                     |
+| 迁移自LDM                | ns-lsp       | 无法像迁移自Bigpipe的日志那样为/log目录开通dt-minos账号的写权限，因为/log目录太大了，涉及的东西太多了 |
+
+** 元信息存储
+Master将元信息存储在ZooKeeper上，组织形式如下：
+#+BEGIN_EXAMPLE
+/minos/log-config
+/minos/log-config/1
+/minos/log-config/46
+/minos/log-config/110
+/minos/log-config/10006743
+/minos/log-config/10020009
+#+END_EXAMPLE
+
+*** 元信息压缩
+为了减少元信息的体积，进而减小对ZK和HDFS的压力，在存取元信息时，会对元信息进行压
+缩/解压。Master使用了Google的Snappy库来进行压缩/解压。相关函数如下：
+#+BEGIN_SRC cpp
+  size_t Compress(const char* input, size_t input_length, string* output); 
+  bool Uncompress(const char* compressed, size_t compressed_length,                                 
+                  string* uncompressed); 
+#+END_SRC
+
+** 主要操作
+Master提供了名为 *LogConfigService* 的Rpc Service来对外提供元信息管理操作。该
+Service定义如下：
+#+BEGIN_SRC cpp
+service LogConfigService {                                                                             
+    rpc AddLogConfig(AddLogConfigRequest) returns(AddLogConfigResponse);                               
+    rpc UpdateLogConfig(UpdateLogConfigRequest) returns(MasterResponse);                               
+    rpc DeleteLogConfig(DeleteLogConfigRequest) returns(MasterResponse);                               
+    rpc GetLogConfig(GetLogConfigRequest) returns(MasterResponse);                                     
+    rpc GetAllClusterInfo(GetAllClusterInfoRequest) returns(MasterResponse);                           
+}     
+#+END_SRC
+
+*** 增加日志配置
+当用户新增日志时，Master会组装好LogConfigMessage，执行PB的序列化后，将序列化后的
+内容存储在ZK的/minos/log-config/${log_module_id}节点下面。
+*** 删除日志配置
+在ZK上删掉/minos/log-config/${log_module_id}节点。
+*** 修改日志配置
+在ZK上更新/minos/log-config/${log_module_id}节点的内容。
+** 节点配置生成
 ** 传输流Checkpoint的存储
 
 之前传输流的Checkpoint是和日志配置一起存储在Zookeeper上面的，但是最近发现几份日志
@@ -152,17 +281,38 @@ Minos的集群在信息管理上有点繁琐，主要原因是：
 
 需要开发一个类 *ClusterInfoManager* 来处理这些繁琐。百度的集群很多，为了保证灵活，
 该类应该提供从某个地方 *动态加载配置* 的功能。我准备在MinosMeta提供一个获取集群信
-息的接口，而ClusterInfoManager通过：
+息的接口，而ClusterInfoManager通过下面函数来从Minos加载配置并更新自己。
 #+BEGIN_SRC cpp
   bool SyncWithMinosMeta();
 #+END_SRC
-来从Minos加载配置并更新自己。
+
+ClusterInfoManager对外提供的查询接口如下：
+#+BEGIN_SRC cpp
+bool GetClusterInfo(const std::string& cluster_name, ClusterInfo* cluster_info); // 查询单个集群信息
+bool GetAllClusterInfoInJsonStr(std::string* json_str, bool with_passwd); // 以JSON形式返回全部集群信息
+#+END_SRC
+
+这里用cluster_name作为某个集群的唯一标识，完整的cluster_name列表在 [[http://dpfhelp.dmop.baidu.com/][dpf主页]] 能查询
+得到。ClusterInfo这个struct的定义如下：
+#+BEGIN_SRC cpp
+message ClusterInfo {                                                                                  
+    required string cluster_name = 1;                                                                  
+    required string hdfs_host = 2;                                                                     
+    required int32 hdfs_port = 3;                                                                      
+    required string username = 4;                                                                      
+    required string password = 5;                                                                      
+                                                                                                       
+    optional string username_in_ldm = 101;
+    optional string password_in_ldm= 102;
+    optional int32 id_in_ldm = 103;                                                                    
+    optional string name_in_cloudatlas = 104;                                                          
+    optional string name_in_dtmeta = 105;                                                              
+}              
+#+END_SRC
 
 后来与OP荣讯沟通，得知百度常用的集群现在只有不到20个，且变动频率不大。它们是：
-#+BEGIN_SRC sql
-+-----------+------+-------------------+--------+----------------------------------------------------+-------+
 | clusterid | type | name              | status | namenode                                           | extra |
-+-----------+------+-------------------+--------+----------------------------------------------------+-------+
+|-----------+------+-------------------+--------+----------------------------------------------------+-------|
 |         1 |    1 | WG-STON           |      0 | hdfs://szwg-ston-hdfs.dmop.baidu.com:54310         | 1     |
 |         4 |    1 | WG-ECOMON         |      0 | hdfs://szwg-ecomon-hdfs.dmop.baidu.com:54310       | 1     |
 |         6 |    1 | HY-ECOMOFF        |      0 | hdfs://hy-ecomoff-hdfs.dmop.baidu.com:54310        | 1     |
@@ -180,17 +330,52 @@ Minos的集群在信息管理上有点繁琐，主要原因是：
 |        28 |    1 | NJ01_NANLING      |      0 | hdfs://nj01-nanling-namespace.dmop.baidu.com:54310 | 1     |
 |        29 |    1 | NMG01_KHAN        |      0 | hdfs://nmg01-khan-hdfs.dmop.baidu.com:54310        | 1     |
 |        30 |    1 | NMG01_MULAN       |      0 | hdfs://nmg01-mulan-hdfs.dmop.baidu.com:54310       | 1     | 
-#+END_SRC
 
 * 传输流管理
+** 为新增的日志建立传输流
+** 为删除的日志销毁传输流
+** 根据传输流Checkpoint来重新加载传输流
+** 更新日志配置时更新传输流
 ** BNS同步
-Master根据BNS来获取状态正常（状态码为0）的机器ip列表，相当于在shell下执行下面的指令：
+针对每个传输流，Master根据BNS来获取状态正常（状态码为0）的机器ip列表，相当于在
+shell下执行下面的指令：
 #+begin_src sh
 get_instance_by_service -si group.bigpipe-vpui-odp.WISE.cn | grep ' 0' | awk '{print  $2}'
 #+end_src
 
-** 为慢节点调用Fallback
+获得该传输流状态正常机器列表后，会与传输流中的所有节点做一轮diff，做下面三件事：
+1. *新增节点* 。如果BNS中正常的机器在传输流中不存在，则在传输流中执行AddNode，同时针
+   对物理节点Fallback；
+2. *删除节点* 。如果传输流中的机器不在BNS的正常机器列表中，则对它执行disable，并对物
+   理节点执行DeleteNode；
+3. *处理故障节点和慢节点* 。如果某机器在BNS中正常，在传输流中也存在，但是太久未汇报
+   状态或传输速度较慢，则会对它执行Fallback；
+
+额外说明：
+#+BEGIN_EXAMPLE
+当前故障节点和慢节点的处理是在BNS同步过程里面做的，并没有分离为单独的线程。
+#+END_EXAMPLE
+
+** 故障节点和慢节点的处理
+Master会遍历各个传输流的各个节点，判断这个节点是否是故障节点或慢节点。如果是，则
+对该节点调用Fallback。
+
+*** 定义
+所谓 *故障节点* ，就是长久没有向Master汇报状态的节点。所谓 *慢节点* ，就是处于延
+时状态，本应该全速追赶传输进度，但是速度仍然上不来的节点。
+
+*** 故障节点的判定标准
+需要满足下面条件：
+1. synced_update_time与当前时间的差值超过阈值（当前默认是10min）；
+
+*** 慢节点的判定标准
+需要同时满足下面两个条件：
+1. synced_log_time与当前时间的差值超过阈值（当前默认是300min）；
+2. 当前传输速度低于阈值（默认是10B/s）
+
 ** 为MA选择MC
+暂略。
+
 * 通知模块
 ** 通知模块的职责
 Minos的通知模块的职责是在数据分片传输就位时，通知下游的数据系统该数据分片
@@ -503,7 +688,6 @@ map的形式被主Master维护，同时，主Master会要将某Master负责的�
 是新的主Master，谁就会履行Master的职责，开始做日志配置管理，Master故障迁移，负载
 均衡等工作。
 
-**** TODO 临时节点是否支持续弦？
 *** Master故障迁移
 当一台Master挂掉后，supervise会立刻把它拉起来。它起来后，会删除掉自己再
 /minos/master下面的临时节点，并重新创建一个空的临时节点。这时候，主Master会感知到
@@ -517,7 +701,6 @@ map。
 如果这台Master挂掉后起不来了，它的临时节点过一段时间后也会消失，然后主Master也感
 知到/minos/master节点下面的变化，其他步骤跟用supervise拉起Master的情景是一样的。
 
-**** TODO 临时节点是否支持续弦？
 *** TODO Master负载均衡
 Master的负载均衡包括两方面，一种是主Master在分配日志模块id给各个Master时，选择最
 空闲的Master，另外一种是主Master探测到某台Master负载过重时，将其负责的日志模块分
@@ -540,11 +723,7 @@ Master。
 问该日志模块id是被那个Master管理的，最终，Master会将结果（该Node所属的Master的ip）
 返回给Node。
 
-** 技术调研
-*** Zookeeper的进阶使用调研
-*** 负载均衡的框架
-*** 策略的抽取
-** 设计图
+** TODO 技术调研
 * Master支持LogFormat
 需要新增的配置项为：
 | 配置项                | 意义                               |
@@ -558,3 +737,5 @@ Master。
 Master在生成NodeConfig时，需要设置logformat相关的LogProcess。
 
 注意：当打开格式化时，日志类型就不能为pb。
+
+

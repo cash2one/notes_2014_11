@@ -15,6 +15,7 @@ Gnuplot，Plantuml等复杂的绘图语言，非常的强大。这是[[http://or
 
 * 导出为HTML
 + [[http://orgmode.org/worg/org-tutorials/org-publish-html-tutorial.html][Publishing Org-mode files to HTML]]
++ [[http://orgmode.org/manual/Configuration.html#Configuration][Org-mode publishing configuration]]
 
 ** 自动生成sitemap（站点地图）
 我想要在我的导出文件中加入一个自动生成的笔记列表，Google一下，发现Org的publish功
@@ -142,10 +143,35 @@ C-u M-x org-publish
 然后选择你要导出的project。由于强制导出并不是频繁执行的命令，所以我就不设
 快捷键了。
 
+** 去掉自动分行带来的讨厌的空格
+Emacs的自动分行功能很好，但是将org文件导出为HTML后，会自动在空行出加入空格，对于
+中文玩家来说，这点很讨厌。我用 *org-mode 中文 空格* 为关键词Google了一下，找到了
+解法：
++ [[http://fasheng.github.io/blog/2013-09-25-fix-chinese-space-issue-when-exporting-org-mode-to-html.html][org-mode 导出 html 时中文空格问题的临时解决方法]]
+
+按照此文，我在我的~/.emacs里面加上下面一段emacs-lisp代码后，问题解决了。
+#+BEGIN_SRC elisp
+(defadvice org-html-paragraph (before fsh-org-html-paragraph-advice                                    
+                                      (paragraph contents info) activate)                              
+  "Join consecutive Chinese lines into a single long line without                                      
+unwanted space when exporting org-mode to html."                                                       
+  (let ((fixed-contents)                                                                               
+        (orig-contents (ad-get-arg 1))                                                                 
+        (reg-han "[[:multibyte:]]"))                                                                   
+    (setq fixed-contents (replace-regexp-in-string                                                     
+                          (concat "\\(" reg-han "\\) *\n *\\(" reg-han "\\)")                          
+                          "\\1\\2" orig-contents))                                                     
+    (ad-set-arg 1 fixed-contents)                                                                      
+    ))     
+#+END_SRC
+
 * 博客发布
 + [[http://orgmode.org/worg/org-tutorials/org-jekyll.html][Using org to Blog with Jekyll]]
 + [[http://dayigu.github.io/WhyUseOrgModeToWriteBlog.html][为什么用 org-mode 写 blog？]]
 
+* TODO 用Org写PPT
+无意中看到了 [[http://jerrypeng.me/2013/10/remove-org-html-useless-spaces/][此文]] ，声称Org-mode + Tex Live能写出很炫酷的PPT。我先记一下，有空搞
+搞。
 * Organize Your Life In Plain Text!
 这篇文章据说非常经典，但确实非常长。地址是：[[http://doc.norang.ca/org-mode.html]]
 

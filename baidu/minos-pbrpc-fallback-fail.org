@@ -17,6 +17,22 @@
 看起来很好，GetLogFlow将各不影响，但关键问题是，这些锁是用map管理起来的，而这个
 map本身就会有读写加锁的问题。
 
+* 问题没有解决，继续排查
+列出因为 *获取NodeConfig* 失败而导致Fallback的日志中的时间和log_module_id信息，并从中过滤出46号日志。
+#+BEGIN_SRC sh
+grep "fail to fallback node." log/master.INFO | grep "Get node config from" | awk '{print $2, $12, $15}' | grep "46," | less
+#+END_SRC
+
+
+#+BEGIN_SRC sh
+grep "async rpc request: fallback is sent." log/master.INFO | grep "Log module id: 46" | awk '{print $2, $14, $17}' | less
+#+END_SRC
+
+从两次的结果观察到：
+1. 从 *13:47:38.804018* 到 *13:47:38.881270* ，对46号日志的所有故障节点执行Fallback（225个故障节点）
+2. 从 *13:47:43.854779* 到 *13:47:43.977224* ，46号日志故障节点依次返回Fallback失败（因为获取配置问题，导致失败了214个节点）
+3. 从 *13:47:38* 到 *13:47:43* 这5秒的时间里，RegisterNode一直不可用。
+
 * 总结和教训
 本次问题的原因可以归结为： *锁粒度太大导致网络交互因为超时而失败* 。
 
