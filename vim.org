@@ -25,6 +25,27 @@ di)
 viw
 #+END_EXAMPLE
 
+* Buffer（寄存器）与复制粘贴
+在Vim中执行复制后，会把内容复制到一个buffer中。Vim会维护者多个buffer，即使退出
+Vim，这些buffer依然存在。buffer分为两类：
+| 类别             | 数目        | 复制操作举例                   | 粘贴操作举例                          |
+|------------------+-------------+--------------------------------+---------------------------------------|
+| 默认buffer       | 空，1个      | yy，复制当前行到默认buffer中   | p，粘贴默认buffer的内容到当前位置     |
+| Numbered Buffers | 0-9，共10个 | ""yy，将当前复制到buffer 2中   | "2p，将buffer 2中的内容粘贴到当前位置 |
+| Named Buffers    | a-z，共23个 | "a7yy，将第7行复制到buffer a中 | "ap，将buffer a中的内容复制到当前位置 |
+
+*注意* ：Numbered Buffers是个循环队列，每次执行复制到默认buffer后，该队列会整体右移，
+而buffer 0会被默认buffer占据。
+
+Vim提供了一个 *非常有用的查看当前各个buffer的指令* ：
+#+BEGIN_EXAMPLE
+:reg
+#+END_EXAMPLE
+
+执行结果如下：
+
+[[./img/vim-1.png]]
+
 * 小贴土
 ** 禁止鼠标选中时自动转换为选择模式
 #+begin_example

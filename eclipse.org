@@ -145,6 +145,7 @@ diff。Eclipse的diff窗口也是挺别致的。
 依次点开Preferences -> General -> Appearance -> Colors and Fonts -> Basic ->
 Text Font，点Edit...，然后就可以设置字体了。我使用的是深受码农喜爱的Monaco字体，
 字号是13。
+
 * 学习回顾
 ** 初步感受Eclipse <2014-02-15 六>
 今天我通过搭建Hadoop项目来熟悉Eclipse，并通过《Hadoop技术内幕 - Common&HDFS》一书

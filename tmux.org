@@ -1,6 +1,5 @@
 #+TITLE: Tmux - GNU Screen的替代者
 
-
 * 前言
 我用了很久的screen，在使用过程中踩了不少坑，也排了不少坑（参考 [[file:screen.org][screen]] ）。现在我
 又遇到了一个screen与vim的兼容问题，导致很多vim插件的特殊符号无法显示（如倒三角和
@@ -104,7 +103,31 @@ tmux status line]]，我它粘贴到我的.tmux.conf，然后执行 *tmux source
 C-b t，然后屏幕中间就出来一个时钟了。
 
 [[./img/tmux-2.png]]
-  
+
+* 寻找更好的 prefix key
+默认情况下，Tmux的prefix key是C-b，我修改为更为顺手的C-x。C-x虽好，但是与Emacs相
+冲突，而我即将要在Tmux里面用Emacs，换prefix key迫在眉睫。
+
+浏览 [[http://superuser.com/questions/209437/how-do-i-scroll-in-tmux][Stack Overflow]] ，发现有人用C-j。
+#+BEGIN_SRC screen
+set -g prefix C-j
+unbind C-b
+bind C-j send-prefix
+#+END_SRC
+
+我试了下，C-j很顺手，于是决定就它了。
+#+BEGIN_EXAMPLE
+值得指出的是C-j
+#+END_EXAMPLE
+
+* Scroll in Tmux
+参考 [[http://superuser.com/questions/209437/how-do-i-scroll-in-tmux][How do I scroll in tmux?]] ，进入Scroll模式的快捷键如下：
+#+BEGIN_SRC screen
+C-b [
+#+END_SRC
+
+然后就通过 *Emacs的各种快捷键* 进行移动和文本选择操作了。
+
 * 学习回顾
 ** 已经可以用tmux替代screen了 <2014-02-16 日>
 经过这段时间的学习，特别是今晚的集中学习和实践之后，我已经上手了tmux，并且已经觉得
@@ -118,4 +141,6 @@ terminal的兼容问题考虑到了。
 1. 窗口的切分
 2. 探究是否可以用tmux来提供类似于SecureCRT的 *Session Clone* 的功能
 3. Status Line的进一步改进
+
+
 

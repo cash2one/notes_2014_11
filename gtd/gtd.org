@@ -1,6 +1,7 @@
 #+TITLE: gtd.org - 我对于GTD的第一次实践
 
 * Life
+** TODO 买PSV和FF10
 ** TODO 帮小亮搞定网站
    SCHEDULED: <2014-02-28 五>
 ** TODO 报名驾校，带上身份证复印件，9张一寸照片，周三14点大厦食堂
@@ -56,7 +57,7 @@
 * Work
 ** TODO 写Checkpoint的双HDFS中的stoff改成log集群
 ** TODO 写双HDFS采用主备读写频率差异化的机制，即每写N次主后才写一次备
-** TODO 提供CloudAtlas的一系列工具，能够灵活地补通知
+** DONE 提供CloudAtlas的一系列工具，能够灵活地补通知
 ** TODO Alarmer使用MySQL Connector C++来向报警数据库写记录
 ** TODO Notifier通过SubProcess来调用MetaService_Util
 ** DONE SaveAllLogFlows拆锁
@@ -185,6 +186,8 @@
    - State "DONE"       from "WAITING"    [2014-02-17 一 23:16]
    - State "WAITING"    from "TODO"       [2014-02-12 三 20:50]
 * Learn
+** TODO 搞定Emacs as an IDE
+   SCHEDULED: <2014-04-05 六>
 ** TODO 学习DataTable
 ** TODO 学习Golang
 ** TODO 学习Python

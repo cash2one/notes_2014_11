@@ -62,6 +62,42 @@ M-x toggle-debug-on-error
 * Emacs/Vim的吐槽文
 + [[http://www.cr173.com/html/11113_1.html][Emacs作为IDE编程环境的不足]]
 
+* 我的.emacs和.emacs.d为啥不起效？
+按照 [[http://www.emacswiki.org/emacs/DotEmacsDotD][Emacs Wiki的说法]] ，当存在.emacs时，则优先加载.emacs，而不加
+载.emacs.d/init.el。
+
+我下载了 [[https://github.com/bbatsov/prelude][Emacs Prelude]] ，并我按照要求，放好.emacs.d/，删除.emacs，并满怀希望地打
+开emacs，发现木有生效！我在网上搜寻解决之道，还通过在在.emacs.d/init.el尾部加上打
+印到message buffer的语句来进行debug。
+#+BEGIN_SRC emacs-lisp
+(message "init.el ends here") 
+#+END_SRC
+
+然后我发现，我的emacs根本没有加载.emacs.d/init.el，也没有加载.emacs。这时候，我怀
+疑是我的环境搞的鬼。我用的是Mac OS X，并且从一个用户su到另外一个用户来使用emacs，
+或许某些环境变量用的还是原先用户的环境变量。于是我在shell中执行：
+#+BEGIN_SRC sh
+env | grep elvestar # elvestar是原先的用户名
+#+END_SRC
+
+返回结果中有三个环境变量用的还是原先的用户名elvestar，应该就是这些环境变量搞的鬼！
+#+BEGIN_SRC sh
+LOGNAME=elvestar
+PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/local/go/bin:/usr/texbin:/Users/elvestar/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin
+OLDPWD=/Users/elvestar
+#+END_SRC
+
+我依次修改这些环境变量为新用户下的对应值，发现只需要修改 *LOGNAME* ，我
+的.emacs.d/就生效了。
+#+BEGIN_SRC sh
+export LOGNAME=zhongyi
+#+END_SRC
+
+问题终于解决了，我因此收获了几条教训：
+1. 用su来切换用户，环境变量改变不彻底。
+2. emacs根据 *LOGNAME* 来决定加载哪个.emacs.d/。
+
+
 * 学习回顾
 ** 成为Emacs用户 <2014-02-20 四>
 我从13年12月31日开始学习Emacs，断断续续学到现在，已经是Emacs入门了。我已经掌握

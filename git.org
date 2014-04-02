@@ -9,3 +9,6 @@ git st *.org */*.org
 git branch -r
 ** Checkout远程分支
 git checkout -r origin/xxx
+* Git的GUI工具
+** SourceTree
+[[http://www.sourcetreeapp.com/images/sourcetree_hero_mac_full_interface.png]]

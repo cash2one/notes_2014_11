@@ -1,7 +1,8 @@
-#+TITLE: 百度 | 仲毅的笔记
+#+TITLE: Elvestar's Notes
 
    + [[file:chromium-base-library.org][Chromium项目的base库]]
    + [[file:eclipse.org][Eclipse：一个强力的IDE]]
+   + [[file:emacs-as-an-ide.org][Emacs as an IDE]]
    + [[file:go.org][Go语言]]
    + [[file:python.org][Python之再学习]]
    + [[file:screen.org][Screen的使用]]
@@ -9,18 +10,6 @@
    + [[file:zookeeper.org][Zookeeper - 分布式系统的协调者]]
    + [[file:zsh.org][Zsh (Z shell) - A powerful shell (maybe) better than bash shell]]
    + [[file:atom.org][atom]]
-   + baidu
-     + [[file:baidu/logagent-manual.org][Logagent用户手册]]
-     + [[file:baidu/multi-master.org][Master多机化的开发]]
-     + [[file:baidu/master-redis.org][Master多机化的详细设计]]
-     + [[file:baidu/minos-master.org][Minos Master 详细设计]]
-     + [[file:baidu/minos-master-manual.org][Minos Master用户手册]]
-     + [[file:baidu/minos-pb.org][Minos业务统计上PB平台]]
-     + [[file:baidu/tc2-front-pb.org][Tc2_front日志的PB化]]
-     + [[file:baidu/minos-pbrpc-fallback-fail.org][minos-pbrpc-fallback-fail]]
-     + [[file:baidu/minos_bak.org][minos_bak]]
-     + [[file:baidu/notifier.org][notifier]]
-   + [[file:bootstrap.org][bootstrap]]
    + [[file:cocos2d.org][cocos2d]]
    + [[file:cracking-the-coding-inverview.org][cracking-the-coding-inverview]]
    + [[file:discuz.org][discuz]]
@@ -35,6 +24,7 @@
    + [[file:hadoop-hdfs.org][hadoop-hdfs]]
    + [[file:index.org][index]]
    + [[file:javascript-dom.org][javascript-dom]]
+   + [[file:latex.org][latex]]
    + [[file:libhdfs.org][libhdfs]]
    + life
      + [[file:life/festival-2014.org][2014年春节回家记]]
@@ -53,8 +43,13 @@
    + [[file:shell.org][shell]]
    + [[file:smart-pointer.org][smart-pointer]]
    + [[file:sql.org][sql]]
+   + [[file:sqlite.org][sqlite]]
    + [[file:sublime-text.org][sublime-text]]
    + [[file:test.org][test]]
    + [[file:vim.org][vim]]
+   + web
+     + [[file:web/bootstrap.org][bootstrap]]
+     + [[file:web/frontend-toolbox.org][我的前端开发工具箱]]
    + [[file:protobuf.org][深入分析Protobuf]]
+   + [[file:inside-the-c++-object-model.org][深度探索C++对象模型]]
    + [[file:algorithm-tree.org][算法]]

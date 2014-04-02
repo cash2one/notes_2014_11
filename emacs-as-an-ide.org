@@ -1,0 +1,75 @@
+#+TITLE: Emacs as an IDE
+#+DATE: 2014-03-28
+
+* 前言
+2010年上操作系统课时，我第一次接触Vim。2011年暑假在腾讯实习时，我第一次用Vim来工
+作。2013年下半年，我花了很大的功夫让自己掌握了Vim这个强大的编辑器，并成为了 *别人
+眼中的Vim高手* 。2013年末，我开始学习Emacs，并在春节前后掌握了Org-mode，然后将自
+己除了C/C++、Python代码编写之外的所有编辑工作都切换到Emacs。而现在，我决定将我的
+所有编码工作也转向Emacs。我作此决定的原因如下：
+1. *Emacs下的Org-mode是我迄今见过的最成熟最完备的工具* ，我相信Emacs下类似的工具还有
+   不少。
+2. *Emacs下能完美地模拟Vim* 。作为当前最高效的一套编辑理念，Vim之魂不会丢，而是会融
+   入Emacs这个操作系统里。
+3. 我一直对 *函数式编程* 很感兴趣，Emacs lisp给了我一个切入点。
+4. Vim，Vim插件以及Vimscript本身基本上都一些瑕疵和局限的。
+
+* 资料搜集
+** 文章
++ [[https://github.com/redguardtoo/mastering-emacs-in-one-year-guide/blob/master/emacs_cpp_developer_guide-en.org][Emacs for C++ developers]]
++ [[http://truongtx.me/2013/03/10/emacs-setting-up-perfect-environment-for-cc-programming/][Emacs - Setting up perfect environment for C/C++ Programming - Part 1]]
++ [[http://blog.csdn.net/karotte/article/details/6990031][将Emacs配置成一个C/C++的IDE编程环境]]
++ [[http://steckerhalter.co.vu/steckemacs.html][Steckemacs's Emacs（很新颖）]]
++ [[http://www.zhihu.com/question/20833433][如何优雅的使用emacs？（介绍了一些插件）]]
+
+** 视频
++ [[https://www.youtube.com/watchv%3DjNa3axo40qM&index%3D6&list%3DPLOsWiPRBpcoRdRK1xXEs6wfTnGa0DWS9b][Emacs Rocks! Episode 13: multiple-cursors]]
++ [[https://www.youtube.com/watchv%3Dsz68cCQ0Zpc&index%3D5&list%3DPLOsWiPRBpcoRdRK1xXEs6wfTnGa0DWS9b][GCCSense - The most intelligent development tools for C/C++]]
++ [[https://www.youtube.com/watchv%3DHTUE03LnaXA&index%3D4&list%3DPLOsWiPRBpcoRdRK1xXEs6wfTnGa0DWS9b][Emacs as a C/C++ Editor/IDE (Part I): auto-complete, yasnippet, and auto-complete-c-headers]]
+  
+** 讨论
++ [[http://www.zhihu.com/question/19588771][听说 Google 和微软内部开发也不用 IDE ， 他们用 Emacs 或Vim，是真的吗？（知乎）]]
+
+* 插件
+** Emacs Packages Manager
+使用方法：
+1. M-x list-package
+2. M-x package-install 
+
+** Emacs Code Browser (ECB)
+[[http://ecb.sourceforge.net/][ECB官网]]
+
+** evil-mode
+一个字，给力！将Vim中除了Vimscript外的所有的功能都搬过来了，包括多buffer，文本对
+象，:%s正则替换等各种Vim高级功能。
+
+** Multiple Cursors（多重光标）
+Sublime Text有个很炫酷的功能，就是鼠标中键调出多重光标的功能。Emacs其实也可以通过
+[[https://github.com/magnars/multiple-cursors.el][multiple-cursors.el插件]] 来支持，而且功能更强大。这里YouTube上有个极炫酷的视频：
++ [[https://www.youtube.com/watch?v=jNa3axo40qM][Emacs Rocks! Episode 13: multiple-cursors]]
+
+安装方法：
+#+BEGIN_SRC emacs-lisp
+M-x package-install multiple-cursors
+(require 'multiple-cursors)
+#+END_SRC
+
+常用指令：
+| 指令                       | 功能 | 备注 |
+|----------------------------+------+------|
+| mc/mark-next-like-this     |      |      |
+| mc/mark-previous-like-this |      |      |
+| mc/mark-all-like-this      |      |      |
+
+** CEDET
++ [[http://cedet.sourceforge.net/speedbar.shtml][CEDET主页]]
+** TODO GCCSense
++ [[http://cx4a.org/software/gccsense/][GCCSense主页]]
+据说比CEDET更牛，是
+** yasnippet
+** GNU GLOBAL source code tagging system
+Emacs下自带etags，但是 [[http://www.gnu.org/software/global/][GNU GLOBAL]] 貌似更加强大。这里有个 [[https://github.com/OpenGrok/OpenGrok/wiki/Comparison-with-Similar-Tools][各大tag工具的比较]] 。
+** Google代码风格插件
++ [[http://google-styleguide.googlecode.com/svn/trunk/][google-c-style.el]]
+
+
