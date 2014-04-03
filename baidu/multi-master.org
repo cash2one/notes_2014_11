@@ -342,6 +342,8 @@ ConfigManager的可选的Master列表是通过调用 *ListAllAliveMaster()* 接�
 *** 加载历史分配结果
 每当ConfigManager抢到ZK上的节点后，则会重新从ZK加载历史分配结果。每当触发任务重新
 分配时，会将分配结果写到ZK。
+*** 更新任务分配map和节点ip map的时机
+我在每轮重新分配任务时，都更新一下这两个map。
 *** ConfigManager的主循环
 在当前的定期轮询模式下的主循环设计：
 1. 获取日志模块id的全集（直接从ConfigManager维护的map中取）
