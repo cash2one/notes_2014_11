@@ -97,6 +97,19 @@ export LOGNAME=zhongyi
 1. 用su来切换用户，环境变量改变不彻底。
 2. emacs根据 *LOGNAME* 来决定加载哪个.emacs.d/。
 
+* Mode Hooks
+我们不希望安装的每一个插件在每一种模式下都被加载，因为这样会带来不必要
+的开销，让我们的Emacs越来越慢。我们希望Emacs提供 *让插件在指定模式下加
+载，而在其他模式下不加载* 的功能。
+
+很显然，Emacs提供了这样的功能。语法如下：
+#+BEGIN_SRC emacs-lisp
+(add-hook 'c++-mode-hook 'linum-mode)
+#+END_SRC
+上面的语句实现了再C++模式下开启行号显示。
+
+参考：
++ [[http://www.emacswiki.org/emacs/ModeHooks][ModeHooks (Emacs Wiki)]]
 
 * 学习回顾
 ** 成为Emacs用户 <2014-02-20 四>

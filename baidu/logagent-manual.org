@@ -1,4 +1,5 @@
 #+TITLE: Logagent用户手册
+#+DATE: 2014-04-03
 
 * Logagent简介
 Logagent是一个调用Bigpipe API向Bigpipe发布单机上的日志文件的程序。
@@ -37,9 +38,39 @@ bmq_persist_path: ./persist_path
 #+END_SRC
 
 
-* Logagent异常处理
+* 测试版Logagent的异常处理
 ** FATAL
 这是老版Logagent在使用公司Configure库时再配置文件里面配了 *[@* 导致的，不用管它。
+
+* 线上版Logagent的异常处理
+** 如何重启线上Logagent？
+（首先得要有节点的OP权限）点击 *数据管理平台* -> *日志查看修改* ，找到你的日志下
+载。
+
+[[./img/logagent-manual-1.png]]
+
+然后点击 *基本操作* 进入到 *下载任务* 页面。
+
+[[./img/logagent-manual-2.png]]
+
+在 *下载任务* 页面，选中想要重启的机器，再点击 *批量重启* 。即可实现批量重启。
+
+[[./img/logagent-manual-3.png]]
+
+* FAQ
+*Q:* 我们的日志路径是这样的 /home/work/xxx/20140403/warning.log，那该配置Logagent的日
+志目录和名称呢？
+
+*A:* Logagent支持递归扫子目录。假设你的切割方式是：每天的日志切割到以当天日期命名的子
+目录里，并以warning.log为名字，则可以这样配置：
+
+[[./img/logagent-manual-4.png]]
+
+Q：一个Logagent支持同时发布两个日志源码？
+
+A：不支持！一个Logagent不能通知追踪发布两个日志源，这样会导致发布错乱，数据重复等
+严重问题。如果有两个发布源要发布到同一个pipename里面，则需要在找OP审核时明确地告
+诉OP第二个发布源发布到第一个发布源的pipename里面。
 
 
 * 订阅失败

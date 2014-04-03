@@ -3,16 +3,16 @@
 
 * 前言
 2010年上操作系统课时，我第一次接触Vim。2011年暑假在腾讯实习时，我第一次用Vim来工
-作。2013年下半年，我花了很大的功夫让自己掌握了Vim这个强大的编辑器，并成为了 *别人
-眼中的Vim高手* 。2013年末，我开始学习Emacs，并在春节前后掌握了Org-mode，然后将自
-己除了C/C++、Python代码编写之外的所有编辑工作都切换到Emacs。而现在，我决定将我的
-所有编码工作也转向Emacs。我作此决定的原因如下：
+作。2013年下半年，我花了很大的功夫让自己掌握了Vim这个强大的编辑器，并成为了 *所谓
+的Vim高手* 。2013年末，我开始学习Emacs，并在春节前后掌握了Org-mode，然后将自己除
+了C/C++、Python代码编写之外的所有编辑工作都切换到Emacs。而现在，我决定将我的所有
+编码工作也转向Emacs。我作此决定的原因如下：
 1. *Emacs下的Org-mode是我迄今见过的最成熟最完备的工具* ，我相信Emacs下类似的工具还有
    不少。
 2. *Emacs下能完美地模拟Vim* 。作为当前最高效的一套编辑理念，Vim之魂不会丢，而是会融
    入Emacs这个操作系统里。
 3. 我一直对 *函数式编程* 很感兴趣，Emacs lisp给了我一个切入点。
-4. Vim，Vim插件以及Vimscript本身基本上都一些瑕疵和局限的。
+4. Vim，Vimscript以及各种Vim插件基本上都一些瑕疵和局限的。
 
 * 资料搜集
 ** 文章
@@ -21,6 +21,7 @@
 + [[http://blog.csdn.net/karotte/article/details/6990031][将Emacs配置成一个C/C++的IDE编程环境]]
 + [[http://steckerhalter.co.vu/steckemacs.html][Steckemacs's Emacs（很新颖）]]
 + [[http://www.zhihu.com/question/20833433][如何优雅的使用emacs？（介绍了一些插件）]]
++ [[https://github.com/redguardtoo/emacs.d][redguardtoo / emacs.d (GitHub)]]
 
 ** 视频
 + [[https://www.youtube.com/watchv%3DjNa3axo40qM&index%3D6&list%3DPLOsWiPRBpcoRdRK1xXEs6wfTnGa0DWS9b][Emacs Rocks! Episode 13: multiple-cursors]]
@@ -43,6 +44,84 @@
 一个字，给力！将Vim中除了Vimscript外的所有的功能都搬过来了，包括多buffer，文本对
 象，:%s正则替换等各种Vim高级功能。
 
+*** 基础改造
+我开始着手对evil-mode的改造，期望能将Vim的精髓和Emacs的精髓完美地集合到一起。在通
+过 *C-h i* 翻阅了evil的文档后，我在我的.emacs里加入了下面三行：
+#+BEGIN_SRC emacs-lisp
+(add-hook 'evil-insert-state-entry-hook 'evil-emacs-state)                       
+(define-key evil-emacs-state-map (kbd "C-[") 'evil-normal-state)                   
+(define-key evil-visual-state-map (kbd "i") 'evil-emacs-state)  
+#+END_SRC
+
+第一行的作用： *加入一个钩子函数，当Emacs进入evil-insert状态后，立刻进入
+evil-emacs状态* 。 通过这行，我完全屏蔽了evil-insert状态，而是以evil-emacs状态
+（也就是普通的Emacs编辑模式）取代之。我认为Vim的insert模式是Vim的糟粕，没有提供方
+便的移动光标和简单编辑的功能，只能切到normal模式进行这类操作。相对而言，Emacs的编
+辑模式就好很多。
+
+第二行的作用： *当我处于evil-emacs状态时，可以通过 C-[ 直接进入evil-normal状态* 。
+evil-normal状态（也极是Vim的Normal模式）是Vim的精髓。
+
+第三行的作用： *当我处于evil-visual状态时，按 i 可以直接进入evil-emacs状态* 。这
+样，我可就可以在evil-visual模式下快速选中我想要的文本，然后开启 *多重光标* 功能（下面
+有介绍），并进入evil-emacs状态，然后开始炫酷的多重编辑。
+
+*** 多窗口改造
+我将我在Vim下最爱的多窗口相关的快捷键也弄到evil下面了：
+#+BEGIN_SRC emacs-lisp
+(define-key evil-normal-state-map (kbd "C-j") 'evil-window-down)                                       
+(define-key evil-normal-state-map (kbd "C-k") 'evil-window-up)                                         
+(define-key evil-normal-state-map (kbd "C-h") 'evil-window-left)                                       
+(define-key evil-normal-state-map (kbd "C-l") 'evil-window-right)                                      
+(define-key evil-normal-state-map (kbd "M-9") 'evil-window-decrease-width)                             
+(define-key evil-normal-state-map (kbd "M-0") 'evil-window-increase-width)                             
+(define-key evil-normal-state-map (kbd "M--") 'evil-window-decrease-height)                            
+(define-key evil-normal-state-map (kbd "M-=") 'evil-window-increase-height)   
+#+END_SRC
+
+副作用：
+#+BEGIN_EXAMPLE
+1. 无法在evil-normal状态下通过 C-h i 来查看文档了。
+2. 在evil-emacs状态下，这些快捷无效。
+#+END_EXAMPLE
+
+*** 寻求从Insert状态回到Normal状态的更好方法
+在Vim中，我寻找了很久，最终从Steve Losh那里学到了将kj给imap成<esc>的方法：
+#+BEGIN_SRC 
+" DO NOT use <esc>!
+inoremap kj <esc>
+#+END_SRC
+
+切换成Emacs并使用起evil-mode后，我发现我无法将kj通过kdb来映射成
+evil-normal-state。只到我刻意地从StackOverflow上搜索，终于在这里找到了解决方法：
++ [[http://stackoverflow.com/questions/10569165/how-to-map-jj-to-esc-in-emacs-evil-mode][How to map “jj” to Esc in emacs Evil mode]]
+
+我需要安装一个叫做 *key-chord* 的插件，并在配置中加入下面几行，Vim的手感就回来了！
+#+BEGIN_SRC emacs-lisp
+(setq key-chord-two-keys-delay 0.1)
+(key-chord-define evil-insert-state-map "kj" 'evil-normal-state)
+(key-chord-mode 1)
+#+END_SRC
+
+遗留问题：
+#+BEGIN_EXAMPLE
+通过外部的粘贴复制进来的字符串中含有kj的话，会出问题。我看了下，我的Vim也有这个问题，但是从来没对我产生影响，看来不足为虑。
+#+END_EXAMPLE
+
+*** 继续深造
++ [[http://stackoverflow.com/questions/8483182/emacs-evil-mode-best-practice][Emacs: Evil Mode best practice?]]
+** evil-nerd-commenter
++ [[https://github.com/redguardtoo/evil-nerd-commenter][redguardtoo / evil-nerd-commenter (GitHub)]]
+
+该插件在Emacs里复刻了Vim的经典的NERD_commentor插件（我已经给作者点赞），我照着
+Readme的配置复制了下就好了（Vim的手感回来了一些）
+** evil-matchit
+与evil-nerd-commenter是同一个作者的作品。
++ [[https://github.com/redguardtoo/evil-matchit][redguardtoo / evil-matchit]]
+
+我按照Readme的配置试了下，发现是可以进行跳转的，但是有一些小瑕疵，而且覆盖了Vim原
+来的 *%* 的功能了。所以我暂时先禁用掉，有时间向作者提个issue。
+
 ** Multiple Cursors（多重光标）
 Sublime Text有个很炫酷的功能，就是鼠标中键调出多重光标的功能。Emacs其实也可以通过
 [[https://github.com/magnars/multiple-cursors.el][multiple-cursors.el插件]] 来支持，而且功能更强大。这里YouTube上有个极炫酷的视频：
@@ -61,15 +140,274 @@ M-x package-install multiple-cursors
 | mc/mark-previous-like-this |      |      |
 | mc/mark-all-like-this      |      |      |
 
+** Auto Complete
+auto-complete这个插件很有名。
++ [[http://cx4a.org/software/auto-complete/manual.html][Auto Complete Mode User Manual]]
+
+*** 安装
+#+BEGIN_SRC sh
+M-x package-install auto-complete
+#+END_SRC
+
+*** 配置
+我照着别人的配置，加了下面几行，auto-complete就可用了。
+#+BEGIN_SRC emacs-lisp
+(require 'auto-complete)                                                                               
+(require 'auto-complete-config)                                                                        
+(add-to-list 'ac-dictionary-directories "~/.emacs.d/ac-dict")                                          
+(ac-config-default)                                                                                    
+(global-auto-complete-mode t)
+#+END_SRC
+
+*** 用法
+| Key       | Command     | 作用       |
+|-----------+-------------+------------|
+| TAB, C-j  | ac-expand   | 补全（小） |
+| RET, C-m  | ac-complete | 补全（大） |
+| down, M-n | ac-next     | 选择下一个候选词 |
+| up, M-p   | ac-previous | 选择上一个候选词 |
+| C-?, F1   | ac-help     | 查看帮助         |
+
+** Auto Complete Clang
++ [[https://github.com/brianjcj/auto-complete-clang][brianjcj / auto-complete-clang (GitHub)]]
+这是我非常期待的一个插件，我的C/C++补全就指望它了。我照着：
+[[http://zarzen.diandian.com/post/2012-12-18/40046907672][emacs+auto-complete-clang的自动补全]] ，随便粘贴点配置，发现已经可用了，赞！以后我
+要搞清楚这些配置项的作用。
+
 ** CEDET
 + [[http://cedet.sourceforge.net/speedbar.shtml][CEDET主页]]
+** ecb
+Emacs Code Browser
+** js2-mode
++ [[http://elpa.gnu.org/packages/js2-mode.html][GNU ELPA - js2-mode]]
++ [[http://blog.binchen.org/p%3D901][Why Emacs is a better editor – case study for JavaScript developer]]
+我安装了js2-mode，然后又安装了 helm （imenu不用安装，是Emacs自带的）。
+#+BEGIN_SRC emacs-lisp
+M-x package-install js2-mode
+M-x package-install helm
+#+END_SRC
+
+然后加上如下配置：
+#+BEGIN_SRC emacs-lisp
+;; js2-mode                                                                                         
+(add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))                                             
+(add-hook 'js-mode-hook 'js2-minor-mode)                                                            
+(add-to-list 'interpreter-mode-alist '("node" . js2-mode))                                          
+                                                                                                    
+(require 'helm-config)                                                                              
+(js2-imenu-extras-mode)  
+#+END_SRC
+
+然后进入随意一个js文件， *M-x helm-imenu* 后，就能显示类似于Vim的Tagbar的小窗口来
+方便跳转。比Vim的Tagbar强的地方在于这里可以直接搜索，而不用再按搜索键（Vim中是/）。
+设想一下Eclipse的招牌功能 *Quick Outline* 功能吧，Emacs通过 *imenu + helm* 也可以
+做到。
+
+js2-mode已经实现了 *将Javascript代码解析成AST（抽象语法树）* 了，因此分析得非常精
+准。下图展示了 *js2-mode + helm + imenu* 三者结合的效果。
+
+[[./img/emacs-as-an-ide-1.png]]
+
+** web-mode
+看了 [[http://www.zhihu.com/question/21943533][有哪些是必备的emacs扩展？（知乎）]] ，有一位Emacs高手推荐了web-mode，我研究了一下，
+发现它很强大，支持各种Web模板的语法高亮，HTML跳转等。留着以后研究。
++ [[http://web-mode.org/][web-mode.el]]
+
 ** TODO GCCSense
 + [[http://cx4a.org/software/gccsense/][GCCSense主页]]
 据说比CEDET更牛，是
 ** yasnippet
+Emacs下非常有名的插件，作者是国人，名叫 [[http://freemind.pluskid.org/][pluskid]] 。
+
+安装和配置
+#+BEGIN_SRC emacs-lisp
+M-x package-install yasnippet
+(require 'yasnippet)
+(yas-global-mode 1)
+#+END_SRC
+
+Yasnippet内置了各种语言的非常多的snippet，我试了一下还行，应该能达到Vim上
+code_complete的好用度。
+
+*** 写自己的snippets
++ [[http://capitaomorte.github.io/yasnippet/snippet-development.html][Writing snippets]]
+
+目前遗留一个问题：
+#+BEGIN_EXAMPLE
+yasnippet 与 auto-complete 经常发生冲突！
+#+END_EXAMPLE
+
+** window-numbering
++ [[https://github.com/nschum/window-numbering.el][nschum / window-numbering.el (GitHub)]]
+
+该工具的功能是 *自动为窗口编号* ，然后通过 M-数字键 来跳转到相应的窗口。
+
+简单配置：
+#+BEGIN_SRC emacs-lisp
+(require 'window-numbering)                                                                         
+(window-numbering-mode 1)  
+#+END_SRC
+
+** smex
++ [[https://github.com/nonsequitur/smex][nonsequitur / smex]]
+Smex插件增强了 M-x 功能。
+#+BEGIN_QUOTE
+Smex is a M-x enhancement for Emacs. Built on top of Ido, it provides a
+convenient interface to your recently and most frequently used commands. And to
+all the other commands, too.
+#+END_QUOTE
+
+安装配置（照抄Readme）：
+#+BEGIN_SRC emacs-lisp
+(require 'smex) ; Not needed if you use package.el                                                  
+(smex-initialize) ; Can be omitted. This might cause a (minimal) delay                              
+                  ; when Smex is auto-initialized on its first run.                                 
+(global-set-key (kbd "M-x") 'smex)                                                                  
+(global-set-key (kbd "M-X") 'smex-major-mode-commands)                                              
+;; This is your old M-x.                                                                            
+(global-set-key (kbd "C-c C-c M-x") 'execute-extended-command)  
+#+END_SRC
+
+** winner-mode（自带）
+*针对窗口（window）* 的undo/redo的功能。设想一下这样的工作场景：在多窗口下，选中
+一个窗口，并通过 *C-x 1* 将窗口最大化，来专注地编辑，编辑完后，通过winner-mode重
+新回到之前的多窗口。
+
+#+BEGIN_EXAMPLE
+winner-mode默认的快捷键是C-c <left>/<right>，与我的org-mode的设置TODO的快捷键冲突。
+#+END_EXAMPLE
+
 ** GNU GLOBAL source code tagging system
 Emacs下自带etags，但是 [[http://www.gnu.org/software/global/][GNU GLOBAL]] 貌似更加强大。这里有个 [[https://github.com/OpenGrok/OpenGrok/wiki/Comparison-with-Similar-Tools][各大tag工具的比较]] 。
+
+我了解了下，发现Emacs有两个相关插件：gtags.el 和 ggtags.el。试了一下，发现后者的
+功能更高级一些。
+
+我又发现了 helm-gtags.el ，安装后发现也不错， *还支持helm风格的窗口* 。
+
+总结一下，这三个插件相互独立，都实现了通过GNU GLOBAL进行tag跳转的功能，都能替代
+Vim下的 ctags + cscope （除了gtags.el插件有点原生态，毕竟它是GNU官方提供的嘛嘿
+嘿）。这三者我更倾向于 helm-gtags。下面是这三个插件的地址：
++ [[http://www.gnu.org/software/global/globaldoc_toc.html#Emacs-editor][Extended Emacs using GLOBAL (gtags-mode)]]
++ [[https://github.com/leoliu/ggtags][leoliu / ggtags]]
++ [[https://github.com/syohex/emacs-helm-gtags][syohex / emacs-helm-gtags]]
+
+*** TODO 需要写一个调用gtags来生成和更新gtags文件的工具
+可以参考 [[https://github.com/redguardtoo/emacs.d/blob/master/init-gtags.el][redguardtoo / emacs.d / init-gtags.el]] 。
+
+** helm
+helm是一个递增式的补全和收缩选择范围的框架。
+#+BEGIN_QUOTE
+Helm is incremental completion and selection narrowing framework for Emacs. It
+will help steer you in the right direction when you're looking for stuff in
+Emacs (like buffers, files, etc)
+#+END_QUOTE
++ [[https://github.com/emacs-helm/helm][emacs-helm / helm]]
+
+简单配置
+#+BEGIN_SRC emacs-lisp
+(require 'helm-config)
+(global-set-key (kbd "C-c h") 'helm-mini) 
+#+END_SRC
+
+输入 C-x h 后就能见识helm了，会弹出一个交互式的小窗口用来选择buffer，并能通过
+pattarn来进行 *selection narrowing* 。当然这只是helm用于buffer的一个小应用，helm
+的应用极为广泛，而且能与其他各种插件组合在一起，来漂亮地解决 *文本编辑* 领域的各
+种问题。
+
+** flymake
+Flymake能够实时检查代码的语法错误并给出提示。下面有演示：
++ [[http://my.oschina.net/chen106106/blog/51150][emacs插件flymake快速检查语法错误(C/C++,python,java,perl等语言)]]
+
+我拿flymake在CMake做个尝试，我根据下面的文章和工具：
++ http://wiki.opencog.org/w/Flymake_help
++ https://github.com/seanfisk/cmake-flymake
+
+折腾一番后，终于让flymake在我的Emacs下生效了。但可能是因为我用的是Mac Terminal下
+的Emacs，我没看到错误提示。
+
+这时，我在 [[http://stackoverflow.com/questions/14088940/how-to-enable-flymake-display-err-menu-for-current-line-in-terminal-for-emacs][How to enable `flymake-display-err-menu-for-current-line` in terminal
+for emacs?]] 一文的提示下，开始研究flycheck。
+
+** flycheck
++ [[https://github.com/flycheck/flycheck][flycheck / flycheck]]
++ [[http://flycheck.readthedocs.org/en/latest/flycheck-versus-flymake.html][Flycheck versus Flymake]]
+
+上面这篇比较把flymake往死里黑，我很欣赏，因为flymake是到现在为止第一个让我不爽的
+Emacs插件。
+
+Flymake的使用确实如宣传得那样方便。我在.emacs中加入下面一行就可以使用了。
+#+BEGIN_SRC emacs-lisp
+(add-hook 'after-init-hook 'global-flycheck-mode)
+#+END_SRC
+
+Flycheck支持非常多的语言， [[http://flycheck.readthedocs.org/en/latest/manual/languages.html][有39种]] 。针对某种语言，需要额外安装相应的 *Syntax
+Checker* 。例如C/C++，我们需要安装clang。由于Max下默认的编译器前端就是clang，所以
+*我不需要做任何配置* ，就可以直接使用flycheck，这点比flymake好一万倍。
+
+** flyspell
+用来做拼写检查的，以后研究。
+** Project in Emacs
+研究了一下，发现Emacs上没有一个人人认可的project插件，Emacs wiki列出的一堆插件也
+没找到特别合用的，所以先放放。
++ [[http://www.emacswiki.org/emacs/CategoryProject][CategoryProject (Emacs Wiki)]]
+
 ** Google代码风格插件
 + [[http://google-styleguide.googlecode.com/svn/trunk/][google-c-style.el]]
 
+** projectile
++ [[https://github.com/bbatsov/projectile][bbatsov / projectile]]
+Projectile 是Emacs的一个项目交互的库。它的目标是在不引入外部依赖的前提
+下，提供一系列 *项目级别* 的操作。
 
+我先让它在C++的模式下启动:
+#+BEGIN_SRC emacs-lisp
+(add-hook 'c++-mode-hook 'projectile-mode)
+#+END_SRC
+
+了解了下它提供的功能，感觉还挺丰富的：
+#+BEGIN_EXAMPLE
+projectile-ack                         projectile-ag
+projectile-cache-current-file          projectile-cleanup-known-projects
+projectile-clear-known-projects        projectile-commander
+projectile-compile-project             projectile-dired
+projectile-display-buffer              projectile-find-dir
+projectile-find-dir-other-window       projectile-find-file
+projectile-find-file-in-directory      projectile-find-file-other-window
+projectile-find-implementation-or-test-other-window
+projectile-find-tag                    projectile-find-test-file
+projectile-global-mode                 projectile-grep
+projectile-invalidate-cache            projectile-kill-buffers
+projectile-mode                        projectile-multi-occur
+projectile-project-buffers-other-buffer projectile-purge-dir-from-cache
+projectile-purge-file-from-cache       projectile-recentf
+projectile-regenerate-tags             projectile-remove-known-project
+projectile-replace                     projectile-run-command-in-root
+projectile-save-project-buffers        projectile-switch-project
+projectile-switch-to-buffer            projectile-switch-to-buffer-other-window
+projectile-test-project
+projectile-toggle-between-implementation-and-test
+projectile-vc                          projectile-version
+#+END_EXAMPLE
+
+*** helm-projectile
+helm-projectile 是projectile的附属插件，提供了helm风格的交互式窗口。
+** magit
+Magit封装了Git，并为Emacs用户提供了非常美好的使用接口。
++ [[https://github.com/magit/magit][magit / magit]]
++ [[http://www.masteringemacs.org/articles/2013/12/06/introduction-magit-emacs-mode-git/][AN INTRODUCTION TO MAGIT, AN EMACS MODE FOR GIT]]
+
+*** 最小用法
+1. M-x magit-status，调出status窗口。
+2. 对那些那些 *unstaged* 的文件按 *s* 执行staging。
+3. 按 *c* 
+* 构建我的Emacs插件体系
+研究了一段时间Emacs的插件后，下面我开始搭建自己的插件体系，并要在清明节
+后应用到我的生产环境中。
+
+** 插件结构
+我研究了下几个著名的.emacs.d，发现他们的插件结构都是将各个插件的配置放
+到init-xxx.el中，然后将对init-xxx.el的引用（require）放到init.el中。我
+也准备这样搞。
+
+** 

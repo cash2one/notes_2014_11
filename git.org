@@ -1,3 +1,7 @@
+#+TITLE: Git
+#+DATE: 2014-02-11
+
+
 * 小技巧
 ** 查看代码库中所有org类型文件的改动情况
 假设目录深度最多为2，那么可以这么写：
@@ -9,6 +13,14 @@ git st *.org */*.org
 git branch -r
 ** Checkout远程分支
 git checkout -r origin/xxx
+** 新建仓库并与远程分支同步
+步骤：
+1. git init （如果本地仓库还没建好的话）
+2. git remote add origin https://github.com/elvestar/emacs.d.git
+3. git checkout -b master
+4. git checkout master （此时才会自动将本地master与远程master关联起来）
+5. git pull
+
 * Git的GUI工具
 ** SourceTree
 [[http://www.sourcetreeapp.com/images/sourcetree_hero_mac_full_interface.png]]

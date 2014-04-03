@@ -342,6 +342,8 @@ ConfigManager的可选的Master列表是通过调用 *ListAllAliveMaster()* 接�
 *** 加载历史分配结果
 每当ConfigManager抢到ZK上的节点后，则会重新从ZK加载历史分配结果。每当触发任务重新
 分配时，会将分配结果写到ZK。
+*** 更新任务分配map和节点ip map的时机
+我在每轮重新分配任务时，都更新一下这两个map。
 *** ConfigManager的主循环
 在当前的定期轮询模式下的主循环设计：
 1. 获取日志模块id的全集（直接从ConfigManager维护的map中取）
@@ -357,6 +359,30 @@ ConfigManager的可选的Master列表是通过调用 *ListAllAliveMaster()* 接�
    3) 将id分给负载最轻的Master
    4) 更新Master的负载情况
 6. 将Master的分配情况重新写入ZK（只写分配发生改变的Master）
+
+*** TODO 新想法：分配信息全部放到一个节点中
+ConfigManager分配好传输任务后，将各Master的传输任务全部序列化好放到一个
+ZK节点。这样的好处有：
+1. 每个Master都拥有全局的分配信息，不需要问CentralMaster就能将某日志的
+   所属Master返回给Agent。
+2. 由于是写一个节点，故不会发生元信息不一致的情况。。
+
+粗略估计一下，假设以后日志有10W份（这是一个合理的极限值），而ZK节点建议
+的数据大小是1M，算起来是勉强够用的。假如以后不够用，也不用怕，我们可以
+分多节点存，只要加一个分布式锁就好了。
+
+*** TODO 新想法：分配信息中带有分配时间，和日志配置的LogConfig的修改时间
+这样的好处有：
+1. 可以轻易地知道某日志分配给某Master的时间，方便排查问题。
+2. FlowManager根据LogConfig的修改时间就能确认某日志是否发生供
+   UpdateLogConfig，而不用每次都访问/minos/log-config来取，减少了开销。
+
+*** 完成单测
++ GetAllLogModuleIds()
++ GetAllocatedLogModuleIds()
++ WriteAllAllocationResultToMinosMeta()
++ WriteAllocationResultToMinosMeta
++ QueryMasterIdNoLock()
 
 ** 第三轮：提供给Agent查询接口
 Agent在Master的BNS
@@ -378,6 +404,7 @@ message QueryMasterAddressResponse {
 #+END_SRC
 
 ** 第四轮：多机情况下的监控和统计
+
 
 		   
 		   

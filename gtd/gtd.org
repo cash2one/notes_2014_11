@@ -186,6 +186,8 @@
    - State "DONE"       from "WAITING"    [2014-02-17 一 23:16]
    - State "WAITING"    from "TODO"       [2014-02-12 三 20:50]
 * Learn
+** TODO 发现一个 [[http://eschulte.github.io/emacs24-starter-kit/][新的org.css]] ，有空研究
+** TODO 研究percol工具
 ** TODO 搞定Emacs as an IDE
    SCHEDULED: <2014-04-05 六>
 ** TODO 学习DataTable
