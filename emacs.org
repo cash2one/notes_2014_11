@@ -111,6 +111,18 @@ export LOGNAME=zhongyi
 参考：
 + [[http://www.emacswiki.org/emacs/ModeHooks][ModeHooks (Emacs Wiki)]]
 
+* 检测Emacs是在终端下启动还是GUI下启动
+有些配置在终端下会导致启动失败，例如字体设置等。为了能让配置在终端和
+GUI两种情况兼容，可以利用window-system这个Emacs内置变量来做检测。
+配置方法如下：
+#+BEGIN_SRC emacs-lisp
+(if window-system
+  (set-default-font "Monaco 14")
+)
+#+END_SRC
+
+我试了一下，不OK！
+
 * 学习回顾
 ** 成为Emacs用户 <2014-02-20 四>
 我从13年12月31日开始学习Emacs，断断续续学到现在，已经是Emacs入门了。我已经掌握
