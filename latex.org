@@ -1,6 +1,44 @@
-* 文章搜集
+#+TITLE: Latex
+#+DATE: 2014-04-07
+
+* 资料搜集
 + [[http://cs2.swfu.edu.cn/~wx672/lecture_notes/linux/latex/latex_tutorial.html][Emacs + LaTeX 快速上手]]
-
-hehehehehehe``i
 * MacTex
 在主页： http://tug.org/mactex/ 下载，安装后大小为4.33G，这个有点太大了。
+* 中文
+* 问题记录
+** 安装好MacTex后，无法找到latex
+显示结果为：
+#+BEGIN_SRC sh
+bin/sh: latex: command not found
+#+END_SRC
+
+我搜索了一下，找到了答案：  [[http://my.oschina.net/rockbaby/blog/171296][mactex 配置emacs和auctex]] 。原来是安装好MacTex后，没
+有设置PATH，导致Terminal无法使用latex等binary。于是修改了~/.zshrc的PATH变量为：
+#+BEGIN_SRC sh
+export PATH="/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/texbin"
+#+END_SRC
+然后执行 *source ~/.zshrc* ，于是latex等一系列binary都可用了。
+** 通过Emacs.app启动Emacs无法找到latex
+通过设置PATH，解决了终端中的Emacs调用latex的问题，但是通过GUI也就是Emacs.app的方
+式来编写LaTex仍然提示找不到latex。我修改了下设置，重启后无效！
+
+[[./img/latex-1.png]]
+
+我搜索了一下，发现解法： [[http://blog.csdn.net/pfanaya/article/details/7669211][Emacs 修改exec-path]] 。于是我在我的~/.emacs.d/init.el中
+设置了exec-path。
+#+BEGIN_SRC emacs-lisp
+(setq exec-path (append exec-path '("/usr/texbin")))
+#+END_SRC
+
+但是我发现， *问题仍然没有解决！*
+
+看来，我只能现在按时用临时解法：
+#+BEGIN_EXAMPLE
+在终端中通过 /Applications/Emacs.app/Contents/MacOS/Emacs 来启动Emacs.app。
+#+END_EXAMPLE
+
+* 回顾
+** 构建Emacs + LaTex的写作环境遇到不少坑 <2014-04-07 一>
+折腾了许久，还是无法在Emacs.app中写Latex。我不想耽搁太久，所以我先直接在终端里用
+Emacs写Latex，同时开另外一个终端专门用来通过xelatex将LaTex编译成PDF。

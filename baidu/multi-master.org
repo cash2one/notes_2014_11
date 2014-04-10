@@ -18,20 +18,21 @@ Master多机化的新增特性非常多，如支持扩容缩容，分配传输�
 3. 这是个 *重构* 原有代码和原有单测的好机会
 
 ** 第一步：抽取ConfigManager和FlowManager
-从当前Master中抽取出ConfigManager和FlowManager来。让ConfigManager接管所有日志的新
-增/修改/删除，以及为FlowManager分配日志传输任务的功能。让FlowManager只管理被
-ConfigManager分配的日志模块。有几点要注意：
-1. ConfigManager通过写FlowManager所在机器再ZK上的节点（以ip:port命名）来告知其管
-   理的日志模块id列表
+从当前Master中抽取出ConfigManager和FlowManager来。让ConfigManager接管所
+有日志的新增/修改/删除，以及为FlowManager分配日志传输任务的功能。让
+FlowManager只管理被ConfigManager分配的日志模块。有几点要注意：
+1. ConfigManager通过写FlowManager所在机器再ZK上的节点（以ip:port命名）
+   来告知其管理的日志模块id列表
 1. FlowManager任然可以获取日志配置，但是它只能获取它所管理的日志的配置
-2. MinosMeta要提供一个新接口，能获取ConfigManager分配给某个FlowManager的日志模块
-   的id列表
-3. FlowManager的各种管理操作：包括Update（传输流的新建/修改/销毁），Save（更新
-   Checkpoint到HDFS），Fallback（处理故障节点），Notify（通知下游数据系统），报警
-   （传输延时的报警）都只调用FlowManager暴露出来的获取日志模块id的列表
+2. MinosMeta要提供一个新接口，能获取ConfigManager分配给某个FlowManager
+   的日志模块的id列表
+3. FlowManager的各种管理操作：包括Update（传输流的新建/修改/销毁），
+   Save（更新Checkpoint到HDFS），Fallback（处理故障节点），Notify（通知
+   下游数据系统），报警（传输延时的报警）都只调用FlowManager暴露出来的
+   获取日志模块id的列表
 
-这样改造后，能将Master的大部分针对传输流的管理操作做到与Master多机化无关，从而降
-低风险。改造后，Master的架构大致如下：
+这样改造后，能将Master的大部分针对传输流的管理操作做到与Master多机化无
+关，从而降低风险。改造后，Master的架构大致如下：
 
 ##+begin_src ditaa :file multi-master-1.png
 	     +---------------+	             +--------------+
@@ -53,16 +54,17 @@ ConfigManager分配的日志模块。有几点要注意：
 ##+end_src
 
 ** 第二步：CentralMaster初现，支持静态分配日志传输任务，初步实现Master多机化
-完成将ConfigManager与FlowManager从Master中的抽取后，下面的工作可以不再与
-FlowManager耦合，而是只与ConfigManager耦合。下面要使CentralMaster的设计在Minos系
-统中成型。
+完成将ConfigManager与FlowManager从Master中的抽取后，下面的工作可以不再
+与FlowManager耦合，而是只与ConfigManager耦合。下面要使CentralMaster的设
+计在Minos系统中成型。
 
-本期会初步实现Master的多机化，但是 *只支持静态分配传输任务* ，即分配传输任务只发
-生在新建日志传输的时候。同时，本期会支持简单的 *负载均衡策略* 。
+本期会初步实现Master的多机化，但是 *只支持静态分配传输任务* ，即分配传
+输任务只发生在新建日志传输的时候。同时，本期会支持简单的 *负载均衡策
+略* 。
 
-CentralMaster在整个Minos系统中是唯一的，并且只有它才又权限管理日志配置，以及分配
-传输任务。需要要保证它的唯一性（通过在ZK节点上写入自己的ip:port），以及高可用性
-（通过主从切换）。
+CentralMaster在整个Minos系统中是唯一的，并且只有它才又权限管理日志配置，
+以及分配传输任务。需要要保证它的唯一性（通过在ZK节点上写入自己的
+ip:port），以及高可用性（通过主从切换）。
 
 相应地，普通Master也要做好随时升级为CentralMaster的准备。
 
@@ -81,12 +83,12 @@ MinosMeta需要增加下面接口：
 
 *** 将CheckpointAccessor从MinosMeta中抽取出去
    SCHEDULED: <2014-03-13 四>
-在编码之前，我要先把CheckpointAccessor从MinosMeta中抽取出去，让FlowManager直接调
-用CheckpointAccessor来管理传输流的Checkpoint，而不是通过MinosMeta。从此后，
-Checkpoint将不再是Minos元数据了，MinosMeta中LogFlow相关的接口也一并删除。
+在编码之前，我要先把CheckpointAccessor从MinosMeta中抽取出去，让FlowManager直
+接调用CheckpointAccessor来管理传输流的Checkpoint，而不是通过MinosMeta。从此
+后，Checkpoint将不再是Minos元数据了，MinosMeta中LogFlow相关的接口也一并删除。
 
-我调查了一下，发现改造代价很小，因为之前我将传输流Checkpoint相关的处理全部封装在
-FlowManager的三个函数里面：
+我调查了一下，发现改造代价很小，因为之前我将传输流Checkpoint相关的处理全部封
+装在FlowManager的三个函数里面：
 #+begin_src cpp
 bool ReloadLogFlow(int log_module_id);
 bool SaveLogFlow(int log_module_id, bool is_new) const;
@@ -376,6 +378,44 @@ ZK节点。这样的好处有：
 1. 可以轻易地知道某日志分配给某Master的时间，方便排查问题。
 2. FlowManager根据LogConfig的修改时间就能确认某日志是否发生供
    UpdateLogConfig，而不用每次都访问/minos/log-config来取，减少了开销。
+
+但是改造代价还是比较大的，需要改动一个基础数据结构：
+从：
+#+BEGIN_SRC cpp
+typedef std::map<std::string, std::set<int> > AllocationMap;
+#+END_SRC
+改为：
+#+BEGIN_SRC cpp
+message LogModuleInfo {
+    required int32 log_module_id = 1;
+    required int64 allocated_time = 2;
+    required int64 last_update_config_time = 3;
+}
+typedef std::map<std::string, std::map<int, LogModuleInfo> > AllocationMap;
+#+END_SRC
+
+*** FlowManager获取全局分配信息（只读）
+FlowManager在内存中也维护者一份AllocationMap，每次FlowManager调用
+UpdateAllLogFlows时，都会从ZK上的/minos/allocation节点上读取全局的分配
+信息，然后存到自己的成员变量m_alloc_map中。
+
+FlowService提供RPC接口供Agent调用。
+#+BEGIN_SRC cpp
+service LogFlowService {                                                                               
+    rpc QueryMasterAddress(QueryMasterAddressRequest) returns(QueryMasterAddressResponse); 
+}
+#+END_SRC
+
+该RPC内部会调用FlowManager的 *QueryMasterAddress* 接口，直接获取某个
+日志模块的属主Master的ip和port。
+#+BEGIN_SRC cpp
+bool QueryMasterAddress(int log_module_id, std::string* master_id);
+#+END_SRC
+
+通过以上的设计，得到了一个显而易见的好处：
+#+BEGIN_EXAMPLE
+Master不必再询问CentralMaster就可以向Agent提供QueryMasterAddress的服务了。
+#+END_EXAMPLE
 
 *** 完成单测
 + GetAllLogModuleIds()

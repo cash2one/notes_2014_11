@@ -1,7 +1,6 @@
 #+TITLE: Git
 #+DATE: 2014-02-11
 
-
 * 小技巧
 ** 查看代码库中所有org类型文件的改动情况
 假设目录深度最多为2，那么可以这么写：
@@ -24,3 +23,10 @@ git checkout -r origin/xxx
 * Git的GUI工具
 ** SourceTree
 [[http://www.sourcetreeapp.com/images/sourcetree_hero_mac_full_interface.png]]
+* 问题汇总
+** git push 失败，提示 "error: RPC failed; result=22, HTTP code = 411"
+原因是git客户端默认的HTTP数据传输的值过小（为1M），改大即可。下面指令将其改为
+100M。
+#+BEGIN_SRC sh
+git config http.postBuffer 104857600
+#+END_SRC

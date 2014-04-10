@@ -1,0 +1,38 @@
+#+TITLE: GitBook
+#+DATE: 2014-04-10
+
+今天无意中逛到了 [[http://www.gitbook.io/][GitBook的主页]] ，被下图震撼到了。虽然我不喜欢Markdown，但
+是搭配上Github，以及漂亮的模板，我不得不承认我也想试一下啊。
+[[./img/gitbook-1.png]]
+
+但是我还是对Org念念不忘，Emacs下的Org提供了一个完美的写作环境。或许有一
+天我会搞出一个OrgBook也说不定。
+
+* GitBook的设计
+GitBook的设计很简单，一本书对应这一个Git仓库，而GitBook的玄机在于编写这
+个Git仓库下的 *SUMMARY.md* 文件。整个图书的目录编排，以及如何将各个章节
+链接到Git仓库的各个Markdown文件就是由 *SUMMARY.md* 决定的。
+
+* 次简单的尝试
+在Mac下，使用GitBook是如此的简单。步骤如下：
+** 安装npm
+npm是Javascript的一个包管理器，如果你的机器上没有安装，需要用下面指令安装：
+#+BEGIN_SRC sh
+brew install npm
+#+END_SRC
+
+** 安装gitbook
+通过npm安装GitBook
+#+BEGIN_SRC sh
+npm install gitbook -g
+#+END_SRC
+
+** 建立一个Git仓库，并在下面新建README.md和SUMMARY.md
+** 查看预览
+#+BEGIN_SRC sh
+gitbook serve ./your_repo
+#+END_SRC
+
+** 专心写作
+
+ 

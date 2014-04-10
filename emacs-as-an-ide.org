@@ -7,10 +7,10 @@
 的Vim高手* 。2013年末，我开始学习Emacs，并在春节前后掌握了Org-mode，然后将自己除
 了C/C++、Python代码编写之外的所有编辑工作都切换到Emacs。而现在，我决定将我的所有
 编码工作也转向Emacs。我作此决定的原因如下：
-1. *Emacs下的Org-mode是我迄今见过的最成熟最完备的工具* ，我相信Emacs下类似的工具还有
-   不少。
-2. *Emacs下能完美地模拟Vim* 。作为当前最高效的一套编辑理念，Vim之魂不会丢，而是会融
-   入Emacs这个操作系统里。
+1. *Emacs下的Org-mode是我迄今见过的最成熟最完备的工具* ，我相信Emacs下类似的工具
+   还有不少。
+2. *Emacs下能完美地模拟Vim* 。作为当前最高效的一套编辑理念，Vim之魂不会丢，而是会
+   融入Emacs这个操作系统里。
 3. 我一直对 *函数式编程* 很感兴趣，Emacs lisp给了我一个切入点。
 4. Vim，Vimscript以及各种Vim插件基本上都一些瑕疵和局限的。
 
@@ -391,16 +391,38 @@ projectile-vc                          projectile-version
 #+END_EXAMPLE
 
 *** helm-projectile
-helm-projectile 是projectile的附属插件，提供了helm风格的交互式窗口。
+helm-projectile 是projectile的附属插件，提供了helm风格的交互式窗口。它能识别git，
+并能递归搜索git根目录一下的所有问题，很方便。缺点是：
+#+BEGIN_EXAMPLE
+当项目太大时，搜索速度非常的慢！
+#+END_EXAMPLE
+
 ** magit
 Magit封装了Git，并为Emacs用户提供了非常美好的使用接口。
 + [[https://github.com/magit/magit][magit / magit]]
 + [[http://www.masteringemacs.org/articles/2013/12/06/introduction-magit-emacs-mode-git/][AN INTRODUCTION TO MAGIT, AN EMACS MODE FOR GIT]]
++ [[http://ergoemacs.org/emacs/emacs_magit-mode_tutorial.html][Emacs: magit-mode Tutorial]]
++ [[http://daemianmack.com/magit-cheatsheet.html][Magit Cheatsheet]]e
 
 *** 最小用法
 1. M-x magit-status，调出status窗口。
 2. 对那些那些 *unstaged* 的文件按 *s* 执行staging。
-3. 按 *c* 
+3. 按 *c* 来commit。 
+4. 按 *P* 来push。
+
+** dirtree
++ [[http://stackoverflow.com/questions/3538064/nerdtree-for-emacs][NERDtree for Emacs]]
+链接里面的用户用得很酷，但是我试了发现不好看，可能跟我的英文字体是 *Monaco* 相关。
+我暂时先用speedbar吧。   
+** TODO gdb
+在Mac上安装gdb
+#+BEGIN_SRC sh
+brew install https://raw.github.com/Homebrew/homebrew-dupes/master/gdb.rb
+#+END_SRC
+
+安装好gdb后，在Emacs下执行 M-x gdb，并没有出现我喜爱的高大上的多窗口
+IDE风格的调试界面，于是决定先放一放。
+
 * 构建我的Emacs插件体系
 研究了一段时间Emacs的插件后，下面我开始搭建自己的插件体系，并要在清明节
 后应用到我的生产环境中。
@@ -410,4 +432,68 @@ Magit封装了Git，并为Emacs用户提供了非常美好的使用接口。
 到init-xxx.el中，然后将对init-xxx.el的引用（require）放到init.el中。我
 也准备这样搞。
 
-** 
+** 第一批插件
+#+BEGIN_SRC emacs-lisp
+(require 'init-org)
+(require 'init-key-chord)
+(require 'init-evil)
+(require 'init-evil-leader)
+(require 'init-evil-nerd-commenter)
+(require 'init-yasnippet)
+(require 'init-flycheck)
+(require 'init-helm)
+(require 'init-smex)
+(require 'init-window-numbering)
+(require 'init-magit)
+(require 'init-ggtags)
+(require 'init-projectile)
+(require 'init-helm-projectile)
+(require 'init-web-mode)
+(require 'init-js2-mode)
+#+END_SRC
+** 部署到生产环境
+下面我要使用我新构建的Emacs编程环境来工作。我要ho我的Mac上的~/.emacs.d与公司开发机
+上的~/.emacs.d同步，我使用了公司的Git爱好者搭建的 [[http://git.baidu.com/][GitLab服务器]] ，发现速度非常快，
+赞！
+
+*** 将我的emacs.d push到公司内网GitLab上
+1. git remote add baidu http://gitlab.baidu.com/zhongyi01/emacs-d.git
+2. git push baidu master
+
+*** 在公司开发机上把emacs.d pull下来
+1. git clone http://gitlab.baidu.com/zhongyi01/emacs-d.git .emacs.d
+
+*** 更新公司开发机的Emacs版本
+公司开发机的Emacs版本很低，才到22，我只能去GNU官网下个24.3来手动安装。
+1. wget http://mirrors.ustc.edu.cn/gnu/emacs/emacs-24.3.tar.gz
+2. tar -zxvf emacs-24.3.tar.gz
+3. cd emacs-24.3
+4. ./configure --prefix=/home/users/zhongyi01/bin/
+5. make 
+6. make install
+
+*** 在公司开发机上安装clang
+感谢万能的Jumbo（公司内部的包管理器），提供了clang-llvm的一键安装。
+#+BEGIN_SRC sh
+jumbo install llvm
+#+END_SRC
+
+*** Enjoy it!
+用Emacs打开一个新的C++文件，发现包括语法检查在内的啥功能都有了，我的公司开发机与
+我的Mac实现了真正的同步。
+
+赞！<2014-04-07 一>
+* 解决方案
+** 快速打开文件
+有两个途径并用：
+1. 设定Emacs的开始界面，让它调用dired打开自己的工作目录。
+2. 调用helm-mini打开buffer列表和最长打开的文件列表。
+
+** 文件搜索
+利用helm神器，相关函数如下：
+1. helm-find-files
+2. helm-projectile
+
+** 对当前文件Outline
+还是利用helm，函数如下：
+1. helm-imenu
