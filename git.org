@@ -20,6 +20,22 @@ git checkout -r origin/xxx
 4. git checkout master （此时才会自动将本地master与远程master关联起来）
 5. git pull
 
+* submodule
+Git的submodule功能允许我们将别人的Git仓库挂到自己的Git仓库的任何位置，
+成为自己的Git仓库的一部分。这个功能在管理大型项目时很有用。
+
+** 带submodule的clone
+#+BEGIN_SRC sh
+git clone --recursive git://github.com/mozilla/kitsune.git
+#+END_SRC
+
+** 更新Git仓库中的submodule
+如果想更新submodule，或者是clone别人的仓库时忘记加--recursive来clone它
+的submodule，可以执行下面指令。
+#+BEGIN_SRC sh
+git submodule update --init --recursive
+#+END_SRC
+
 * Git的GUI工具
 ** SourceTree
 [[http://www.sourcetreeapp.com/images/sourcetree_hero_mac_full_interface.png]]

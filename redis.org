@@ -3,10 +3,15 @@
 之前在百度的几个项目的存储选型中，曾经考虑到使用Redis，因为应用场景很适合。但是最
 终因为对Redis的存储持久化，多机以及运维监控存在疑虑而放弃，并转用公司内部的KV存储。
 
-* 文章搜集
+* 资料搜集
 + [[http://www.cnblogs.com/liping13599168/archive/2011/04/12/2013094.html][Redis源码解析（1）——源码目录介绍]]
 + [[http://blog.nosqlfan.com/html/2949.html][Redis源码分析系列文章]]
 + [[http://blog.nosqlfan.com/html/4007.html][Redis运行流程源码解析]] （对Redis的网络通讯层分析得很详细）
+  
+** 第二批
++ [[https://github.com/springside/springside4/wiki/redis][Redis资料搜集（江南白衣）]]
++ [[http://origin.redisbook.com/en/latest/][Redis 设计与实现（第一版）]]
++ [[http://redis.readthedocs.org/en/latest/][Redis 命令参考]]
 
 * Redis Client
 通过Eclipse稍微阅读了Redis Client端的代码。Client端的代码位于redis-cli.c以及

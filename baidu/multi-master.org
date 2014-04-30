@@ -313,7 +313,6 @@ std::map<std::string, std::set<std::string> >
 这里用std::string以 *点分十进制* 的方式存储机器ip，而没有用 *长整型* 的方式来存储。
 考虑一下Minos系统机器的极限，假设是10W台，每个ip的占12个字节，一共需要120W字节，
 一换算，得到 *120K* ，这点内存占用可以接受。
-
 *** 各个noah_node_id与其下面的日志模块id列表中的关系
 Minos用户在使用上有个特点，就是按照Noah运维节点的id来查看日志列表，所以
 ConfigManager需要维护着noah_node_id与其下面所有日志模块id的对应关系，以方便快速查
@@ -444,8 +443,59 @@ message QueryMasterAddressResponse {
 #+END_SRC
 
 ** 第四轮：多机情况下的监控和统计
+*** 需要改造的接口
+看了下LogFlowService，把需要多机化考虑的接口列出来：
+#+BEGIN_SRC cpp
+rpc GetLogFlowStatus(GetLogFlowStatusRequest) returns(MasterResponse);
+rpc GetLogFlowStatusRaw(GetLogFlowStatusRawRequest) returns(MasterResponse); 
+rpc GetLogFlowList(GetLogFlowListRequest) returns(MasterResponse); 
+rpc GetNodeStatus(GetNodeStatusRequest) returns(MasterResponse);
+rpc GetLogConfigList(GetLogConfigListRequest) returns(MasterResponse); 
+#+END_SRC
 
+除了上面的查询接口外，还有一些控制接口也需要改造：
+#+BEGIN_SRC cpp
+rpc ManuallyFallback(ManuallyFallbackRequest) returns(MasterResponse);
+rpc ManuallyClearCheckpoint(ManuallyClearCheckpointRequest) returns(MasterResponse);
+rpc ManuallyAddNode(ManuallyAddNodeRequest) returns(MasterResponse);
+rpc ManuallyDeleteNode(ManuallyDeleteNodeRequest) returns(MasterResponse);
+rpc ManuallyRestartExecutor(ManuallyRestartExecutorRequest) returns(MasterResponse);
+#+END_SRC
 
-		   
+分析一下，这些接口分为两类，分别是请求的转发与请求的汇聚。
+
+*** 请求的转发
+对于转发类请求，需要实现的功能如下：
+1. 获取该日志所属Master的地址。
+2. 启动RpcClient，连接对应的Master。
+3. 将原始Request直接拷贝生成转化Request。
+4. 以RpcClient的身份转发RPC。
+5. 将转化Response直接拷贝生成原始Response。
+6. 如果转发RPC返回失败，则将失败也传递给原始RPC的调用者。
+
+*** 实现
+最终我的实现方式是：
+#+BEGIN_SRC cpp
+class MasterRpcDispatcher {
+public:
+    MasterRpcDispatcher() {};
+    ~MasterRpcDispatcher() {};
+
+    static bool ShouldDeliver(int log_module_id, std::string* master_ip_port);
+    static bool DeliverRequest(const std::string& master_ip_port,
+                               const std::string& rpc_method,
+                               const google::protobuf::Message* request,
+                               google::protobuf::Message* response);
+
+    static bool DeliverRequestToAllMasters(const std::string& rpc_method,
+                                           const google::protobuf::Message* request,
+                                           Json::Value* json_response);
+
+private:
+};
+#+END_SRC
+
+*** MinosStatistics的汇聚
+该接口较特殊，它有大量的计算。
 		   
     

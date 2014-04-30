@@ -1,0 +1,9 @@
+* 匹配URL
+#+BEGIN_EXAMPLE
+^https?://(?:.*:.*@)?(?P<HOST>[^/:]+)(:(?P<PORT>\\d+))?(?P<PATH>/.*)?$
+#+END_EXAMPLE
+
+说明：
+1. 本正则基于Google的RE2正则引擎。
+2. (?P<XXX> )的命名分组。
+3. (?: )是分组不匹配。

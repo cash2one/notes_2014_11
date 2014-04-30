@@ -148,6 +148,21 @@ bootstrap.min.css，剩下的工作就是完善cars/index.html这个Django templ
 git clone https://github.com/elvestar/sunliang.git
 #+end_src
 
+* Emacs django
++ [[https://code.djangoproject.com/wiki/Emacs]]
+* Django学习资料
++ [[http://stackoverflow.com/questions/1499543/good-open-source-django-project-for-learning][Good open source django project for learning]]
++ [[http://docs.django-blog-zinnia.com/en/v0.14/index.html][Django-Blog-Zinnia’s documentation!]]
++ [[https://code.djangoproject.com/wiki/DjangoResources#Djangobooks][Django resources]]
++ [[http://www.djangobook.com/en/2.0/index.html][The Django Book (The Definitive Guide to Django: Web Development Done Right)]]
++ [[http://www.reddit.com/r/django/comments/1c5u23/excellent_open_source_django_projects_to_learn/][Excellent open source Django projects to learn from?]]
+
+** GitHub
++ [[https://github.com/torchbox/wagtail]]
++ [[https://github.com/stephenmcd/mezzanine]]
++ [[https://github.com/Fantomas42/django-blog-zinnia]]
+
++ 
 * 问题汇总
 ** css文件有时候需要重启server才能生效
 例如：bootstrap.min.css

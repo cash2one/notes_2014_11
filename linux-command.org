@@ -1,0 +1,89 @@
+#+TITLE: Linux 指令
+#+DATE: 2014-04-17
+
+
+* ulimit
+ulimit可以用来查看和修改进程的各种资源限制，如栈大小、最大打开文件数等。
+如下：
+#+BEGIN_SRC sh
+ulimit -a # 查看所有资源限制
+ulimit -n # 查看最大打开文件数
+ulimit -n 204800 # 修改最大打开文件数为204800
+#+END_SRC
+
+任何用户都可以用ulimit查看，但是只有root才有权用ulimit修改，并且，用
+ulimit修改只针对当前的ssh连接有效，一旦退出，期间作的修改就全部作废。
+
+** 案例：ulimit与popen相关
+我开发模块遇到一个问题： *popen()频繁返回NULL* ，进而触发模块coredump。
+这很诡异，网上也查不到答案。不得已我用man来查看popen()函数的说明。
+#+BEGIN_SRC sh
+man popen
+#+END_SRC
+
+得到如下信息：
+#+BEGIN_EXAMPLE
+RETURN VALUE
+       The popen function returns NULL if the fork(2) or pipe(2) calls fail, or if it cannot allocate memory.
+       The pclose function returns -1 if wait4 returns an error, or some other error is detected.
+#+END_EXAMPLE
+
+于是怀疑是系统资源不足。我用free查看，发现系统的内存是充足的。
+#+BEGIN_SRC sh
+[work@cq01.xxx.cq01.xxxxx.com master]$ free
+             total       used       free     shared    buffers     cached
+Mem:      49429336   39001528   10427808          0     750044   34474160
+-/+ buffers/cache:    3777324   45652012
+Swap:      1020088     588288     431800
+#+END_SRC
+
+于是，我怀疑是进程打开的文件数目达到了上限，导致无法返回FD，于是我用
+ulimit -a，发现最大打开文件数目是10240。
+
+对于一般模块，10240是完全够用的，但是我开发是一个server模块，它会跟整个
+系统的10000多个client有交互，并且会维持着长连接，消耗掉很多FD。于是怀疑是
+打开文件数目超过限制导致popen()返回NULL。联想到今天下午系统的很多client有
+过升级，与server的连接数会大大增加。这更加印证了我的怀疑。
+
+我用netstat查看模块与系统的各个client的连接数目：
+#+BEGIN_SRC sh
+netstat -lanp | grep 8010 | wc # 8010是我的模块占用的端口号
+#+END_SRC
+
+得到的结果是8915，也就说说我的模块至少要维护者8915个FD，这确实容易达到
+资源的上限。于是我尝试修改这个资源上限。
+
+我在网上查资料，在IM上问同事，多番尝试后都没找到修改这个FD资源上限的方
+法。我只好采用一个临时的解法： *在root下修改，然后su到work账号，并重启
+进程* 。这样，新起的进程就拥有了新设的FD资源上限了。模块重启后，观察一
+段时间，没发生popen()返回NULL导致的coredump问题。
+
+问题虽然被临时解决了，但是还有尾巴。我通过ssh实现的模块一键部署，这样会
+导致模块重新部署后，进程的FD资源上限仍然是10240。于是我继续寻找长期的解
+决方案。最后我通过 *ulimit*, *ssh* 这两个关键词在Google搜索，终于找到
+了解法。
++ [[http://stackoverflow.com/questions/1887365/ssh-remote-command-execution-and-ulimit][ssh remote command execution and ulimit]]
+
+解法就是修改 */etc/secutiry/limits.conf* 文件，在尾部加入：
+#+BEGIN_SRC sh
+     *           soft    nofile          204800
+     *           hard    nofile          204800
+#+END_SRC
+
+然后保存文件，退出ssh，再重新用ssh登陆，用ulimit -n观察，发现最大打开文
+件数终于被成功地改为204800了。
+
+得到一些经验：
+1. 对于popen这些系统函数，man文档是很靠谱的。
+2. 每个模块都有其特殊性。server类型的模块要维持其与client的连接数，它对
+   FD资源的消耗与client类型的不在一个量级的。
+3. 一个经过深思熟虑过的 *搜索关键词* 是解决问题的良方。
+* grep
+** 速查表
+| 功能   | 指令           | 助记符                |
+|--------+----------------+-----------------------|
+| 取反   | grep -v        | 全称是 --invert-match |
+| 取相邻行 | grep -A x -B x | A = after, B = before |
+|        |                |                       |
+|        |                |                       |
+

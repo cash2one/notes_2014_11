@@ -1,0 +1,50 @@
+#+TITLE: Minos迁移
+#+DATE: 2014-04-22
+
+
+* BAIDU_ECOM_SDC
++ [[http://m1-sdc-4dt02.m1.baidu.com:8888/minos/index.php?r%3Dminosswitch/roadmapDetail&nodepath%3DBAIDU_ECOM_SDC][一键迁移]]
+
+| NOAH_ID | NOAH_NAME                       | 传输方式 | 优先级 | BNS名                      | 集群       | 修改状态                |
+|---------+---------------------------------+----------+--------+----------------------------+------------+-------------------------|
+|    4483 | +holmes_azzz_visit_ad_conn_noah+ | ftp      |     10 | hm-dc.HOLMES.yf            | nmg01-khan | 切换点：22日0点，有问题 |
+|    4364 | +holmes_mobapp_rcvlog+          | ftp      |      6 | group.hmma-rcv.HOLMES.all  | nmg01-khan | 切换点：22日0点，有问题 |
+
+** 五级日志
+| NOAH_ID | NOAH_NAME                     | 传输方式 | 优先级 | BNS名                   | 集群        | 修改状态                 |
+|---------+-------------------------------+----------+--------+-------------------------+-------------+--------------------------|
+|   [[http://tc-dt-minos-master01.tc.baidu.com:8088/rpc/baidu.minos.logflowservice.getlogflowstatus?log_module_id=10010743][10743]] | +holmes_mobapp_statbak_session+ | ftp      |      5 | hmmp-statbak.holmes.cq  | nmg01-khan  | 切换点：22日15点。有问题 |
+|    8158 | mc_pusher_mapper_new          | ftp      |      5 | pacific-log.prodb.cq01  | nmg01-mulan |                          |
+|    8159 | mc_monitor_mapper_new1        | ftp      |      5 | pacific-log.prodb.cq01  | nmg01-mulan |                          |
+|    8160 | mc_pacific_mapper_new         | ftp      |      5 | slave.PRODB.all         | nmg01-mulan |                          |
+|    7651 | mc_audit2_log                 | ftp      |      5 | slave.PRODB.all         | nmg01-mulan |                          |
+|    3048 | dan_vlog_log                  | ftp      |      5 | ZKP.DAN.all             | szwg-ston   |                          |
+|    9195 | mc_shandian_log               | ftp      |      5 | shandian.PRODB.all      | nmg01-mulan |                          |
+|    9196 | mc_shandian_mapper            | ftp      |      5 | shandian.PRODB.all      | nmg01-mulan |                          |
+|    9197 | mc_sdmonitor_log              | ftp      |      5 | shandian-log.PRODB.cq02 | nmg01-mulan |                          |
+|    9198 | mc_sdmonitor_mapper           | ftp      |      5 | shandian-log.PRODB.cq02 | nmg01-mulan |                          |
+|         |                               |          |        |                         |             |                          |
+
+* BAIDU_MCO_MI
++ [[http://m1-sdc-4dt02.m1.baidu.com:8888/minos/index.php?r%3Dminosswitch/roadmapDetail&nodepath%3DBAIDU_MCO_MI][迁移列表]]
+** 五级日志
+| NOAH_ID | NOAH_NAME                      | 传输方式 | 优先级 | BNS名     | 集群 | 修改状态 |
+|---------+--------------------------------+----------+--------+-----------+------+
+
+* BAIDU_NS_CBD
++ [[http://m1-sdc-4dt02.m1.baidu.com:8888/minos/index.php?r%3Dminosswitch/roadmapDetail&nodepath%3DBAIDU_NS_CBD][迁移列表]]
+
+| NOAH_ID | NOAH_NAME                    | 传输方式 | 优先级 | BNS名                       | 集群      | 修改状态           |
+|---------+------------------------------+----------+--------+-----------------------------+-----------+--------------------|
+| [[http://tc-dt-minos-master01.tc.baidu.com:8088/rpc/baidu.minos.LogFlowService.GetLogFlowStatus?log_module_id=10003065][3065]]    | maps_lighttpd                | ftp      |      5 | group.maps-lighttpd.map.cn  | szwg-ston | 切换点：22日16点。 |
+| [[http://tc-dt-minos-master01.tc.baidu.com:8088/rpc/baidu.minos.LogFlowService.GetLogFlowStatus?log_module_id=10009298][9298]]    | lbs_pal_log_warning          | ftp      |      5 | group.place-pal.map.all     | szwg-ston | 切换点：22日16点。 |
+| [[http://tc-dt-minos-master01.tc.baidu.com:8088/rpc/baidu.minos.LogFlowService.GetLogFlowStatus?log_module_id=10009300][9300]]    | lbs_pal_wf_log_warning       | ftp      |      5 | group.place-pal.map.all     | szwg-ston | 切换点：22日16点。 |
+| [[http://tc-dt-minos-master01.tc.baidu.com:8088/rpc/baidu.minos.LogFlowService.GetLogFlowStatus?log_module_id=10009031][9031]]    | tuangou_ui_open              | ftp      |      5 | group.webforlog.tuangou.all | szwg-ston | 切换点：22日0点。需要改通知周期。 |
+| [[http://tc-dt-minos-master01.tc.baidu.com:8088/rpc/baidu.minos.LogFlowService.GetLogFlowStatus?log_module_id=10009032][9032]]    | tuangou_ui_open_wf           | ftp      |      5 | group.webforlog.tuangou.all | szwg-ston | 切换点：22日0点。需要改通知周期。  |
+| [[http://tc-dt-minos-master01.tc.baidu.com:8088/rpc/baidu.minos.LogFlowService.GetLogFlowStatus?log_module_id=10008014][8014]]    | lbs_ui_uii_route_log_warning | ftp      |      5 | group.uii-proxy.map.all     | szwg-ston | 切换点：22日16点。 |
+| [[http://tc-dt-minos-master01.tc.baidu.com:8088/rpc/baidu.minos.LogFlowService.GetLogFlowStatus?log_module_id=10010734][10734]]   | pc_ala_phpui_st              | ftp      |      5 | group.pcaladdin-map.MAP.cn  | szwg-ston | 切换点：22日17点。 |
+| [[http://tc-dt-minos-master01.tc.baidu.com:8088/rpc/baidu.minos.LogFlowService.GetLogFlowStatus?log_module_id=10008072][8072]]    | tuangou_ui_lbspayal          | ftp      |      5 | group.webforlog.tuangou.all | szwg-ston | 切换点：22日0点。需要改通知周期。  |
+|         |                              | ftp      |      5 |                             | szwg-ston | 切换点：22日点。   |
+|         |                              | ftp      |      5 |                             | szwg-ston | 切换点：22日点。   |
+|         |                              |          |        |                             |           |                    |
+|         |                              |          |        |                             |           |                    |

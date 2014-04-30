@@ -1,4 +1,4 @@
-#+TITLE: Python之再学习
+#+TITLE: Python
 
 * 前言
 在浏览Google的一些网页之后，突然再次涌起了学习Python的热情。于是我无限期停止了学
@@ -17,6 +17,60 @@
 ** 书籍
 + [[http://woodpecker.org.cn/diveintopython/][深入 Python :Dive Into Python 中文版（啄木鸟社区）]]
 + [[http://book.douban.com/subject/3117898/][Python源码剖析]]
+
+* 问题记录
+** Mac下pip安装一些模块失败，报"clang: error"
+我在Mac安装PIL，但是总是失败。错误信息如下：
+#+BEGIN_SRC sh
+sudo pip install Pillow 
+Downloading/unpacking Pillow
+  Downloading Pillow-2.4.0.zip (6.5MB): 6.5MB downloaded
+  Running setup.py egg_info for package Pillow
+...
+...
+clang: error: unknown argument: '-mno-fused-madd' [-Wunused-command-line-argument-hard-error-in-future]
+
+clang: note: this will be a hard error (cannot be downgraded to a warning) in the future
+
+error: command 'cc' failed with exit status 1
+
+----------------------------------------
+Cleaning up...
+...
+#+END_SRC
+
+用网上找到了N多方法尝试都无法解决此问题，最后，终于找到了这篇文章：
++ [[http://bruteforce.gr/bypassing-clang-error-unknown-argument.html][Bypassing “clang: error: unknown argument”]]
+
+并按照这篇文章提供的解法来安装，终于成功。
+#+BEGIN_SRC sh
+sudo ARCHFLAGS=-Wno-error=unused-command-line-argument-hard-error-in-future  pip install pillow
+#+END_SRC
+
+该问题的原因是： *Mac的LLVM compiler升级新版后，将识别不了的命令行参数
+当成错误* 。这个改动导致了很多通过pip安装的Python模块和通过gem安装的
+Ruby包发生了安装失败的问题。
+
+这里我不得不吐槽一下Mac，在非Xcode开发的环境兼容性的处理上 *不够严肃*
+（相对一些Linux发行版）。
+
+** bad interpreter: Permission denied
+我在公司的机器上安装percol，装好一运行，出现如下结果：
+#+BEGIN_SRC sh
+[work@cq01-testing-ecom327.cq01.baidu.com master]$ percol
+-bash: /home/work/.jumbo/bin/percol: /home/users/zhongyi01/.jumbo/bin/python: bad interpreter: Permission denied
+#+END_SRC
+
+怀疑是Python解释器环境配置问题，于是打开*/home/work/.jumbo/bin/percol*
+，发现该Python脚本的第一行写着：
+#+BEGIN_SRC python
+#!/home/users/zhongyi01/.jumbo/bin/python
+#+END_SRC
+
+我将它改成如下行后，问题解决！
+#+BEGIN_SRC python
+#!/bin/env python
+#+END_SRC
 
 * 学习回顾 
 ** 或许我需要的只是背诵一下api，以及一个能自动提示的IDE <2014-02-23 日>

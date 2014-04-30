@@ -1,0 +1,38 @@
+#+TITLE: Tornado 框架
+#+DATE: 2014-04-26
+
+
++ [[http://www.tornadoweb.org/][Tornado 主页]]
+
+* 资料搜集
+** Template
++ [[http://bibhas.in/blog/using-jinja2-as-the-template-engine-for-tornado-web-framework/][Using Jinja2 as the Template Engine for Tornado Web Framework]]
++ [[http://community.itbbs.cn/thread/20131/][Python 模板引擎性能对比]]
++ [[http://docs.python-guide.org/en/latest/scenarios/web/][Web Applications （最下面有Tornado + Jinja2的示例）]]
+
+** 项目
++ [[https://github.com/facebook/tornado/tree/master/demos/chat][Tornado demo - Chat room]]
++ [[https://github.com/myoula/cakeshop][基于tornado、peewee、jinja2的商城]]
+
+** 书籍
++ [[http://demo.pythoner.com/itt2zh/index.html][《Introduction to Tornado 中文版》]]
+  
+* 问题记录
+** 模板中的HTML转义
+默认情况，Tornado的模板系统会为插入到其中的HTML执行转义，从而在页面上
+直接显示HTML源码。但有时候我们希望不要转义，这时候需要在借助raw关键词。
+如下：
+#+BEGIN_EXAMPLE
+{% raw *expr* %}
+    Outputs the result of the given expression without autoescaping.
+#+END_EXAMPLE
+** 截取GET参数
+Tornado支持更优雅的url拼装方式，在写url路由的正则时，加入()就可以把GET
+参数捕获。例如：
+#+BEGIN_SRC python
+app = tornado.web.Application(
+     [
+       (r"/", MainHandler),
+       (r"/logflow/([^/]+)", LogFlowHandler),
+     ],
+#+END_SRC

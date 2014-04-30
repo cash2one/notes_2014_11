@@ -1,0 +1,10 @@
+
+* 表格
+** 避免换行导致难看
+#+BEGIN_SRC html
+white-space:nowrap; 
+#+END_SRC
+
+参考： [[http://stackoverflow.com/questions/1893751/how-to-prevent-line-break-in-a-column-of-a-table-cell-not-a-single-cell][How to prevent line-break in a column of a table cell (not a
+single cell)?]]
+

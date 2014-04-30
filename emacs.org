@@ -116,12 +116,16 @@ export LOGNAME=zhongyi
 GUI两种情况兼容，可以利用window-system这个Emacs内置变量来做检测。
 配置方法如下：
 #+BEGIN_SRC emacs-lisp
-(if window-system
+(when window-system
   (set-default-font "Monaco 14")
 )
 #+END_SRC
 
-我试了一下，不OK！
+#+RESULTS:
+
+Google搜索结果告诉我，可以使用 *(if window-system xxx)* 来做判断，我试
+过，不行！我还不知道原因，我只知道用 *(when window-system xxx)* 是OK
+的。
 
 * 学习回顾
 ** 成为Emacs用户 <2014-02-20 四>
@@ -139,6 +143,8 @@ GUI两种情况兼容，可以利用window-system这个Emacs内置变量来做�
 对于Emacs附带的编辑器，我觉得它相对Vim来说非常的原始，只提供有限的移动和编辑指令。
 但即便如此，也比Evernote等工具附带的编辑器要方便很多。下一步我会尝试viper/evil插
 件，让Vim之魂附身于Emacs，同时也是解放我的 *氪金左小指* 。
+
+
 
 
 
