@@ -12,3 +12,15 @@ update download_config set mailList = replace(mailList, "lixxx11@baidu.com", "")
 
 
 
+* MySQL的导入导出
+** 导出
+#+BEGIN_SRC sh
+mysqldump -h10.23.247.91 -P3306 -uinf -p inf --skip-lock-tables > inf.sql 
+#+END_SRC
+说明：由于没有root账号，无法Lock table，所以只能用 ~--skip-lock-table~
+参数。
+
+** 导入
+#+BEGIN_SRC sh
+mysql -hm1-dt-log01.m1 -P3306 -uzy -p bdg_bbs < inf.sql
+#+END_SRC

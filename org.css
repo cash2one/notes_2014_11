@@ -1,14 +1,14 @@
 body {
     margin: 1em;
-    border-right: 5px solid #bbb;
-    border-bottom: 5px solid #bbb;
+    /* border-right: 5px solid #bbb; */
+    /* border-bottom: 5px solid #bbb; */
     padding: 0;
-    background: #ddd none repeat scroll 0 0;
-    border: 1px solid #000;
+    background: none repeat scroll 0 0;
+    /* border: 1px solid #000; */
     margin: 0;
     padding: 2em;
     color: #000;
-    font: 16px/1.5 Optima, Segoe, "Segoe UI", Candara, Calibri, Georgia, Verdana, Arial, sans-serif;
+    font: 15px/1.5 Optima, Segoe, "Segoe UI", Candara, Calibri, Georgia, Verdana, Arial, sans-serif;
 }
 
 code {
@@ -16,7 +16,9 @@ code {
 }
 
 div#content {
-    border: 1px solid #bbb;
+    /* border: 1px solid #bbb; */
+    border-left: 1px solid #bbb;
+    /* border-right: 1px solid #bbb; */
     background: #fff;
     margin: 0;
     padding: 2em;
@@ -30,6 +32,27 @@ a {
 
 a:hover {
     color: #900;
+}
+
+.nav-list>.active>a {
+    color: #563d7c;
+    background-color: #FFFFFF;
+}
+
+.nav-list>.active>a:hover {
+    font-weight: bold;
+    background-color: #716b7a;
+}
+
+.nav-list > li > a {
+    color: #716b7a;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    white-space: nowrap;
+}
+
+.tocify ul, .tocify li {
+    line-height: 20px;
 }
 
 /*
@@ -71,10 +94,11 @@ div.title {
 }
 
 h1 {
-    background: #369 none repeat scroll 0 0;
-    color: #fff;
+    /* background: #369 none repeat scroll 0 0; */
+    /* color: #fff; */
     font-family: "BitStream Vera Sans", Verdana;
     font-size: 200%;
+    border-bottom: 1px solid #bbb;
     font-weight: bold;
     letter-spacing: 0.1em;
     margin: -1em -1em .2em;
@@ -797,8 +821,9 @@ td, th {
   }
 
 #toc {
-    font-size: 12px;
-    margin-left: -3%
+    font-size: 13px;
+    margin-left: -3%;
+    margin-top: 2%;
 }
 
 .tocify {
@@ -808,12 +833,10 @@ td, th {
 
 div#content {
     margin-left: -6%;
-    margin-right : -2%;
 }
 
 div#postamble {
     margin-left: -6%;
-    margin-right : -2%;
 }
 
 p {

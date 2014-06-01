@@ -8,3 +8,43 @@ white-space:nowrap;
 参考： [[http://stackoverflow.com/questions/1893751/how-to-prevent-line-break-in-a-column-of-a-table-cell-not-a-single-cell][How to prevent line-break in a column of a table cell (not a
 single cell)?]]
 
+
+* 布局
+** padding
+padding是指某个元素的边界到这个元素的实际内容之间的距离。
+** boarder与分隔线
+boarder属性可以为区块加入边框。除此之外，还可以利用它来为区块与区块之
+间加入分隔线。例如：
+#+BEGIN_SRC css
+div#content {
+border-left: 1px solid #bbb;                                                                    
+border-right: 1px solid #bbb; 
+}
+#+END_SRC
+这样的话，content与左边的TOC就有了一条分隔线，于右边的浏览器边界也有一
+个分隔线。如图：
+
+[[./img/html-1.png]]
+
+* 元素
+** 如何隐藏元素
+假设我们想让一个table在页面上不可见，我们可以通过在table标签中的style
+属性来实现这一点。设置style就相当于设置css，下面的display属性可以决定
+该元素是隐藏，设置 =display:none;= 表示隐藏元素。
+#+BEGIN_SRC html
+<table class="table" style="display:none;"> 
+...
+</table>
+#+END_SRC
+
+* Javascript（暂时放在这里）
+** 如何判断是否在iframe里面
++ [[http://stackoverflow.com/questions/9996304/how-to-judge-a-page-is-in-a-iframe-use-javascript][how to judge a page is in a iframe use javascript?]]
+判断原理是根据DOM的层级结构，this可以获取到iframe的DOM的根节点，而
+iframe的DOM是属于整个HTML页面的DOM的某节点的，所以可以通过this取的DOM根节点
+并判断它是否是整个HTML页面的DOM根节点来判断是否在iframe里面。代码如下：
+#+BEGIN_SRC js
+if (this != top) {
+    alert("true");
+}
+#+END_SRC

@@ -1,0 +1,19 @@
+#+TITLE: Nginx
+#+DATE: 2014-05-31
+
+* 配置Nginx
+** 负载均衡
+upstream这个里面可以配置多个ip:port，nginx会通过轮询的方式来将请求负载到
+各个ip:port上。当然，nginx也支持根据访问者的ip将来自该访问者的请求固化
+到某个ip:port上。
+
+** 反向代理
+这个在location里面设置，一般上，会与upstream合用。
+
+** location
+~ 符号代表使用正则。
+
+
+** 遇到问题
+minos.css被~* /minos这个location给捕获了。我将之改为~* /minos/后，问题
+解决。

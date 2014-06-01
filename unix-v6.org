@@ -7,11 +7,11 @@
 + John Lions的书的附带源码
 
 ** 源码
-我从网上下载了名为unix.v6.v7.src的压缩包，解压后cd到V6/usr/sys下面，然
-后使用GNU GLOBAL来生成带交叉引用的HTML源码阅读页面。
-#+BEGIN_SRC sh
+我从网上下载了名为unix.v6.v7.src的压缩包，解压后cd到v6/usr/sys下面，然
+后使用gnu global来生成带交叉引用的html源码阅读页面。
+#+begin_src sh
 gtags .
-htags -sanohITvFt "UNIX v6 源码" 
+htags -sanohitvft "unix v6 源码" 
 #+END_SRC
 然后上传到公司的fe.baidu.com上。
 

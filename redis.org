@@ -118,6 +118,43 @@ typedef struct redisDb {
 } redisDb;
 #+END_SRC
 
+* Redis实践
+** 当要get的key数目非常多时（MGET与pipeline）
+虽然get每个key的时间非常短，但是如果遇到那种需要get非常多的key的场景时，
+这些get操作的累加耗时就非常非常的长了。耗时主要好在网络连接上，所以需
+要研究下Redis是否提供的批量get的方式。
+
++ [[http://stackoverflow.com/questions/3329408/is-there-mget-analog-for-redis-hashes][Is there MGET analog for Redis hashes?]]
++ [[http://stackoverflow.com/questions/4929202/most-efficient-way-to-get-several-hashes-in-redis][Most efficient way to get several hashes in Redis?]]
+通过上面的文章，我了解到Redis为string类型提供了MGET的批量get key的接口，
+这是符合我的需求的。但是为hash类型提供了HMGET的接口的语义却是 *一次get
+一个key的多个字段*，而不是 *一次get多个key的多个字段* ，这个接口不符合
+我的要求。
+
+还好Redis提供了强大的pipeline功能，能够批量执行任意操作。但是有一个副
+作用，那就是 *pipeine会独占redis client* ，故用pipeline时还是要慎重一
+点的。
+
+** 使用hiredis的pipeline，部分key无法正常写入redis
+查看官方的test文件，发现它的用法是： *redisAppendCommand* 和
+*redisGetReply* 一一对应。我也修改我的代码，发现这样就可以正常写入了！
+
+至于为啥，我现在还不大了解，我决定先放着，以后可以问别人。不过我通过阅
+读下面两文：
++ [[https://github.com/redis/hiredis][README.md(HIREDIS)]]
++ [[http://informatikr.com/2012/redis-pipelining.html][Automatic Optimal Pipelining of Redis Commands]]
+
+得知redisGetReply可能使hiredis阻塞。即调用redisGetReply时：
+#+BEGIN_EXAMPLE
+1. The input buffer is non-empty:
+  + Try to parse a single reply from the input buffer and return it
+  + If no reply could be parsed, continue at 2
+2. The input buffer is empty:
+  + Write the entire output buffer to the socket
+  + Read from the socket until a single reply could be parsed
+#+END_EXAMPLE
+
+
 * 学习回顾
 ** 初步了解，有些质疑 <2014-02-21 五>
 初步了解了Redis的源码架构，并通过源码和别人的文章了解了Redis接受网络请求时的操作。

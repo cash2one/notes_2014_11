@@ -64,7 +64,7 @@ netstat -lanp | grep 8010 | wc # 8010是我的模块占用的端口号
 了解法。
 + [[http://stackoverflow.com/questions/1887365/ssh-remote-command-execution-and-ulimit][ssh remote command execution and ulimit]]
 
-解法就是修改 */etc/secutiry/limits.conf* 文件，在尾部加入：
+解法就是修改 */etc/security/limits.conf* 文件，在尾部加入：
 #+BEGIN_SRC sh
      *           soft    nofile          204800
      *           hard    nofile          204800
@@ -86,4 +86,16 @@ netstat -lanp | grep 8010 | wc # 8010是我的模块占用的端口号
 | 取相邻行 | grep -A x -B x | A = after, B = before |
 |        |                |                       |
 |        |                |                       |
+
+* netstat
+** 查看端口被那个进程占用
+#+BEGIN_SRC sh
+netstat -apn | grep 8010
+#+END_SRC
+
+* lsof
+** 查看端口被那个进程占用
+#+BEGIN_SRC sh
+lsof -i:8010
+#+END_SRC
 

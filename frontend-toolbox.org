@@ -11,3 +11,6 @@
 [[http://www.datatables.net/blog/Twitter_Bootstrap_2][Data Tables (with Twitter Bootstrap)]] 增强了HTML Table的展现，提供了分页、排序、搜
 索等强大功能。
 
+* Highcharts
++ [[http://www.highcharts.com/][主页]]
++ [[http://jsfiddle.net/gh/get/jquery/1.9.1/highslide-software/highcharts.com/tree/master/samples/highcharts/demo/column-parsed/][Highcharts和HighchartsTable的合用]]

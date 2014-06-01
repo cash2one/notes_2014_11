@@ -17,6 +17,7 @@ fi
 * 重定向
 ** 重定向标准输出和错误输出到文件
 这里举的例子是一个提交MapReduce的脚本，该脚本接收一个参数。
+
 #+BEGIN_SRC sh
 ./submit_mr.sh 0900 2>&1 > mr.log
 #+END_SRC
@@ -36,3 +37,6 @@ fi
 #+BEGIN_SRC sh
 ./submit_mr.sh 1000 1 >> mr.log 2>&1
 #+END_SRC
+
+参考：
++ [[http://blog.csdn.net/ithomer/article/details/9288353][Linux Shell 1>/dev/null 2>&1 含义]]

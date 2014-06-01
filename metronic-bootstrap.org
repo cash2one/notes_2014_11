@@ -1,0 +1,13 @@
+#+
+#+DATE: 2014-04-30
+
+* Chart
+我用加减法来看看是那些css和js在其作用，并最终渲染出Metronic风格的页面
+的。
+| 文件                 | 作用                                    |
+|----------------------+-----------------------------------------|
+| bootstrap.min.css    | 基础css                                 |
+| style.css            | Metronic的基础css                       |
+| style-responsive.css | 将sidebar移动到左侧，完成左右的页面布局 |
+| default.css          | 将页面黑化（应该属于主题类的，可以灵活替换）             |
+|                      |                                         |

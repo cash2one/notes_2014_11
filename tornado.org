@@ -35,4 +35,5 @@ app = tornado.web.Application(
        (r"/", MainHandler),
        (r"/logflow/([^/]+)", LogFlowHandler),
      ],
+)
 #+END_SRC

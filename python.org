@@ -18,6 +18,25 @@
 + [[http://woodpecker.org.cn/diveintopython/][深入 Python :Dive Into Python 中文版（啄木鸟社区）]]
 + [[http://book.douban.com/subject/3117898/][Python源码剖析]]
 
+* re模块
+** group
++ [[https://docs.python.org/2/library/re.html][re — Regular expression operations]]
+
+下面面的代码利用re模块实现了正则查找和捕获，将一行日志中的pid字段给捕获
+并打印。
+#+BEGIN_SRC python
+#!/bin/env python
+
+import re
+import sys 
+
+for line in sys.stdin:
+    m = re.search(r"pid=(\d+)&", line)
+    if m != None:
+        pid = m.group(1).strip("\n")
+        print pid 
+#+END_SRC
+
 * 问题记录
 ** Mac下pip安装一些模块失败，报"clang: error"
 我在Mac安装PIL，但是总是失败。错误信息如下：
@@ -72,6 +91,16 @@ Ruby包发生了安装失败的问题。
 #!/bin/env python
 #+END_SRC
 
+** ascii codec can t decode byte 0xef in position 0 ordinal not in range 128
+解法：
+#+BEGIN_SRC python
+import sys 
+reload(sys) 
+sys.setdefaultencoding('utf8') 
+#+END_SRC
++ [[http://www.cnblogs.com/DjangoBlog/p/3543430.html]]
 * 学习回顾 
 ** 或许我需要的只是背诵一下api，以及一个能自动提示的IDE <2014-02-23 日>
 翻几本Python书，发现都眼熟的很，可看的不多。
+
+
