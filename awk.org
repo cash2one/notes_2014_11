@@ -1,7 +1,7 @@
 #+TITLE: Awk
 #+DATE: 2014-04-15
 
-* Awk是什么？
+* Awk 是什么？
 下面的定义来自于1979年随同Unix v7一起发布的Awk作者写的Awk说明文档。
 #+BEGIN_QUOTE
 Awk is a programming language designed to make many common information

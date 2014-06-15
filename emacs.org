@@ -1,37 +1,40 @@
-* Emacs的几个编辑循环
-在了解Emacs的基本快捷键之后，我对于Emacs还是疑惑重重，这时候，就需要通过Emacs的基
-本使用场景来学习Emacs。
+#+TITLE: Emacs
+#+DATE: 2013-12-21
+
+* Emacs 的几个编辑循环
+在了解 Emacs 的基本快捷键之后，我对于 Emacs 还是疑惑重重，这时候，就需要通过 Emacs 的基
+本使用场景来学习 Emacs。
 
 打开文件 -> 修改文件 -> 保存文件
 
-打开文件 -> 打开buffer -> 关闭buffer（buffer/window分为两种，一种可以用q来关闭，
-一种只能用 C-x K或C-x 0）
+打开文件 -> 打开 buffer -> 关闭 buffer（buffer/window 分为两种，一种可以用 q 来关闭，
+一种只能用 C-x K 或 C-x 0）
 
 执行操作 -> 撤销操作
 
 执行操作 -> 中止操作
 
-* Emacs的排查/调试（当使用emacs遇到问题时）
-我们执行一个命令，但是Emacs并没有按照我们预期的方式来执行，而且也没有告诉我们哪里
+* Emacs 的排查/调试（当使用 emacs 遇到问题时）
+我们执行一个命令，但是 Emacs 并没有按照我们预期的方式来执行，而且也没有告诉我们哪里
 出问题了，这时候，我们就得要进行排查/调试了。
 
-我们执行的每一个命令，在Emacs内部其实都是对应这一个emacs lisp函数。这些函数的运行
-日志是输出在一个名为 *message* 的buffer中，我们打开这个名为 *message* 的buffer就
-可以查看emacs lisp函数的运行日志，然后就能对Emacs就进行更进一步的排查了。
+我们执行的每一个命令，在 Emacs 内部其实都是对应这一个 emacs lisp 函数。这些函数的运行
+日志是输出在一个名为 *message* 的 buffer 中，我们打开这个名为 *message* 的 buffer 就
+可以查看 emacs lisp 函数的运行日志，然后就能对 Emacs 就进行更进一步的排查了。
 
-打开 *message* 这个buffer的操作的方式是： M-x switch-to-buffer 回车，然后在下图的
-buffer列表中选择 *message* 。
+打开 *message* 这个 buffer 的操作的方式是：M-x switch-to-buffer 回车，然后在下图的
+buffer 列表中选择 *message* 。
 
 [[./img/emacs-1.png]]
 
-补充一下，当用Emacs打开一个文件时，Emacs默认会打开 *1* 个窗口（window）和 *3* 个
-   缓冲区（buffer）。三个buffer分别为：
-1. 当前文件的buffer
-2. Emacs lisp的运行日志buffer。名为 *message*
-3. 临时buffer，相当于草稿。名为 *scratch* 
+补充一下，当用 Emacs 打开一个文件时，Emacs 默认会打开 *1* 个窗口（window）和 *3* 个
+   缓冲区（buffer）。三个 buffer 分别为：
+1. 当前文件的 buffer
+2. Emacs lisp 的运行日志 buffer。名为 *message*
+3. 临时 buffer，相当于草稿。名为 *scratch* 
 
-** 进阶：打印出backtrace
-Emacs的message buffer中只有粗略的信息，有时候无法精确地定位问题。这时候，就该拿出
+** 进阶：打印出 backtrace
+Emacs 的 message buffer 中只有粗略的信息，有时候无法精确地定位问题。这时候，就该拿出
 杀手锏 *debug-on-error* 了。执行：
 #+begin_src emacs-lisp
 M-x toggle-debug-on-error
@@ -40,10 +43,10 @@ M-x toggle-debug-on-error
 打开 *debug-on-error* ，然后执行一个命令（emacs lisp）函数，再按 *C-g* 就能打印出
 函数调用栈（[[http://stackoverflow.com/questions/14067524/how-to-show-backtrace-for-emacs][参考此文]]）。
 
-* Emacs的备份功能（自动产生的*~文件）
-当我们执行保存（如C-x C-s），Emacs在保存时发现目录下有同名文件，这时它会使用 *原
-文件名后面缀上~* 作为为新名字来保存到原目录，这就是Emacs的备份功能。Emacs的这个功
-能会导致目录下文件凌乱，我们需要稍稍地配置一下，让我们能更好地享受Emacs的备份功能。
+* Emacs 的备份功能（自动产生的*~文件）
+当我们执行保存（如 C-x C-s），Emacs 在保存时发现目录下有同名文件，这时它会使用 *原
+文件名后面缀上~* 作为为新名字来保存到原目录，这就是 Emacs 的备份功能。Emacs 的这个功
+能会导致目录下文件凌乱，我们需要稍稍地配置一下，让我们能更好地享受 Emacs 的备份功能。
 
 #+begin_src emacs-lisp
 ;;; Backup                                                                                             
@@ -52,35 +55,35 @@ M-x toggle-debug-on-error
   backup-directory-alist                                                                               
   '(("." . "~/.backup")) ; 自动备份在目录"~/.backup"下                                                 
   delete-old-versions t ; 自动删除旧的备份文件                                                         
-  kept-new-versions 6 ; 保留最近的6个备份文件                                                          
-  kept-old-versions 2 ; 保留最早的2个备份文件                                                          
+  kept-new-versions 6 ; 保留最近的 6 个备份文件                                                          
+  kept-old-versions 2 ; 保留最早的 2 个备份文件                                                          
   version-control t) ; 多次备份        
 #+end_src
 
 [[http://www.cnblogs.com/samael/articles/2033644.html][参考文章]]
 
-* Emacs/Vim的吐槽文
-+ [[http://www.cr173.com/html/11113_1.html][Emacs作为IDE编程环境的不足]]
+* Emacs/Vim 的吐槽文
++ [[http://www.cr173.com/html/11113_1.html][Emacs 作为 IDE 编程环境的不足]]
 
-* 我的.emacs和.emacs.d为啥不起效？
-按照 [[http://www.emacswiki.org/emacs/DotEmacsDotD][Emacs Wiki的说法]] ，当存在.emacs时，则优先加载.emacs，而不加
+* 我的 .emacs 和 .emacs.d 为啥不起效？
+按照 [[http://www.emacswiki.org/emacs/DotEmacsDotD][Emacs Wiki 的说法]] ，当存在.emacs 时，则优先加载.emacs，而不加
 载.emacs.d/init.el。
 
 我下载了 [[https://github.com/bbatsov/prelude][Emacs Prelude]] ，并我按照要求，放好.emacs.d/，删除.emacs，并满怀希望地打
-开emacs，发现木有生效！我在网上搜寻解决之道，还通过在在.emacs.d/init.el尾部加上打
-印到message buffer的语句来进行debug。
+开 emacs，发现木有生效！我在网上搜寻解决之道，还通过在在.emacs.d/init.el 尾部加上打
+印到 message buffer 的语句来进行 debug。
 #+BEGIN_SRC emacs-lisp
 (message "init.el ends here") 
 #+END_SRC
 
-然后我发现，我的emacs根本没有加载.emacs.d/init.el，也没有加载.emacs。这时候，我怀
-疑是我的环境搞的鬼。我用的是Mac OS X，并且从一个用户su到另外一个用户来使用emacs，
-或许某些环境变量用的还是原先用户的环境变量。于是我在shell中执行：
+然后我发现，我的 emacs 根本没有加载.emacs.d/init.el，也没有加载.emacs。这时候，我怀
+疑是我的环境搞的鬼。我用的是 Mac OS X，并且从一个用户 su 到另外一个用户来使用 emacs，
+或许某些环境变量用的还是原先用户的环境变量。于是我在 shell 中执行：
 #+BEGIN_SRC sh
-env | grep elvestar # elvestar是原先的用户名
+env | grep elvestar # elvestar 是原先的用户名
 #+END_SRC
 
-返回结果中有三个环境变量用的还是原先的用户名elvestar，应该就是这些环境变量搞的鬼！
+返回结果中有三个环境变量用的还是原先的用户名 elvestar，应该就是这些环境变量搞的鬼！
 #+BEGIN_SRC sh
 LOGNAME=elvestar
 PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/local/go/bin:/usr/texbin:/Users/elvestar/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin
@@ -94,26 +97,26 @@ export LOGNAME=zhongyi
 #+END_SRC
 
 问题终于解决了，我因此收获了几条教训：
-1. 用su来切换用户，环境变量改变不彻底。
-2. emacs根据 *LOGNAME* 来决定加载哪个.emacs.d/。
+1. 用 su 来切换用户，环境变量改变不彻底。
+2. emacs 根据 *LOGNAME* 来决定加载哪个.emacs.d/。
 
 * Mode Hooks
 我们不希望安装的每一个插件在每一种模式下都被加载，因为这样会带来不必要
-的开销，让我们的Emacs越来越慢。我们希望Emacs提供 *让插件在指定模式下加
+的开销，让我们的 Emacs 越来越慢。我们希望 Emacs 提供 *让插件在指定模式下加
 载，而在其他模式下不加载* 的功能。
 
-很显然，Emacs提供了这样的功能。语法如下：
+很显然，Emacs 提供了这样的功能。语法如下：
 #+BEGIN_SRC emacs-lisp
 (add-hook 'c++-mode-hook 'linum-mode)
 #+END_SRC
-上面的语句实现了再C++模式下开启行号显示。
+上面的语句实现了再 C++模式下开启行号显示。
 
 参考：
 + [[http://www.emacswiki.org/emacs/ModeHooks][ModeHooks (Emacs Wiki)]]
 
-* 检测Emacs是在终端下启动还是GUI下启动
+* 检测 Emacs 是在终端下启动还是 GUI 下启动
 有些配置在终端下会导致启动失败，例如字体设置等。为了能让配置在终端和
-GUI两种情况兼容，可以利用window-system这个Emacs内置变量来做检测。
+GUI 两种情况兼容，可以利用 window-system 这个 Emacs 内置变量来做检测。
 配置方法如下：
 #+BEGIN_SRC emacs-lisp
 (when window-system
@@ -123,26 +126,59 @@ GUI两种情况兼容，可以利用window-system这个Emacs内置变量来做�
 
 #+RESULTS:
 
-Google搜索结果告诉我，可以使用 *(if window-system xxx)* 来做判断，我试
-过，不行！我还不知道原因，我只知道用 *(when window-system xxx)* 是OK
+Google 搜索结果告诉我，可以使用 *(if window-system xxx)* 来做判断，我试
+过，不行！我还不知道原因，我只知道用 *(when window-system xxx)* 是 OK
 的。
 
+* Mac Emacs 的字体和排版
+Mac Emacs 默认的中文字体是很俏皮的，不能用做严肃的场合，所以我换做了冬青黑体
+（Hiragino Sans），英文则用 Monaco。
+
+#+BEGIN_SRC emacs-lisp
+(set-default-font "Monaco 15")                                                                
+ (setq default-line-spacing 2)                                                                        
+ (set-fontset-font                                                                                    
+   (frame-parameter nil 'font)                                                                        
+   'han                                                                                               
+   (font-spec :family "Hiragino Sans GB" ))    
+#+END_SRC
+
+用了一段时间，越来越感觉不顺眼。后来，终于领悟到，原来是因为 Monaco 不适合中英文
+混排！我需要重新找一种英文字体。我在知乎上找到了一篇文章 [[http://www.zhihu.com/question/19587406][中英文混排时中文与英文之
+间是否要有空格？]] ，得知了一种叫做 *Lucida Grande* 的字体。我一用，发现效果真不错
+啊！然后又再同一篇文章中，学到了中英文混排时处理空格的技巧：
+
+#+BEGIN_QUOTE
+中文正文及标题中出现的英文及数字应该使用半角方式输入，并且在左右各留一个半角空格。
+如果这些这些半角英文及数字的左边或者右边紧接着任何的中文全角括号或者其他标点符号
+的话，则不需要加入半角空格。
+#+END_QUOTE
+
+按照这种处理方法，搞了一下下，得到了如下的排版效果：
+
+[[./img/emacs-2.png]]
+
+** 让 Emacs 自动加入空格
++ [[http://coldnew.github.io/blog/2013/05/20_5cbb7.html][讓你的 emacs 自動在英文與中文之間加入空白]]
+
+*pangu-spacing* 一个字，赞！
+
 * 学习回顾
-** 成为Emacs用户 <2014-02-20 四>
-我从13年12月31日开始学习Emacs，断断续续学到现在，已经是Emacs入门了。我已经掌握
+** 成为 Emacs 用户 <2014-02-20 四>
+我从 13 年 12 月 31 日开始学习 Emacs，断断续续学到现在，已经是 Emacs 入门了。我已经掌握
 了：
 1. 基本编辑
-2. 修改~/.emacs配置
-3. 安装Emacs插件
-4. 调试Emacs，排查问题
+2. 修改~/.emacs 配置
+3. 安装 Emacs 插件
+4. 调试 Emacs，排查问题
 5. Org-mode
 
-我已经成功地吧我除了代码之外的所有笔记和文档的编辑从Vim/Sublime Text/Evernote上全
-部切换到Emacs上来了，并且感受到了 *工具升级带来的巨大便利* 。
+我已经成功地吧我除了代码之外的所有笔记和文档的编辑从 Vim/Sublime Text/Evernote 上全
+部切换到 Emacs 上来了，并且感受到了 *工具升级带来的巨大便利* 。
 
-对于Emacs附带的编辑器，我觉得它相对Vim来说非常的原始，只提供有限的移动和编辑指令。
-但即便如此，也比Evernote等工具附带的编辑器要方便很多。下一步我会尝试viper/evil插
-件，让Vim之魂附身于Emacs，同时也是解放我的 *氪金左小指* 。
+对于 Emacs 附带的编辑器，我觉得它相对 Vim 来说非常的原始，只提供有限的移动和编辑指令。
+但即便如此，也比 Evernote 等工具附带的编辑器要方便很多。下一步我会尝试 viper/evil 插
+件，让 Vim 之魂附身于 Emacs，同时也是解放我的 *氪金左小指* 。
 
 
 

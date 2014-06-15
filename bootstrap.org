@@ -7,7 +7,7 @@
 + [[http://www.revillweb.com/tutorials/twitter-bootstrap-tutorial/][Twitter Bootstrap Tutorial – Up and running with Twitter Bootstrap in 20 Minutes]]
 + [[http://django-china.cn/topic/212/][上文的中文版]]
 
-* 通过Open CDN来加速
+* 通过 Open CDN 来加速
 如果将Bootstrap放在自己的空间里面，速度可能比较慢，这回延迟整个页面的渲染。我发现
 了有一个雷锋网站提供了常用的前端开源库的加速获取：http://open.bootcss.com/ ，赞！
 
@@ -16,7 +16,16 @@
 <link href="http://cdn.bootcss.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
 #+END_SRC
 就可以方便地调用Bootstrap的css文件了。
-* Bootstrap扩展插件
+* Bootstrap 扩展插件
 + [[http://www.oschina.net/news/43645/30-amazing-plugins-extend-twitter-bootstrap][30 个惊艳的 Bootstrap 扩展插件]]
 
 我看中了 [[https://github.com/gfranko/jquery.tocify.js][jquery.tocify.js]] 和 [[http://www.datatables.net/blog/Twitter_Bootstrap_2][jquery.dataTables.js]] 。
+* 表单
++ [[http://v3.bootcss.com/css/#forms][Bootstrap 表单]]
++ [[http://www.w3cschool.cc/bootstrap/bootstrap-forms.html][Bootstrap 表单（W3cSchool）]]
+
+ Bootstrap 支持四种表单布局：
++ 垂直（默认）
++ 搜索
++ 内联
++ 水平

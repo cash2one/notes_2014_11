@@ -8,27 +8,38 @@
 ** Template
 + [[http://bibhas.in/blog/using-jinja2-as-the-template-engine-for-tornado-web-framework/][Using Jinja2 as the Template Engine for Tornado Web Framework]]
 + [[http://community.itbbs.cn/thread/20131/][Python 模板引擎性能对比]]
-+ [[http://docs.python-guide.org/en/latest/scenarios/web/][Web Applications （最下面有Tornado + Jinja2的示例）]]
++ [[http://docs.python-guide.org/en/latest/scenarios/web/][Web Applications（最下面有 Tornado + Jinja2 的示例）]]
 
 ** 项目
 + [[https://github.com/facebook/tornado/tree/master/demos/chat][Tornado demo - Chat room]]
-+ [[https://github.com/myoula/cakeshop][基于tornado、peewee、jinja2的商城]]
++ [[https://github.com/myoula/cakeshop][基于 tornado、peewee、jinja2 的商城]]
 
 ** 书籍
 + [[http://demo.pythoner.com/itt2zh/index.html][《Introduction to Tornado 中文版》]]
   
+* 用户登录/认证
+实现方式是实现一个 BaseHandler，里面实现了 get_current_user 函数。然后其他 Handler 继
+承 BashHandler，并在要做用户认证的方法（如 get 和 post）函数前面加上一个修饰器
+~@tornado.web.authenticated~  ，这样，触发该方法时，均会触发 get_current_user 函
+数，如果 get_corrent_user 放回空，则 Tornado 会自动调用 login_url，触发用户登录。
+
+* 请求处理
+** 表单与 POST
+对于 POST 类型的 Request，可以通过在 post 函数入口处 *print self.request.arguments* 打印
+出所有参数来方便调试。
+
 * 问题记录
-** 模板中的HTML转义
-默认情况，Tornado的模板系统会为插入到其中的HTML执行转义，从而在页面上
-直接显示HTML源码。但有时候我们希望不要转义，这时候需要在借助raw关键词。
-如下：
+** 模板中的 HTML 转义
+默认情况，Tornado 的模板系统会为插入到其中的 HTML 执行转义，从而在页面上直接显示
+HTML 源码。但有时候我们希望不要转义，这时候需要在借助 raw 关键词。如下：
 #+BEGIN_EXAMPLE
 {% raw *expr* %}
     Outputs the result of the given expression without autoescaping.
 #+END_EXAMPLE
-** 截取GET参数
-Tornado支持更优雅的url拼装方式，在写url路由的正则时，加入()就可以把GET
-参数捕获。例如：
+
+** 截取 GET 参数
+Tornado 支持更优雅的 url 拼装方式，在写 url 路由的正则时，加入 () 就可以把 GET 参
+数捕获。例如：
 #+BEGIN_SRC python
 app = tornado.web.Application(
      [
@@ -37,3 +48,4 @@ app = tornado.web.Application(
      ],
 )
 #+END_SRC
+

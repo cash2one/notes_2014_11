@@ -32,6 +32,6 @@ O(logn)STL的map就用红黑树来实现。
 哈希表平均效率高，平均复杂度达到O(1)，但是会有极端情况出现。另外当健稀疏时，占用
 内存多。
 
-** Linux内核中的红黑树
-Linux内核
+** Linux 内核中的红黑树
+Linux 内核
 [[http://blog.csdn.net/npy_lp/article/details/7420689][详解Linux内核红黑树算法的实现]]
