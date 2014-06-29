@@ -28,6 +28,71 @@
 对于 POST 类型的 Request，可以通过在 post 函数入口处 *print self.request.arguments* 打印
 出所有参数来方便调试。
 
+** 表单与 GET
+如果表单的 method 为 GET，那么还是用 get_argument 来获取参数。
+* SQLAlchemy
++ [[http://docs.sqlalchemy.org/en/rel_0_9/core/engines.html][Engine Configuration]]
++ [[http://docs.jinkan.org/docs/flask/patterns/sqlalchemy.html][在 Flask 中使用 SQLAlchemy]] （介绍了以非 ORM 的方式来使用）
+
+** 遍历 Model
+有一种需求，就是将需要通过遍历的方式，将一个 Model 的所有字段给吐出来展示到前端页
+面。Model 本身是无法迭代遍历的，用 for x in model 会报 *TypeError: 'LogConfig'
+object is not iterable* 的错误。
+
+我查了 Model 的所有接口，发现了__dict__，我用了一下，发现该接口把 Model 的所有字段以
+字典的方式返回，这样就很方便地遍历了。如下：
+#+BEGIN_SRC html
+<tr>
+    {% for key in log_config.__dict__ %}
+        <td>{{ log_config[key] }}</td>
+    {% endfor %}
+</tr>
+#+END_SRC
+
+** 如何 Group 和 count
+利用 SQLAlchemy 的 group_by 和 func 中的 count 函数可以轻易实现，如下：
+#+BEGIN_SRC python
+product_lines = session.query(NoahNode.department, func.count(NoahNode.department)) \
+                .group_by(NoahNode.department).all()
+#+END_SRC
+
+** filter
+*** 实现 not in
+利用 Column 的 notin_方法（感谢 PyCharm 的自动提示功能！）
+*** 实现 where in
+利用 Column 的 in_方法（好像与上面的 not in 重了）
+
+** 如何删除表中的一个记录？
+方法：
+1. 先通过 session 的 query() 配合 filter 找到该记录，返回实例
+2. 调用 session.delete(object)
+3. 调用 session.commit()
+
+参考： [[http://docs.sqlalchemy.org/en/rel_0_9/orm/session.html#delete][Using the Session]]
+
+** 更新记录
+文档里面没找到如果更新记录的方法，于是挨个尝试接口，发现 ORM 的 session 没有 update 接
+口，而且它的 flush 接口也不是用来更新记录的。
+
+最后，我尝试了 add，发现它竟然能实现 update 的功能！
+
+
+** 非 ORM 方式的使用
++ [[http://docs.jinkan.org/docs/flask/patterns/sqlalchemy.html][在 Flask 中使用 SQLAlchemy]] （介绍了以非 ORM 的方式来使用）
+
+* 打日志
+默认不把日志，除非在配置文件中配置了相关的配置型：
+#+BEGIN_SRC python
+log_to_stderr = True
+log_file_prefix = './log/minos_web.log'
+log_file_num_backups = 1000
+#+END_SRC
+
+并在 app 中加载配置：
+#+BEGIN_SRC python
+import tornado.options
+tornado.options.parse_config_file("./minos.conf")
+#+END_SRC
 * 问题记录
 ** 模板中的 HTML 转义
 默认情况，Tornado 的模板系统会为插入到其中的 HTML 执行转义，从而在页面上直接显示

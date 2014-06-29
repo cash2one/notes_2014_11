@@ -136,6 +136,32 @@ Process 29286 detached
 
 
 
+* 信号
+** 获取信号全集
+使用 kill -l 即可得到本系统的信号全集。
+#+BEGIN_SRC sh
+[work@m1-dt-minos-master02.m1.baidu.com master]$ kill -l
+ 1) SIGHUP       2) SIGINT       3) SIGQUIT      4) SIGILL
+ 5) SIGTRAP      6) SIGABRT      7) SIGBUS       8) SIGFPE
+ 9) SIGKILL     10) SIGUSR1     11) SIGSEGV     12) SIGUSR2
+13) SIGPIPE     14) SIGALRM     15) SIGTERM     17) SIGCHLD
+18) SIGCONT     19) SIGSTOP     20) SIGTSTP     21) SIGTTIN
+22) SIGTTOU     23) SIGURG      24) SIGXCPU     25) SIGXFSZ
+26) SIGVTALRM   27) SIGPROF     28) SIGWINCH    29) SIGIO
+30) SIGPWR      31) SIGSYS      34) SIGRTMIN    35) SIGRTMIN+1
+36) SIGRTMIN+2  37) SIGRTMIN+3  38) SIGRTMIN+4  39) SIGRTMIN+5
+40) SIGRTMIN+6  41) SIGRTMIN+7  42) SIGRTMIN+8  43) SIGRTMIN+9
+44) SIGRTMIN+10 45) SIGRTMIN+11 46) SIGRTMIN+12 47) SIGRTMIN+13
+48) SIGRTMIN+14 49) SIGRTMIN+15 50) SIGRTMAX-14 51) SIGRTMAX-13
+52) SIGRTMAX-12 53) SIGRTMAX-11 54) SIGRTMAX-10 55) SIGRTMAX-9
+56) SIGRTMAX-8  57) SIGRTMAX-7  58) SIGRTMAX-6  59) SIGRTMAX-5
+60) SIGRTMAX-4  61) SIGRTMAX-3  62) SIGRTMAX-2  63) SIGRTMAX-1
+64) SIGRTMAX
+#+END_SRC
+** SIGCONT
+有一些进程用 kill -9 都无法杀死（例如 pstack 和 gdb 调试时由于它们意外杀死产生的进程），
+这时候我们可以用 SIGCONT 来杀死它们。
+
 ** 案例：ulimit 与 popen 相关
 我负责的模块遇到一个问题： *popen()频繁返回 NULL* ，进而触发模块 coredump。
 这很诡异，网上也查不到答案。不得已我用 man 来查看 popen()函数的说明。

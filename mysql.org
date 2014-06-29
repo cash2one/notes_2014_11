@@ -1,0 +1,59 @@
+
+* SQL 实践经验
+** 字符串替换（REPLACE)
+具体问题：修改数据库里的一批记录，将其中的报警人字段中的指定人去掉（该报警人字段的值是由多个人组成，用分号间隔）
+
+解决方法：利用 SQL 中的内置的 replace 函数。如下：
+#+begin_src sql
+update download_config set mailList = replace(mailList, "lixxx11@baidu.com;", "") where nodeId = 200006912;
+update download_config set mailList = replace(mailList, "lixxx11@baidu.com", "") where nodeId = 200006912;
+#+end_src
+
+
+** 修改字段默认值
+#+BEGIN_SRC sql
+mysql> alter table agent_config alter zk_log_file set default "/noah/log/logagent.log";
+#+END_SRC
+参考： [[http://dev.mysql.com/doc/refman/5.1/en/alter-table.html][MySQL: 13.1.7 ALTER TABLE Syntax]]
+* 正则表达式
+下面的 SQL 实现了搜索表中 bns_name 字段不满足正确的 faker.bns 的模式的所有记录。
+#+BEGIN_SRC sh
+mysql> select log_module_id , bns_name  from minos_bns_logs where noah_node_path = "BAIDU" and bns_name not REGEXP "^[0-9.;]{1,}faker.bns";
++---------------+-----------------------------------------------------------------------------------------------------------------------------------+
+| log_module_id | bns_name                                                                                                                          |
++---------------+-----------------------------------------------------------------------------------------------------------------------------------+
+|          1252 | jx-qianqian28.jx;10.81.24.176.faker.bns                                                                                           | 
+|          1379 | 10.65.25.206;yx-jt06.yx01.faker.bns                                                                                               | 
+|          2084 | yf-amdan00-cn03.yf01;yf-amdan01-cn03.yf01;yf-amdan02-cn03.yf01;tc-amdan03-cn03.tc;tc-amdan04-cn03.tc;tc-amdan05-cn03.tc.faker.bns | 
+|          3293 | 10.65.43.159;db-hao123-mining00.db01.faker.bns                                                                                    | 
+|          5295 | ai-sf-remora00.ai01.faker.bns                                                                                                     | 
+|          5513 | db-iris-tp00.db01.faker.bns                                                                                                       | 
+|          6338 | m1-quku-api00.m1.faker.bns                                                                                                        | 
+|          7633 | tc-psop-dnsmon0.tc    .faker.bns                                                                                                     | 
+|          7710 | yf-bae-pssui00.yf01.faker.bns                                                                                                     | 
+|          7956 | cq01-ibase48.vm.faker.bns                                                                                                         | 
+|          8824 | dbl-wise-ecom13-jx.dbl01.baidu.com.faker.bns                                                                                      | 
++---------------+-----------------------------------------------------------------------------------------------------------------------------------+
+11 rows in set (0.00 sec)
+
+#+END_SRC
+* MySQL 的导入导出
+** 导出
+#+BEGIN_SRC sh
+mysqldump -h10.23.247.91 -P3306 -uinf -p inf --skip-lock-tables > inf.sql 
+#+END_SRC
+说明：由于没有 root 账号，无法 Lock table，所以只能用 ~--skip-lock-table~
+参数。
+
+** 导入
+#+BEGIN_SRC sh
+mysql -hm1-dt-log01.m1 -P3306 -uzy -p bdg_bbs < inf.sql
+#+END_SRC
+* MySQL Connector/C++
+MySQL Connector/C++ 是 MySQL 官方推荐的 C++客户端。
+
+- [[http://dev.mysql.com/doc/connector-cpp/en/connector-cpp-getting-started-examples.html][MySQL Connector/C++ Getting Started: Usage Examples]] 
+  
+隔壁组的同学包装了一个连接池，简化了该库的使用。
+
+SQL 分为两类，查询是 executeQuery，剩下的增删改都是 executeUpdate。

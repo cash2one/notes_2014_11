@@ -1,4 +1,4 @@
-#+DATE: Python的pexpect模块
+#+DATE: Python 的 pexpect 模块
 
 * 源码
 #+BEGIN_SRC python
@@ -43,3 +43,5 @@ if __name__ == "__main__":
 #+BEGIN_SRC sh
 ./ssh_and_exec.py "10.0.123.1" "ps -ef | grep process_name"
 #+END_SRC
+* 回顾 - 2014-06-17
+自从用了 Fabric，我就再也不用 pexpect 了。如果不出意外，这篇笔记就不再更新了。

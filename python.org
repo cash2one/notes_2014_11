@@ -1,28 +1,28 @@
 #+TITLE: Python
 
 * 前言
-在浏览Google的一些网页之后，突然再次涌起了学习Python的热情。于是我无限期停止了学
-习Ruby的进程，开始系统习学习Python。
+在浏览 Google 的一些网页之后，突然再次涌起了学习 Python 的热情。于是我无限期停止了学
+习 Ruby 的进程，开始系统习学习 Python。
 
-我第一次接触Python是在2011年，那时我在阅读《集体智慧编程》，并照着书敲完了上面是
-所有Python代码。之后在工作中也经常会用到Python写脚本，每次用的时候，基础语法还好，
+我第一次接触 Python 是在 2011 年，那时我在阅读《集体智慧编程》，并照着书敲完了上面是
+所有 Python 代码。之后在工作中也经常会用到 Python 写脚本，每次用的时候，基础语法还好，
 但是一旦用到函数库，我就不得不通过搜索，非常的没效率。我一直想找个机会来进行几轮
 系统的学习。
 
 * 资料搜集
 ** 文档
-+ [[http://docs.python.org/2/][Python 2.7文档]]
-+ [[http://docs.python.org/2/library/index.html][Python标准库]]
++ [[http://docs.python.org/2/][Python 2.7 文档]]
++ [[http://docs.python.org/2/library/index.html][Python 标准库]]
 
 ** 书籍
 + [[http://woodpecker.org.cn/diveintopython/][深入 Python :Dive Into Python 中文版（啄木鸟社区）]]
-+ [[http://book.douban.com/subject/3117898/][Python源码剖析]]
++ [[http://book.douban.com/subject/3117898/][Python 源码剖析]]
 
-* re模块
+* re 模块
 ** group
 + [[https://docs.python.org/2/library/re.html][re — Regular expression operations]]
 
-下面面的代码利用re模块实现了正则查找和捕获，将一行日志中的pid字段给捕获
+下面面的代码利用 re 模块实现了正则查找和捕获，将一行日志中的 pid 字段给捕获
 并打印。
 #+BEGIN_SRC python
 #!/bin/env python
@@ -37,9 +37,35 @@ for line in sys.stdin:
         print pid 
 #+END_SRC
 
+* pycurl
+** curl 与 ftp
+通过 curl 配合 ftp，能实现不登陆机器就能方便地实现一些文件系统操作。如下面几行代码
+实现了远程 ls 一个指定目录的功能：
+#+BEGIN_SRC python
+# ftp_dir 变量的格式例如：ftp://ftp.cn.freebsd.org/pub/FreeBSD/
+def ListDirectory(ftp_dir):
+    buf = cStringIO.StringIO()
+    c = pycurl.Curl()
+
+    c.setopt(c.URL, ftp_dir)
+    c.setopt(c.WRITEFUNCTION, buf.write)
+    c.setopt(pycurl.TIMEOUT, 1)
+    c.perform()
+
+    file_list = buf.getvalue()
+    buf.close()
+    return file_list
+#+END_SRC
+** 超时设置
+curl 是一种网络交互过程，这种过程必须要考虑超时设置。
+设置方法如下：
+#+BEGIN_SRC python
+# 设置超时为 1 秒
+c.setopt(pycurl.TIMEOUT, 1)
+#+END_SRC
 * 问题记录
-** Mac下pip安装一些模块失败，报"clang: error"
-我在Mac安装PIL，但是总是失败。错误信息如下：
+** Mac 下 pip 安装一些模块失败，报"clang: error"
+我在 Mac 安装 PIL，但是总是失败。错误信息如下：
 #+BEGIN_SRC sh
 sudo pip install Pillow 
 Downloading/unpacking Pillow
@@ -58,7 +84,7 @@ Cleaning up...
 ...
 #+END_SRC
 
-用网上找到了N多方法尝试都无法解决此问题，最后，终于找到了这篇文章：
+用网上找到了 N 多方法尝试都无法解决此问题，最后，终于找到了这篇文章：
 + [[http://bruteforce.gr/bypassing-clang-error-unknown-argument.html][Bypassing “clang: error: unknown argument”]]
 
 并按照这篇文章提供的解法来安装，终于成功。
@@ -66,22 +92,22 @@ Cleaning up...
 sudo ARCHFLAGS=-Wno-error=unused-command-line-argument-hard-error-in-future  pip install pillow
 #+END_SRC
 
-该问题的原因是： *Mac的LLVM compiler升级新版后，将识别不了的命令行参数
-当成错误* 。这个改动导致了很多通过pip安装的Python模块和通过gem安装的
-Ruby包发生了安装失败的问题。
+该问题的原因是： *Mac 的 LLVM compiler 升级新版后，将识别不了的命令行参数
+当成错误* 。这个改动导致了很多通过 pip 安装的 Python 模块和通过 gem 安装的
+Ruby 包发生了安装失败的问题。
 
-这里我不得不吐槽一下Mac，在非Xcode开发的环境兼容性的处理上 *不够严肃*
-（相对一些Linux发行版）。
+这里我不得不吐槽一下 Mac，在非 Xcode 开发的环境兼容性的处理上 *不够严肃*
+（相对一些 Linux 发行版）。
 
 ** bad interpreter: Permission denied
-我在公司的机器上安装percol，装好一运行，出现如下结果：
+我在公司的机器上安装 percol，装好一运行，出现如下结果：
 #+BEGIN_SRC sh
 [work@cq01-testing-ecom327.cq01.baidu.com master]$ percol
 -bash: /home/work/.jumbo/bin/percol: /home/users/zhongyi01/.jumbo/bin/python: bad interpreter: Permission denied
 #+END_SRC
 
-怀疑是Python解释器环境配置问题，于是打开*/home/work/.jumbo/bin/percol*
-，发现该Python脚本的第一行写着：
+怀疑是 Python 解释器环境配置问题，于是打开*/home/work/.jumbo/bin/percol*
+，发现该 Python 脚本的第一行写着：
 #+BEGIN_SRC python
 #!/home/users/zhongyi01/.jumbo/bin/python
 #+END_SRC
@@ -100,7 +126,7 @@ sys.setdefaultencoding('utf8')
 #+END_SRC
 + [[http://www.cnblogs.com/DjangoBlog/p/3543430.html]]
 * 学习回顾 
-** 或许我需要的只是背诵一下api，以及一个能自动提示的IDE <2014-02-23 日>
+** 或许我需要的只是背诵一下 api，以及一个能自动提示的 IDE <2014-02-23 日>
 翻几本Python书，发现都眼熟的很，可看的不多。
 
 

@@ -48,6 +48,12 @@ if (this != top) {
     alert("true");
 }
 #+END_SRC
+* JQuery
+** 使用 JQuery 隐藏元素
+使用 css 方法。
+#+BEGIN_SRC js
+ $('#datatablizer').css('display', 'none');
+#+END_SRC
 * 如何在前端获取 Cookie
 Javascript 获取 Cookie 中某字段的方式极其原始，我们可以使用 jquery.cookie.js 这个库，让获
 取更为简洁。
@@ -73,3 +79,31 @@ table.dataTable thead .sorting, table.dataTable thead .sorting_asc {
 * 表单
 ** 单选框 radio
 一定要将两个 radio 的 name 设为同样的值，才能保证 radio 为单选。
+* 问题记录
+** href, button, type="submit" and POST
+当我们想通过$.ajax()或$.post()等方式来向后端发起请求时，要保证发起该 JS 函数的元素
+拥有 submit 的能力， +否则，浏览器会报出 *post canceled* 的错误。+
+
+Wait，我想复现该场景时，发现不成功，即使用<a>元素，也能发起 POST/GET 成功。经过深
+入的调查，发现 *罪魁祸首不是 submit 或 button，而是 href！* 
+#+BEGIN_SRC html
+<a href="" class="btn btn-danger btn-xs" onclick="DeleteLog({{ apply_log.id }})">删除</a></td>
+<script type="text/javascript">
+        function DeleteLog(id) {
+            $.post("/log/delete", {'id': id}, function(result) {
+            });
+ }
+ </script>
+#+END_SRC
+
+只要去掉 href=""，就能 POST/GET 成功。而浏览器报的 ~post canceled~ 的错误其实因为
+这个 href，导致了 POST/GET 被取消掉了。
+
+** JQuery 库文件加载不全问题
+网站新上线一版后，发现部分依赖 JQuery 的功能不可用了，通过浏览器排查，发现是
+jquery.js 加载不全，只加载到 3146 行就中断了，报的错误是 *Unexpected end of input*
+。我 Google N 久，换了 N 个关键字都不管用。最后，我在 [[http://blog.163.com/wys8211@126/blog/static/3615333520105251450190/][解决 jQuery 无法在 Apache 上加载的
+问题]] 一文中发现 ~然后清空所有浏览器缓存~ 这个词，给了我灵感，于是我按住 control 强
+制刷新了页面，发现 jquery.js 终于能加载完成，问题解决。
+
+问题原因： *浏览器缓存！！！*
