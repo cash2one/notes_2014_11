@@ -33,7 +33,6 @@
 * SQLAlchemy
 + [[http://docs.sqlalchemy.org/en/rel_0_9/core/engines.html][Engine Configuration]]
 + [[http://docs.jinkan.org/docs/flask/patterns/sqlalchemy.html][在 Flask 中使用 SQLAlchemy]] （介绍了以非 ORM 的方式来使用）
-
 ** 遍历 Model
 有一种需求，就是将需要通过遍历的方式，将一个 Model 的所有字段给吐出来展示到前端页
 面。Model 本身是无法迭代遍历的，用 for x in model 会报 *TypeError: 'LogConfig'
@@ -76,9 +75,56 @@ product_lines = session.query(NoahNode.department, func.count(NoahNode.departmen
 
 最后，我尝试了 add，发现它竟然能实现 update 的功能！
 
-
 ** 非 ORM 方式的使用
 + [[http://docs.jinkan.org/docs/flask/patterns/sqlalchemy.html][在 Flask 中使用 SQLAlchemy]] （介绍了以非 ORM 的方式来使用）
+
+** 使用 MySQL engine
++ [[http://docs.sqlalchemy.org/en/rel_0_9/core/engines.html][Engine Configuration]]
+先给出最终我使用的方法吧：
+#+BEGIN_SRC python
+# 总共出现了三个 minos_test。第一个是用户名，第二是密码，第三个是数据库名
+engine = create_engine('mysql://minos_test:minos_test@localhost:3306/minos_test?charset=utf8', encoding="utf-8", echo=True)
+#+END_SRC
+
+SQLAlchemy 的 MySQL 方言支持三种 DBAPI，它们的用法分别如下：
+#+BEGIN_SRC python
+# default
+engine = create_engine('mysql://scott:tiger@localhost/foo')
+# mysql-python
+engine = create_engine('mysql+mysqldb://scott:tiger@localhost/foo')
+# MySQL-connector-python
+engine = create_engine('mysql+mysqlconnector://scott:tiger@localhost/foo')
+# OurSQL
+engine = create_engine('mysql+oursql://scott:tiger@localhost/foo')
+#+END_SRC
+
+我们用的是默认，也就是 mysql-python，也就是 MySQLdb 这个 Python 模块。注意，该模块名
+不叫 MySQLdb，而叫 MySQL-python，故安装方法如下：
+#+BEGIN_SRC sh
+sudo pip install MySQL-python
+#+END_SRC
+
+** DateTime 的处理
+可以定义一个 Column 为 DateTime 类型的，需要 from sqlalchemy import datetime
+
+insert 时，对于一个 DateTIme 类型的字段设的值其实就是 python 自带的 datetime 类型，我们
+可以 import datetime，并用 datetime 的构造接口来生成一个 DateTime。例如，我们想从一
+个 timestamp 来构造 DateTIme，那么可以这么搞：
+#+BEGIN_SRC python
+import datetime
+import time
+
+ts = int(ts_str)
+ts_max = time.mktime(datetime.datetime.max.timetuple())
+if ts > ts_max:
+    ts = ts_max
+    dt = datetime.datetime.fromtimestamp(ts)
+#+END_SRC
+三点说明：
+1. timestamp 有最大值限制，该值小于整型的最大值。它的最大值是 9999 年 12 月 31 日的最后一
+   秒。为了防止越界，我会拿它与（用抠脚的方式算出的）最大时间戳先做个比较
+2. 想要使用 fromtimestamp，需要 datetime.datetime.，而不是 datetime.
+3. 应该有个更优雅的获取最大 timestamp 的方法
 
 * 打日志
 默认不把日志，除非在配置文件中配置了相关的配置型：

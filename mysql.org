@@ -9,7 +9,6 @@ update download_config set mailList = replace(mailList, "lixxx11@baidu.com;", ""
 update download_config set mailList = replace(mailList, "lixxx11@baidu.com", "") where nodeId = 200006912;
 #+end_src
 
-
 ** 修改字段默认值
 #+BEGIN_SRC sql
 mysql> alter table agent_config alter zk_log_file set default "/noah/log/logagent.log";
@@ -49,6 +48,33 @@ mysqldump -h10.23.247.91 -P3306 -uinf -p inf --skip-lock-tables > inf.sql
 #+BEGIN_SRC sh
 mysql -hm1-dt-log01.m1 -P3306 -uzy -p bdg_bbs < inf.sql
 #+END_SRC
+
+* MySQL 的安装
+** 启动 mysqld
+修改配置中的服务器端口号为 8306（为了让外网能访问公司的 mysqld），然后执行 mysqld，
+mysql 服务器就简单地启动起来了。
+** 创建数据库
+#+BEGIN_SRC sql
+create database minos_test;
+#+END_SRC
+** 创建用户
+#+BEGIN_SRC sql
+CREATE USER 'minos_test'@'%' IDENTIFIED BY 'minos_test';
+#+END_SRC
+** 赋权限
+下面语句赋予了用户 minos_test 在任何机器上 minos_test 数据库中所有表的所有权限。
+#+BEGIN_SRC sql
+grant all privileges on minos.* to minos_test@'%' identified by 'minos_test';
+#+END_SRC
+
+** 自动补全
+按 tab 自动是 mysql client 的设置，故需要在[mysql]下面配置，如下：
+#+BEGIN_SRC sh
+[mysql] 
+auto-rehash 
+#+END_SRC
+顺带提一句，Mac 下 mysql 的配置的默认路径是 */etc/my.conf* 。
+
 * MySQL Connector/C++
 MySQL Connector/C++ 是 MySQL 官方推荐的 C++客户端。
 
@@ -57,3 +83,13 @@ MySQL Connector/C++ 是 MySQL 官方推荐的 C++客户端。
 隔壁组的同学包装了一个连接池，简化了该库的使用。
 
 SQL 分为两类，查询是 executeQuery，剩下的增删改都是 executeUpdate。
+
+* 问题记录：
+** ERROR 1044 (42000): Access denied for user ''@'localhost' to database
+当我执行 *mysql -uminos_test -Dminos_test -pminos_test;* 时报这个错误，我百思不
+得其解，为啥我填写了用户名，但是报错中会提示我使用了一个空的用户名？后来我在 [[http://blog.csdn.net/tys1986blueboy/article/details/7056835][这
+篇文章]] 上找到了答案，原来是我的 mysql.user 表中出现了用户名为空的 User。
+
+** ERROR 1133 (42000): Can't find any matching row in the user table
+原因：用户不存在！如果你是明明添加了用户，但是仍然这个错，那么就需要先执行：
+*FLUSH PRIVILEGES;*

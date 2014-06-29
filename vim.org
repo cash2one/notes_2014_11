@@ -1,17 +1,17 @@
-* 80% - 20%理论在Vim中的体现
+* 80% - 20%理论在 Vim 中的体现
 ** 文件间的跳转
 
 | 跳转类型                | 快捷健            | 相关插件                              |
 |-------------------------+-------------------+---------------------------------------|
-| .h与.cpp之间            | <leader>a         | a.vim                                 |
-| .h/.cpp与_test.cpp之间  | 需要我完善 TODO   | 拟作at.vim                            |
-| 在include语句上直接跳转 | gf                | gf是Vim本身支持的，但是需要预设path   |
-| 跳转到上一处            | C-o               | Vim本身支持                           |
-| 跳转到下一处            | C-i               | Vim本身支持                           |
-| 跳转到变量/函数的定义处 | C-]/:cs find g    | ctags/cscope工具，我用得还不够好 TODO |
+| .h 与.cpp 之间            | <leader>a         | a.vim                                 |
+| .h/.cpp 与_test.cpp 之间  | 需要我完善 TODO   | 拟作 at.vim                            |
+| 在 include 语句上直接跳转 | gf                | gf 是 Vim 本身支持的，但是需要预设 path   |
+| 跳转到上一处            | C-o               | Vim 本身支持                           |
+| 跳转到下一处            | C-i               | Vim 本身支持                           |
+| 跳转到变量/函数的定义处 | C-]/:cs find g    | ctags/cscope 工具，我用得还不够好 TODO |
 | 跳到指定文件（通用） | 我要继续改进 TODO | NERD_tree.vim/lookupfiles.vim         |
-* Vim文本对象
-使用 *:help text-objects* ，查看帮助，发现了Vim的这个强大功能。Vim对于 *文本编
+* Vim 文本对象
+使用 *:help text-objects* ，查看帮助，发现了 Vim 的这个强大功能。Vim 对于 *文本编
 辑* 这个领域的问题模型做了很完善的抽象，所以它如此的锋利。
 
 ** 用法示例
@@ -26,18 +26,18 @@ viw
 #+END_EXAMPLE
 
 * Buffer（寄存器）与复制粘贴
-在Vim中执行复制后，会把内容复制到一个buffer中。Vim会维护者多个buffer，即使退出
-Vim，这些buffer依然存在。buffer分为两类：
+在 Vim 中执行复制后，会把内容复制到一个 buffer 中。Vim 会维护者多个 buffer，即使退出
+Vim，这些 buffer 依然存在。buffer 分为两类：
 | 类别             | 数目        | 复制操作举例                   | 粘贴操作举例                          |
 |------------------+-------------+--------------------------------+---------------------------------------|
-| 默认buffer       | 空，1个      | yy，复制当前行到默认buffer中   | p，粘贴默认buffer的内容到当前位置     |
-| Numbered Buffers | 0-9，共10个 | ""yy，将当前复制到buffer 2中   | "2p，将buffer 2中的内容粘贴到当前位置 |
-| Named Buffers    | a-z，共23个 | "a7yy，将第7行复制到buffer a中 | "ap，将buffer a中的内容复制到当前位置 |
+| 默认 buffer       | 空，1 个      | yy，复制当前行到默认 buffer 中   | p，粘贴默认 buffer 的内容到当前位置     |
+| Numbered Buffers | 0-9，共 10 个 | ""yy，将当前复制到 buffer 2 中   | "2p，将 buffer 2 中的内容粘贴到当前位置 |
+| Named Buffers    | a-z，共 23 个 | "a7yy，将第 7 行复制到 buffer a 中 | "ap，将 buffer a 中的内容复制到当前位置 |
 
-*注意* ：Numbered Buffers是个循环队列，每次执行复制到默认buffer后，该队列会整体右移，
-而buffer 0会被默认buffer占据。
+*注意* ：Numbered Buffers 是个循环队列，每次执行复制到默认 buffer 后，该队列会整体右移，
+而 buffer 0 会被默认 buffer 占据。
 
-Vim提供了一个 *非常有用的查看当前各个buffer的指令* ：
+Vim 提供了一个 *非常有用的查看当前各个 buffer 的指令* ：
 #+BEGIN_EXAMPLE
 :reg
 #+END_EXAMPLE
@@ -46,6 +46,14 @@ Vim提供了一个 *非常有用的查看当前各个buffer的指令* ：
 
 [[./img/vim-1.png]]
 
+* 第三轮 VIm 学习
+前段时间做过一次
+** 文章
++ [[http://stevelosh.com/blog/2010/09/coming-home-to-vim/][Coming Home to Vim]]
+** 插件
++ [[http://kien.github.io/ctrlp.vim/][ctrlp.vim: Full path fuzzy file, buffer, mru, tag, ... finder for Vim.]]
++ [[http://zuyunfei.com/2013/05/16/killer-plugin-of-vim-youcompleteme/][vim 中的杀手级插件: YouCompleteMe]]
++ [[http://vimawesome.com/plugin/youcompleteme][YOUCOMPLETEME: A CODE-COMPLETION ENGINE FOR VIM]]
 * 小贴土
 ** 禁止鼠标选中时自动转换为选择模式
 #+begin_example
