@@ -77,6 +77,12 @@ product_lines = session.query(NoahNode.department, func.count(NoahNode.departmen
 
 ** 非 ORM 方式的使用
 + [[http://docs.jinkan.org/docs/flask/patterns/sqlalchemy.html][在 Flask 中使用 SQLAlchemy]] （介绍了以非 ORM 的方式来使用）
+我是这样用的：
+#+BEGIN_SRC python
+data_slices = engine.execute('SELECT * FROM data_slice WHERE log_module_id = ' + str(log_module_id) + ' ORDER BY base_time DESC')
+#+END_SRC
+execute()返回了一种类型为 ResultProxy 的结果集。 *ResultProxy 可以遍历，也有 first()
+方法，但是没有 all()方法*
 
 ** 使用 MySQL engine
 + [[http://docs.sqlalchemy.org/en/rel_0_9/core/engines.html][Engine Configuration]]
@@ -126,8 +132,39 @@ if ts > ts_max:
 2. 想要使用 fromtimestamp，需要 datetime.datetime.，而不是 datetime.
 3. 应该有个更优雅的获取最大 timestamp 的方法
 
+** unique key
+如果一张表只有一个 unique key，那么直接在 Column 中设置 unique=True 即可。如果一张表
+中有多个 unique key，则要通过 __table_args__ 来设置 UniqueConstraint。例子如下：
+#+BEGIN_SRC python
+class MinosStat(Base):
+    __tablename__ = 'minos_stat'
+
+    id = Column(Integer, primary_key=True)
+    log_module_id = Column(Integer, nullable=False)
+    base_date = Column(DateTime, nullable=False)
+    noah_node_id = Column(Integer, nullable=False)
+    total_slices_num = Column(Integer)
+    ready_slices_num = Column(Integer)
+    alarm_slices_num = Column(Integer)
+    avg_delay_time = Column(Integer)
+    final_delay_time = Column(Integer)
+
+    __table_args__ = (UniqueConstraint('log_module_id', 'base_date', name='unique'),)
+#+END_SRC
+
+** 问题记录
+*** ResourceClosedError: This result object is closed.
+我用非 ORM 的方式来使用 SQLAlchemy，当我执行完 execute，返回给我一个结果集，我先把它
+遍历 print 出来进行调试。我发现可以 print 出来，但是模板中却无法使用该结果集，并且报
+出上面的错误。这时我猜想:
+#+BEGIN_EXAMPLE
+sqlalchemy.engine.result.ResultProxy 这种类型是一次性的！遍历完了，它就会自动清空掉。
+#+END_EXAMPLE
+
+于是我尝试只在模板中遍历，这时候，可以一切正常了！
+
 * 打日志
-默认不把日志，除非在配置文件中配置了相关的配置型：
+默认不打日志，除非在配置文件中配置了相关的配置项：
 #+BEGIN_SRC python
 log_to_stderr = True
 log_file_prefix = './log/minos_web.log'
@@ -139,6 +176,44 @@ log_file_num_backups = 1000
 import tornado.options
 tornado.options.parse_config_file("./minos.conf")
 #+END_SRC
+* 加载配置
+Tornado 的 options 模块实现了类似于 GFlags 的功能，本笔记也提到了通过 options 模块的
+parse_config_file 来将日志相关的配置加载到应用中。
+
+除了 Tornado 原生的配置项外，options 模块还支持用户自定义配置型。使用流程是：
+1. 在用到该配置项的地方 define 这个配置项，可以预设 default 值。
+2. 在配置文件或者启动命令行中为该配置项设值。
+3. 在 main 函数执行 options.parse_config_file() 或 options.parse_command_line()
+4. 使用它吧！
+ 
+下面是一个具体的例子：
+** 自定义 options 的具体例子
+在 models.py 中定义配置项
+#+BEGIN_SRC python
+from tornado.options import define, options
+
+define('db_engine_config', default='sqlite:///minos.db', help='database engine')
+#+END_SRC
+
+在配置文件 minos.conf 中设值
+#+BEGIN_SRC sh
+db_engine_config = 'mysql://minos_test:minos_test@localhost1:3306/minos_test?charset=utf8'
+#+END_SRC
+
+在 main.py 中加载
+#+BEGIN_SRC python
+import tornado.options
+
+tornado.options.parse_config_file("./minos.conf")
+#+END_SRC
+
+在 models.py 中使用（注意，是用 options.options.xxx 调，而不是 options.xxx 调）
+#+BEGIN_SRC python
+from tornado.options import define, options
+
+engine = create_engine(options.db_engine_config, encoding="utf-8", echo=True)
+#+END_SRC
+
 * 问题记录
 ** 模板中的 HTML 转义
 默认情况，Tornado 的模板系统会为插入到其中的 HTML 执行转义，从而在页面上直接显示

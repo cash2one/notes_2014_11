@@ -1,0 +1,7 @@
+#+TITLE: Pandoc
+#+DATE: 2014-07-28
+
+* html -> rst
+#+BEGIN_SRC sh
+pandoc -s -t rst --toc minos-user-manual.html -o user_manual.rst
+#+END_SRC

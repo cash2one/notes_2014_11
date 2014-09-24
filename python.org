@@ -63,6 +63,48 @@ curl 是一种网络交互过程，这种过程必须要考虑超时设置。
 # 设置超时为 1 秒
 c.setopt(pycurl.TIMEOUT, 1)
 #+END_SRC
+* datetime
+** timedelta
+两个 datetime 相减就能得到一个 timedelta，所以要想得到两个 datetime 相差的秒数，可以
+拿它们相减，并对得到的 timedelta 调用 seconds 方法。下面例子演示了对数据库表中的
+DateTime 类型字段取它们相差的秒数：
+#+BEGIN_SRC python
+data_slices = engine.execute('SELECT base_time, end_time, ready_time, data_size FROM data_slice '
+                                     'WHERE log_module_id = ' + str(log_module_id) +
+                                     ' AND DATE(base_time) = "' + base_date + '"')
+
+for data_slice in data_slices:
+    slice_delay_time = (data_slice.ready_time - data_slice.end_time).seconds
+#+END_SRC
+** string -> datetime -> timestamp
+#+BEGIN_SRC python
+datetime_start = "2014-07-29 18:00:00"
+datetime_end = "2014-07-29 19:00:00"
+timestamp_start = int(time.mktime(datetime.datetime.strptime(datetime_start, '%Y-%m-%d %H:%M:%S').timetuple()))
+timestamp_end = int(time.mktime(datetime.datetime.strptime(datetime_end, '%Y-%m-%d %H:%M:%S').timetuple()))
+#+END_SRC
+
+感想：很坑爹，很丑陋，调用了 N 多时间相关的函数。
+
+* 调用子进程
+Python 里有 N 种方法调用子进程，我自己就用过 os.system 和 os.popen3，此外还有
+subprocess 和 commands。
+
+我有个需求，就是在 Python 中调用公司一个命令行工具来获取某个 Naming Service 的全部实例的
+信息。我关注的是调用的返回状态码（用以判断调用成功与否），和标准输出信息（进一步
+解析，返回给前端），我注意到了 commands，发现它完美契合我的需求，并且据 [[http://blog.csdn.net/menglei8625/article/details/7494094][此文]] 的说
+法说还有 *不阻塞* 的特性（但经过我的测试，发现 *不阻塞* 纯属妄想）
+
+顺带说一句，公司环境下有这个命令行，但是我在我的 Mac 下开发，没有这个命令行，于是
+我机智地 Mock 了一把。如下：
+#+BEGIN_SRC sh
+sudo vi /bin/get_instance_by_service
+
+echo "tc-mo-ucenter00.tc 10.26.185.29 mimo-ucenter-wiaui.MO.all 0 0                                    
+tc-mo-wap03.tc 10.26.198.51 wap.MO.tc 404 0                                                            
+tc-mo-wap04.tc 10.26.198.71 wap.MO.tc 404 0"
+#+END_SRC
+
 * 问题记录
 ** Mac 下 pip 安装一些模块失败，报"clang: error"
 我在 Mac 安装 PIL，但是总是失败。错误信息如下：
@@ -127,6 +169,6 @@ sys.setdefaultencoding('utf8')
 + [[http://www.cnblogs.com/DjangoBlog/p/3543430.html]]
 * 学习回顾 
 ** 或许我需要的只是背诵一下 api，以及一个能自动提示的 IDE <2014-02-23 日>
-翻几本Python书，发现都眼熟的很，可看的不多。
+翻几本 Python 书，发现都眼熟的很，可看的不多。
 
 

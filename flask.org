@@ -1,0 +1,98 @@
+#+TITLE: Flask
+#+DATE: 2014-08-29
+
+* 前言
+Tornado 用了大半年，有些不爽的地方，主要在于 Tornado 太自由了，无法在所谓的 "最佳
+实践" 上给我指导。想换回 Django，但一想到它的 ORM 和 Template System，我又产生了
+抗拒之心。于是，我想到了 Flask。
+
+Flask 是著名的 Pocoo 团队出品的 Python Web 框架。
+
+* 资料搜集
++ [[http://python-china.org/topic/93][flask 的优点是什么？]]
++ [[http://neue.v2ex.com/t/28701][有没有用 Flask 做的比较大的开源项目？]]
+
+** Flask Blog
++ [[http://blog.miguelgrinberg.com/post/about-this-blog]]
++ [[http://www.jamesharding.ca/posts/simple-static-markdown-blog-in-flask/][Build a Simple, Static, Markdown-Powered Blog with Flask]]
+
+** 谁在使用 Flask？
++ [[https://bitbucket.org/thomaswaldmann/moin-2.0][MoinMoin - a wiki engine in Python]] 
+
+* 学习 Flask 文档
+** 官方文档
++ [[http://dormousehole.readthedocs.org/en/latest/index.html][Flask 中文文档]]
+virtualenv 是个好东西，解决了广受诟病的 Python 部署的环境依赖问题。在 virtualenv 下安
+装 Flask：
+1. sudo pip install virtualenv
+2. . venv/bin/activate
+3. sudo pip install Flask
+   
+打开调试模式（不需要每次修改代码后都重启 Flask），这个功能真赞啊。
+#+BEGIN_SRC python
+app.run(debug=True)
+#+END_SRC
+
+另外，打开调试模式后，还可以获得另外的好处，就是出错时，能在网页上弹出非常详细的
+错误调试信息，让开发者能快速定位错误，而且还能在 Web 上直接调试！再次好顶赞啊！不
+过要记住， *生产环境下不能打开调试模式* 。
+
+Flask 默认使用 Jinja2 模板，相对 Tornado，它加入了很多便利的措施。如：
+1. 直接可以调用 render_template 来渲染 Jinja2 模板。
+2. 模板内部可以直接访问 request，session，g 对象和 get_flashed_messages() 函数。
+   
+request 对象如同 Tornado 的 self.request 一样。由它可以通过 key 获取表单的各个
+value，如果 key 不存在，会抛出个 KeyError 的异常。如果不捕捉，会弹出 400（请求出
+错）页面，用户可能会略有不爽。如果通过 request.args.get('key', '') 来获取的话，则
+会好一点。
+
+session 对象可以用来在不同的请求间传递信息，这点类似于 Cookie。但是 session 可以
+加密，没有密钥的话，用户无法修改它。session 和 request 一样，都是内置变量。
+
+消息闪现，日志和部署。我发现 Flask 可以用过 Tornado 部署，这个很赞，我打喜欢在
+Web 服务器上直接部署，我喜欢部署在 WSGI 容器里，通过反向代理的这种部署方式。
+
+ 应用环境。。。
+
+请求环境。。。
+** The Flask Mega-Tutorial
++ [[http://www.pythondoc.com/flask-mega-tutorial/index.html][The Flask Mega-Tutorial (zh_cn)]]
+  
+这篇教程里的 Web 表单一章介绍了使用 Flask-WTF 扩展来快捷地实现表单。
++ [[http://www.pythondoc.com/flask-mega-tutorial/webforms.html][Web 表单]]
+
+另外，官方文档里也提到用 WTForms 来实现表单验证。
++[[http://dormousehole.readthedocs.org/en/latest/patterns/wtforms.html][使用 WTForms 进行表单验证]]
+
+| sdf | sdf | sdf | sdf | sdf |
+|-----+-----+-----+-----+-----|
+| sdf | sdf | sdf | sdf | dsf |
+* 阅读 Flask 源码
+** 源码总览和阅读意义
+通过阅读 Flask 的源码，我想知道或者获得：
++ Web 框架实现 URL 分发，参数解析，Session 支持等功能的原理。
++ Flask 是如何支持扩展的。
++ 从源码角度学习 Flask 的功能和用法
++ 以后我用 Flask 出问题，我想更轻易地排查出问题原因。
+
+Flask 0.10.1 的源码有 5345 行，而 Tornado 的源码有 15811 行，Flask 依赖的
+Werkzeug 则有 14622 行。Tornado 比 Flask 源码多这么多的原因是 Tornado 实现了 一个
+Http Server，以及 IO Loop，Http Client 等，而 Flask 是个纯粹的 Web 框架，大量依赖
+其他 Python 库，甚至连 Route 功能都是由 Werkzeug 提供的。由此也已看出，用 Python
+开发出一个 Web 框架在技术上是件很容易的事情。
+
+** app.py
+该文件实现了主类 Flask，Flask 开头定义了几个配置项，如 DEBUG，TESTTING，
+SECRET_KEY 等，并为它们设置了缺省值。
+
+*route()* 方法定义在 Flask 类里，以修饰器的方式来将一个 View Function 注册给一个 URL
+Rule。在内部的 decorator() 函数中是调用 self.add_url_rule(rule, endpoint, f,
+**options) 来实现真正的注册。
+
+*add_url_rule()* 方法负责 生成 Rule，然后加入到 url_map 中。这两步涉及到的 Rule 和
+Map 其实是 werkzeug.routing 提供的， 不过从 Endpoint 到 View Function 的映射是由
+Flask 来维护的（Endpoint 就是路由的终点，是 werkzeug 定义的概念，Flask 沿用）。
+
+*dispatch_request()* 函数在执行之前，路由过程就已经完成（其实是由
+werkzeug.routing 来完成的）。 如果之前的路由出错了，在这个函数里会执行路由异常过
+程。在这个的末尾会调用真正的 View Function，也就是用户自己定义的部分。

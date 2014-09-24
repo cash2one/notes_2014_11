@@ -1,0 +1,13 @@
+#+TITLE: Jinja Template System
+#+DATE: 2014-07-30
+
+* 内置函数/过滤器
+** 数值取整
+使用内置的 round 函数。用法如下：
+#+BEGIN_SRC python
+{% if data_slice.data_size > 512 * 1024 * 1024 %}
+    {{ (data_slice.data_size / (1024 * 1024 * 1024)) | round(2) }} GB
+{% endif %}
+#+END_SRC
+
+Jinja 内置函数的使用模式基本都是如上的 filter 风格。参考：[[http://jinja.pocoo.org/docs/templates/#list-of-builtin-filters][Template Designer Documentation]]

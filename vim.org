@@ -54,6 +54,7 @@ Vim 提供了一个 *非常有用的查看当前各个 buffer 的指令* ：
 + [[http://kien.github.io/ctrlp.vim/][ctrlp.vim: Full path fuzzy file, buffer, mru, tag, ... finder for Vim.]]
 + [[http://zuyunfei.com/2013/05/16/killer-plugin-of-vim-youcompleteme/][vim 中的杀手级插件: YouCompleteMe]]
 + [[http://vimawesome.com/plugin/youcompleteme][YOUCOMPLETEME: A CODE-COMPLETION ENGINE FOR VIM]]
++ [[https://github.com/rking/ag.vim]]
 * 小贴土
 ** 禁止鼠标选中时自动转换为选择模式
 #+begin_example

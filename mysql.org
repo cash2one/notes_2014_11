@@ -49,6 +49,15 @@ mysqldump -h10.23.247.91 -P3306 -uinf -p inf --skip-lock-tables > inf.sql
 mysql -hm1-dt-log01.m1 -P3306 -uzy -p bdg_bbs < inf.sql
 #+END_SRC
 
+** 生成建表语句
+我想把公司开发机上表复制到我的 Mac 上，方便测试，但是我没有找到方便生成建表语句的
+工具。最后我发现 phpMyAdmin 可以很方便地帮我实现。下面是步骤：
+1. 在 Web 上访问 phpMyAdmin，选择想要的表，然后选择 "导出"。
+2. 指定导出那些记录，并确保 "对象创建选项" 中的 *CREATE TABLE 选项* 被勾选上，然
+   后执行导出，导出的文件可以通过浏览器直接下载到 Mac 上。
+3. 在 Mac 的终端里面执行 *mysql -uminos_test -pminos_test -Dminos_test <
+   ~/Downloads/data_slice.sql* ，即完成了 *表的创建* 以及数据的导入。
+
 * MySQL 的安装
 ** 启动 mysqld
 修改配置中的服务器端口号为 8306（为了让外网能访问公司的 mysqld），然后执行 mysqld，
@@ -75,6 +84,28 @@ auto-rehash
 #+END_SRC
 顺带提一句，Mac 下 mysql 的配置的默认路径是 */etc/my.conf* 。
 
+* MySQL 状态监控
+** 查看连接数
+show status 后的 Thread_connected 字段。
+#+BEGIN_SRC mysql
+mysql> show status;
+...
+...
+| Threads_cached                    | 19            |
+| Threads_connected                 | 23            |
+| Threads_created                   | 301582        |
+| Threads_running                   | 2             |
+| Uptime                            | 6295556       |
+| Uptime_since_flush_status         | 6295556       |
+...
+...
+#+END_SRC
+** 查看正在执行的查询
+尤其是当我们发现查询阻塞时，我们可以通过 show processlist;来列出正在执行的查询。
+#+BEGIN_SRC mysql
+mysql> show processlist;
+#+END_SRC
+
 * MySQL Connector/C++
 MySQL Connector/C++ 是 MySQL 官方推荐的 C++客户端。
 
@@ -93,3 +124,20 @@ SQL 分为两类，查询是 executeQuery，剩下的增删改都是 executeUpda
 ** ERROR 1133 (42000): Can't find any matching row in the user table
 原因：用户不存在！如果你是明明添加了用户，但是仍然这个错，那么就需要先执行：
 *FLUSH PRIVILEGES;*
+** 建表时提示：Specified key was too long; max key length is 767 bytes')
+查明原因，是被的指定为 unique key 的某 string 字段太长了为 1024 * 3（因为是 Unicode），
+建表代码如下：
+#+BEGIN_SRC python
+class ProductLine(Base):
+    __tablename__ = 'product_line'
+
+    id = Column(Integer, primary_key=True)
+    noah_node_id = Column(Integer, unique=True, nullable=False)
+    name = Column(String(1024), nullable=False)
+    path = Column(String(1024), unique=True, nullable=False)
+    department = Column(String(1024), nullable=False)
+    log_module_num = Column(Integer)
+#+END_SRC
+
+由于 path 字段不能改得太小，我只能不将其设为 unique key，而是只留 noah_node_id 作为
+unique key。

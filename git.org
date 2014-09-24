@@ -2,46 +2,49 @@
 #+DATE: 2014-02-11
 
 * 小技巧
-** 查看代码库中所有org类型文件的改动情况
-假设目录深度最多为2，那么可以这么写：
+** 查看代码库中所有 org 类型文件的改动情况
+假设目录深度最多为 2，那么可以这么写：
 #+BEGIN_SRC sh
 git st *.org */*.org 
 #+END_SRC
+* git rm
+** 在 git 中删除，但保留本地文件
+git rm --cached xxx 即可！
 * 远程分支
 ** 列出远程分支
 git branch -r
-** Checkout远程分支
+** Checkout 远程分支
 git checkout -r origin/xxx
 ** 新建仓库并与远程分支同步
 步骤：
-1. git init （如果本地仓库还没建好的话）
+1. git init（如果本地仓库还没建好的话）
 2. git remote add origin https://github.com/elvestar/emacs.d.git
 3. git checkout -b master
-4. git checkout master （此时才会自动将本地master与远程master关联起来）
+4. git checkout master（此时才会自动将本地 master 与远程 master 关联起来）
 5. git pull
 
 * submodule
-Git的submodule功能允许我们将别人的Git仓库挂到自己的Git仓库的任何位置，
-成为自己的Git仓库的一部分。这个功能在管理大型项目时很有用。
+Git 的 submodule 功能允许我们将别人的 Git 仓库挂到自己的 Git 仓库的任何位置，
+成为自己的 Git 仓库的一部分。这个功能在管理大型项目时很有用。
 
-** 带submodule的clone
+** 带 submodule 的 clone
 #+BEGIN_SRC sh
 git clone --recursive git://github.com/mozilla/kitsune.git
 #+END_SRC
 
-** 更新Git仓库中的submodule
-如果想更新submodule，或者是clone别人的仓库时忘记加--recursive来clone它
-的submodule，可以执行下面指令。
+** 更新 Git 仓库中的 submodule
+如果想更新 submodule，或者是 clone 别人的仓库时忘记加--recursive 来 clone 它
+的 submodule，可以执行下面指令。
 #+BEGIN_SRC sh
 git submodule update --init --recursive
 #+END_SRC
 
-* Git的GUI工具
+* Git 的 GUI 工具
 ** SourceTree
 [[http://www.sourcetreeapp.com/images/sourcetree_hero_mac_full_interface.png]]
 * 问题汇总
 ** git push 失败，提示 "error: RPC failed; result=22, HTTP code = 411"
-原因是git客户端默认的HTTP数据传输的值过小（为1M），改大即可。下面指令将其改为
+原因是 git 客户端默认的 HTTP 数据传输的值过小（为 1M），改大即可。下面指令将其改为
 100M。
 #+BEGIN_SRC sh
 git config http.postBuffer 104857600
