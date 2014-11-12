@@ -9,8 +9,10 @@ Tornado 用了大半年，有些不爽的地方，主要在于 Tornado 太自由
 Flask 是著名的 Pocoo 团队出品的 Python Web 框架。
 
 * 资料搜集
++ [[http://flask.pocoo.org/snippets/][Flash Snippets]]
 + [[http://python-china.org/topic/93][flask 的优点是什么？]]
 + [[http://neue.v2ex.com/t/28701][有没有用 Flask 做的比较大的开源项目？]]
++ [[http://www.reddit.com/r/Python/comments/1phog0/im_writing_a_web_app_flask_tornado_and_would/][Expert's opinion on best practices about python web]]
 
 ** Flask Blog
 + [[http://blog.miguelgrinberg.com/post/about-this-blog]]
@@ -57,6 +59,7 @@ Web 服务器上直接部署，我喜欢部署在 WSGI 容器里，通过反向�
 请求环境。。。
 ** The Flask Mega-Tutorial
 + [[http://www.pythondoc.com/flask-mega-tutorial/index.html][The Flask Mega-Tutorial (zh_cn)]]
++ [[https://github.com/miguelgrinberg/flasky]]
   
 这篇教程里的 Web 表单一章介绍了使用 Flask-WTF 扩展来快捷地实现表单。
 + [[http://www.pythondoc.com/flask-mega-tutorial/webforms.html][Web 表单]]
@@ -64,9 +67,12 @@ Web 服务器上直接部署，我喜欢部署在 WSGI 容器里，通过反向�
 另外，官方文档里也提到用 WTForms 来实现表单验证。
 +[[http://dormousehole.readthedocs.org/en/latest/patterns/wtforms.html][使用 WTForms 进行表单验证]]
 
-| sdf | sdf | sdf | sdf | sdf |
-|-----+-----+-----+-----+-----|
-| sdf | sdf | sdf | sdf | dsf |
+** Flask Web Development
+*** 第二章：Basic Application Structure
+主要关注
+*** 第七章：
+看完了 app 的_init_.py 的实现方式，但是蓝图和 manager.py 以及 make_shell_context()，
+requiremens.txt，unittest 还没看，等以后要用到再看。
 * 阅读 Flask 源码
 ** 源码总览和阅读意义
 通过阅读 Flask 的源码，我想知道或者获得：
@@ -96,3 +102,302 @@ Flask 来维护的（Endpoint 就是路由的终点，是 werkzeug 定义的概�
 *dispatch_request()* 函数在执行之前，路由过程就已经完成（其实是由
 werkzeug.routing 来完成的）。 如果之前的路由出错了，在这个函数里会执行路由异常过
 程。在这个的末尾会调用真正的 View Function，也就是用户自己定义的部分。
+* Flask 扩展
+** Flask-Admin
++ [[http://flask-admin.readthedocs.org/en/latest/][Flask-Admin 文档]] 
+用法：
+
+** WTForms
++ [[http://dormousehole.readthedocs.org/en/latest/patterns/wtforms.html][使用 WTForms 进行表单验证]]
++ [[http://wtforms.readthedocs.org/en/latest/index.html][WTForms Documentation]]
++ [[http://www.pythondoc.com/flask-mega-tutorial/webforms.html][The Flask Mega-Tutorial: Web 表单]]
++ [[http://dormousehole.readthedocs.org/en/latest/patterns/wtforms.html][Jinja2 下的 macro：render_field]]
+*** 问题：form.validate_on_submit() 总是返回 false
+原因：这是 WTForms 的一个经典的坑，需要在表单前加上 form.csrf_token 和
+form.hidden_tag() 才能避免这种情况。
++ [[http://stackoverflow.com/questions/10722968/flask-wtf-validate-on-submit-is-never-executed]]
+
+*** 用 model 来构造 form
+#+BEGIN_SRC python
+log_config = LogConfig.query.filter_by(log_module_id=log_module_id).first()
+...
+form = EditLogConfigForm(obj=log_config)
+return render_template('edit.html', log_config=log_config, form=form)
+#+END_SRC
+*** 用 form 来更新 model
+解法：实现一个用 form 来更新 model 的函数（如下）。
+#+BEGIN_SRC python
+@staticmethod
+def update_model_by_form(form, model):
+    for key, value in form.data.items():
+        if value != '':
+            model.__setattr__(key, value)
+#+END_SRC
+
+完整的代码如下：
+#+BEGIN_SRC python
+# 编辑日志配置
+@main.route('/edit/<int:log_module_id>', methods=['GET', 'POST'])
+def edit_log_config(log_module_id):
+    log_config = LogConfig.query.filter_by(log_module_id=log_module_id).first()
+    if not log_config:
+        return '没找到！'
+    form = EditLogConfigForm()
+    if form.validate_on_submit():
+        # 用 form 来更新 model
+        Utils.update_model_by_form(form, log_config)
+        db.session.add(log_config)
+        db.session.commit()
+        return '编辑成功'
+    else:
+        # 用 model 来生成 form
+        form = EditLogConfigForm(obj=log_config)
+        return render_template('edit.html', log_config=log_config, form=form)
+#+END_SRC
+*** 遍历 form，访问其各个字段的各个属性
+#+BEGIN_SRC python
+    @staticmethod
+    def list_all_field_errors_of_form(form):
+        for field in form:
+            if field.errors:
+                form_errors = '\n'
+                form_errors += field.label.text + ' - '
+                form_errors += ' '.join(field.errors)
+        return form_errors
+#+END_SRC
+几个要点：
+1. 通过 ~for field in form:~ 可以直接遍历 form
+2. 访问 field label 要通过 field.label.text，而访问 field value 则要用 field.xxx.data
+   （xxx 是字段名）
+** WTForms-Components
+#+BEGIN_EXAMPLE
+WTForms-Components provides various additional fields, validators and widgets for WTForms.
+#+END_EXAMPLE
++ [[http://wtforms-components.readthedocs.org/en/latest/][WTForms-Components Docs]]
++ [[http://www.w3school.com.cn/html5/html_5_form_input_types.asp][HTML5 input 类型]]
+感想：该扩展提供的 DateTimeField 就很赞，让我可以快速地实现 DateTime Picker。美中
+不足的是不同浏览器对 HTML5 的一些 input type 的支持参差不齐，例如，Chrome 不支持
+DateTimeField，但支持 DateTimeLocalField。
+** Flash-Script
+*** 在 shell 下操纵 Flash App
+在 manager.py 中加入：
+#+BEGIN_SRC python
+from flask.ext.script import Manager, Shell
+...
+manager.add_command('shell', Shell(make_context=make_shell_context))
+#+END_SRC
+然后，执行 python manager.py shell，即可在 shell 中启动一个 Python 解释器，且运行环境
+中包含整个 Flash App，我们可以在这个运行环境中执行 *db.create_all()* 来建表等操作。
+*** 配置启动的端口号
+通过 -p 传入：
+#+BEGIN_SRC sh
+python manage.py  runserver -p 8099 
+#+END_SRC
+** Flask-Bootstrap
++ [[http://pythonhosted.org/Flask-Bootstrap/basic-usage.html][Flask Bootstrap Docs]]
+** Flask-SQLAlchemy 
++ [[https://pythonhosted.org/Flask-SQLAlchemy/index.html][Flask-SQLAlchemy Docs]]
+*** 如何只 select 指定 field
+解法：使用 with_entities。例如：
+#+BEGIN_SRC python
+log_module_ids = LogConfig.query.with_entities(LogConfig.log_module_id).filter_by(cluster_name=cluster_name).all()
+#+END_SRC
+* URL 路由和请求处理
+** 如何处理 GET 方式的 search?query=xxx 形式的 URL？
+ #+BEGIN_SRC python
+@main.route('/search')
+def search():
+    query = request.args.get('query')
+...
+ #+END_SRC
+   
+** 如何处理 POST 方式的参数在 post data 里的情况？
+答案：在 request.form 里取，而不是 request.args 里面取！
+** URL 中带有 '/' 时该如何路由？
+Flask 不仅支持 int/float/string 类型的 URL 字段的路由，还支持一种 path 字段，该种字段
+里可以包含 '/'。不过要注意的是，path 字段不能以 '/ 作为开头！ 这是一个不方便的地
+方。
+#+BEGIN_SRC python
+@main.route('/ls/<int:log_module_id>/<hostname>/<path:directory>')
+def list_dir(log_module_id, hostname, directory):
+    ftp_dir = "ftp://" + hostname + '/' + directory
+#+END_SRC
++ [[http://flask.pocoo.org/snippets/76/][Handling URLs containing slash '/' character]]
+
+** 如何向后端 POST 参数格式为 JSON 的请求？
+#+BEGIN_SRC javascript
+var data = {log_plan_id: log_plan_id, machines: machines}
+$.ajax({
+    type : "POST",
+    url : "/batch_restart_agents",
+    data: JSON.stringify(data, null, '\t'),
+    contentType: 'application/json;charset=UTF-8',
+    success: function(result) {
+        alert(result);
+    },
+    error: function() {
+        alert('服务器端发生异常或者返回数据格式不正确!');
+        return false;
+    }
+});
+#+END_SRC
+后端需要在 request.json 里面获取参数。
+* Cookies and Sessions
+Cookies 和 Sessions 的一个重要区别在于：浏览器关闭时，Sessions 会清空，而 Cookies 不
+会，只有过期后才会清除。
+** 每次请求前通过 Cookies 获取用户名
+下面代码是个例子，@main.before_app_request 下面定义了一个钩子函数，main 这个 app 每
+次处理请求前，都会执行这个函数，尝试从 Cookies 中获取 minos_user，并设置到我自定义的
+request.minos_user 变量中。如果没在 Cookies 中，则会从其他的地方获取（如通过 SSO），
+并设置到 Cookies 中，并执行重定向。
+#+BEGIN_SRC python
+@main.before_app_request
+def before_request():
+    request.minos_user = request.cookies.get('minos_user')
+    if not request.minos_user:
+        print 'not found'
+        if request.host.startswith('localhost'):
+            request.minos_user = 'zhongyi_test'
+        else:
+            # Get and set minos_user
+
+        response = make_response(redirect(request.url))
+        response.set_cookie('minos_user', request.minos_user, 3600 * 24 * 30)
+        return response
+    else:
+        print 'found'
+#+END_SRC 
+* Http Client
+Flask 不自带 Http Client，需要额外购置。我们可以用 urlib2，不过我对 Tornado 的 Http
+Client 更熟悉一点，所以就用它吧。
++ [[http://runnable.com/Us3h5Ccn6TFMAAGu/python-tornado-http-client-example][Python Tornado HTTP client example (Runable)]] 
+
+ 发现了一个更易用的库：
++ [[http://docs.python-requests.org/en/latest/][Requests: HTTP for Humans]]
+* 异步，多线程，后台任务相关
+**  使用 Celery
+我需要在 Flask 中定期运行一类繁重的任务（主要是每日的业务统计），该任务需要额外的执
+行线程，还需要拥有 Flask 的执行环境（如数据库配置等），看起来 Celery 能解决我的问题。
++ [[http://www.celeryproject.org/]]
++ [[https://github.com/celery/celery]]
++ [[http://flask.pocoo.org/docs/0.10/patterns/celery/][Celery Based Background Tasks]]
++ [[https://github.com/thrisp/flask-celery-example]]
+
+* Jinja 相关
+** 使用 macro 来快速实现带表单的 Modal（模态窗口）
+#+BEGIN_SRC html
+{% macro render_modal_from_form(modal_id, modal_title, form) %}
+    <div class="modal fade" id="{{ modal_id }}" tabindex="-1" role="dialog" aria-labelledby="" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <h4 class="modal-title">{{ modal_title }}</h4>
+                </div>
+                <div class="modal-body">
+                    {{ bs_wtf.quick_form(form, form_type='basic', button_map={'submit':'primary'}) }}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endmacro %}
+#+END_SRC
+要点：
+1. 使用 Flask-Bootstrap 的 quick_form() 来一键生成表单
+2. 使用 Flask 的
+* Cache
++ [[http://flask.pocoo.org/docs/0.10/patterns/caching/][Flask Caching]]
++ [[https://pythonhosted.org/Flask-Cache/][Flask-Cache]]  
+** 一个简单的 Cache 实现
+#+BEGIN_SRC python
+def get_my_item():
+    rv = cache.get('my-item')
+    if rv is None:
+        rv = calculate_value()
+        cache.set('my-item', rv, timeout=5 * 60)
+    return rv
+#+END_SRC
+** 利用 Flask-Cache 来 Cache 某个 View Function
+#+BEGIN_SRC python
+@cache.cached(timeout=50)
+def index():
+    return render_template('index.html')
+#+END_SRC
+由于在 Flask 中，View Function 是不重名的，所以在 为其做 Cache 时，很容易找到一个唯
+一的 Key。
+* 数据库相关
+** 忠告
+*数据库相关操作需要谨慎* ！！！例如做数据库迁移时，要仔细阅读迁移工具生成的脚本，了
+解其带来的影响和后果， *尤其要看是否有 drop table/drop column 的操作* ，确认影响后再执
+行迁移。如下图的迁移脚本的 upgrade 会删掉两张表，这可能不是我们期望的：
+#+BEGIN_SRC python
+def upgrade():
+    ### commands auto generated by Alembic - please adjust! ###
+    op.drop_table('notice_dtmeta')
+    op.drop_table('minos_data_back')
+    op.drop_table('data_slice')
+    op.add_column('log_config', sa.Column('associated_log_module_ids', sa.String(length=2048), nullable=True))
+    op.add_column('log_config', sa.Column('is_open_associated_notify', sa.Boolean(), nullable=True))
+    op.add_column('log_config', sa.Column('notify_delay_minutes', sa.Integer(), nullable=True))
+    ### end Alembic commands ###
+#+END_SRC
+
+对于一个数据库，如果既有 ORM 在用，也有手工 DDL (Data Definition Language, such as
+CREATE, DROP, ALTER)，则迁移脚本可能会将手工建立的表给完全地抹去。 *所以说，我们
+应该只在一个地方执行数据库的 DDL* ，如果用了 ORM，则就用 ORM 提供的迁移设施来执行 DDL。
+
+#+BEGIN_EXAMPLE
+数据库一般都有回滚到某个版本的功能，不知道此功能是否能完美恢复被 drop 的 table？
+#+END_EXAMPLE
+** 如何做数据库迁移
+就几步：
+1. 使用 Flask-Migrate
+2. py manage.py db init
+3. py manage.py db migrate -m "add fields: associated notify and notify delay minutes"
+4. py manage.py db upgrade  
+最终显示：
+#+BEGIN_SRC sh
+$ xxxx git:(master) ✗ py manage.py db upgrade                                                            
+INFO  [alembic.migration] Context impl MySQLImpl.
+INFO  [alembic.migration] Will assume non-transactional DDL.
+INFO  [alembic.migration] Running upgrade None -> 389afadb5dd3, add fields: associated notify and notify delay minutes
+#+END_SRC
+*** 感受
+以前我是先改 modes.py，然后登录数据库执行 alter table xxx add column 加字段，现在用
+上了专业的数据库迁移工具，感觉确实很好。以后我不会再手工加字段了。
+* Miscellaneous
+** 处理 Ajax
+Flask 提供了快捷的 jsonify 函数，能将 dict 或其他值转化为 JSON 格式，并通过 return 直接返
+回给浏览器。
++ [[http://dormousehole.readthedocs.org/en/latest/patterns/jquery.html][通过 jQuery 使用 AJAX]]
+
+** 邮件
++ [[http://flask.pocoo.org/docs/0.10/errorhandling/][Logging Application Errors]]
+Python 的 logging 库支持将邮件发送，并可以指定日志等级大于多少的才发。不过需要搞
+SMTP，而公司项目一般用 sendmail 指令，所以我包装一下 sendmail，将一些重要的错误发
+到我的邮箱里。
+#+BEGIN_SRC python
+    @staticmethod
+    def send_mail(body):
+        p = os.popen("/usr/sbin/sendmail -t", "w")
+        p.write("MIME-Version: 1.0\n")
+        p.write("Content-type:text/html;charset=utf-8\n")
+        p.write("From: %s\n" % "xxx-admin@xxx.com")
+        p.write("To: %s\n" % "zy@xxx.com")
+        p.write("Subject: A Mail from Xxx (xxx.xxx.com)\n")
+        p.write("\n")
+        p.write(body)
+        p.close()
+#+END_SRC
+  
+** 在 Flask 里使用 Redis
++ [[http://flask.pocoo.org/snippets/71/][Counting Online Users with Redis]]
++ [[http://flask.pocoo.org/snippets/75/][Server-side Sessions with Redis]]
+** Angular.js with Flask
+如果哪天我要使用 Angular.js 的话，就再详细读一下下面的文章吧。
++ [[http://stackoverflow.com/questions/11522151/typical-angular-js-workflow-and-project-structure-with-python-flask/][Typical Angular.js workflow and project structure (with Python Flask)]]
+* 回顾
+** 读完了 Flask 的文档，发现 Flask 是个比 Tornado 更加理想的 Web 框架 <2014-09-20 Sat>
+今天在西安校招结束了，坐高铁回北京，路上无聊开始学习 Flask，发现了很多让我想立马
+就用的特性。不过回公司后还有很多事情要处理，等国庆节时，我再抽出个三天来把 Minos 平
+台用 Flask 给重构一把。

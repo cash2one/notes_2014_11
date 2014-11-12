@@ -18,6 +18,40 @@
 + [[http://woodpecker.org.cn/diveintopython/][深入 Python :Dive Into Python 中文版（啄木鸟社区）]]
 + [[http://book.douban.com/subject/3117898/][Python 源码剖析]]
 
+* list 和 dict
+** list 的并集和交集
+求交集：
+#+BEGIN_SRC python
+log_module_ids_unfound = list(set(log_module_ids).difference(set(log_module_ids_found)))
+#+END_SRC
+求并集：
+#+BEGIN_SRC python
+# 等到用上的吧。。
+#+END_SRC
+** 将 tuple 组成的 list 转化为 int 组成的 list
+例如，将 [(1234), (4556), (6543)] 转化为 [1234, 4556, 6543]，前者是用 SQLAlchemy
+select 出来的结果，后者是我们想要的可以接在 where in 语句后面的 list。代码实现如下：
+#+BEGIN_SRC python
+log_module_ids = [t[0] for t in log_module_ids]
+#+END_SRC
+** 复杂 list 的排序
+例如，元素为 dict 的 list，想根据 dict 的某个 key 的值来进行排序。
+#+BEGIN_SRC python
+# 对节点进行排序，将故障节点排在前面
+import operator
+running_nodes.sort(key=operator.itemgetter('log_time', 'update_time'))
+disable_nodes.sort(key=operator.itemgetter('log_time', 'update_time'))
+#+END_SRC
++ [[http://www.the5fire.com/python-sort-dict-in-list-by-time.html][python 对列表中的字典按{key}时间排序]]
+* Built-in Functions
+** getattr
+下面例子实现了通过 getattr() 实现打印 Model 的各个字段（各个字段是 Model Object 的
+Attribute）。
+#+BEGIN_SRC python
+log_config = LogConfig.query.filter_by(log_module_id=log_module_id).first()
+for col in log_config.__table__.columns:
+    print col.name, getattr(log_config, col.name)
+#+END_SRC
 * re 模块
 ** group
 + [[https://docs.python.org/2/library/re.html][re — Regular expression operations]]
@@ -74,8 +108,10 @@ data_slices = engine.execute('SELECT base_time, end_time, ready_time, data_size 
                                      ' AND DATE(base_time) = "' + base_date + '"')
 
 for data_slice in data_slices:
-    slice_delay_time = (data_slice.ready_time - data_slice.end_time).seconds
+    # slice_delay_time = (data_slice.ready_time - data_slice.end_time).seconds 
+    slice_delay_time = (data_slice.ready_time - data_slice.end_time).total_seconds()
 #+END_SRC
+说明：应该使用 total_seconds()，seconds 得到的差值不包括天数。
 ** string -> datetime -> timestamp
 #+BEGIN_SRC python
 datetime_start = "2014-07-29 18:00:00"
@@ -86,6 +122,29 @@ timestamp_end = int(time.mktime(datetime.datetime.strptime(datetime_end, '%Y-%m-
 
 感想：很坑爹，很丑陋，调用了 N 多时间相关的函数。
 
+** 案例：给出两个时间点和一个时间间隔，求生成所有时间点
+解法：先将两个时间点生成 2 个 datetime，然后将一个时间间隔生成 1 个 timedelta，然后利
+用 datetime 之间可以比较，datetime 和 timedelta 可以互相加减的特性来循环生成。
+#+BEGIN_SRC python
+start_time = datetime.datetime.strptime(form.start_time.data, '%Y-%m-%d %H:%M')
+end_time = datetime.datetime.strptime(form.end_time.data, '%Y-%m-%d %H:%M')
+time_delta = datetime.timedelta(minutes=5)
+cur_time = start_time
+while cur_time <= (end_time - time_delta):
+    print cur_time.strftime('%Y-%m-%d %H:%M:%S')
+    cur_time += time_delta
+#+END_SRC
+** 案例：利用 timetuple 来对 datetime 进行按某一时间间隔取整 
+#+BEGIN_SRC python
+# 需要先对 start_time 按通知周期进行取整，天级以下的分钟位，秒位都置零， 天级的还要额外地 把小时位也置零
+start_tt = start_time.timetuple()
+if log_config.notify_interval >= 1440:
+    cur_time = datetime.datetime(start_tt.tm_year, start_tt.tm_mon, start_tt.tm_mday,
+                                 0, 0, 0, 0)
+else:
+    cur_time = datetime.datetime(start_tt.tm_year, start_tt.tm_mon, start_tt.tm_mday,
+                                 start_tt.tm_hour, 0, 0, 0)
+#+END_SRC
 * 调用子进程
 Python 里有 N 种方法调用子进程，我自己就用过 os.system 和 os.popen3，此外还有
 subprocess 和 commands。

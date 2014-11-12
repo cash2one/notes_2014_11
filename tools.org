@@ -11,3 +11,9 @@
 + [[http://www.yushufang.me/doit-im/reveal-js-master-zh.html#/][REVEAL.JS HTML 让演示更便捷]]
 * Gollum
 * Poole/Lanyon
+* Supervisor
+** 当 Supervisor 运行的程序依赖一堆环境变量时
+我们一般会将这些环境变量写到一个文件（例如叫 xxx 文件）中，然后执行 source xxx 来设置
+它们。而当使用 Supervisor 时，在启动参数中执行 source xxx 总是失败，这时我想到了一个
+临时的解决方法，就是先执行 source xxx，再启动 supervisord。这时，通过 Supervisor 启动
+的进程就会拥有 xxx 文件中的环境变量了。

@@ -146,6 +146,38 @@ if ($('#is_open_alarm_gsm').is(':checked')) {
 
 + [[http://www.oschina.net/code/snippet_54100_2968][几种用来检查 checkbox 是否选中的方法]]
 
+** select 如何在 disabled 的状态下也给后端发送值？
++ [[http://stackoverflow.com/questions/1191113/disable-select-form-field-but-still-send-the-value]]
+#+BEGIN_SRC javascript
+$('#notify_interval').attr('disabled', '');
+$('#form_add_log').bind('submit', function() {
+    $('#notify_interval').removeAttr('disabled');
+});
+#+END_SRC
+** 提交表单前，手工加入字段
+#+BEGIN_SRC javascript
+ $('#edit_form').submit(function() {
+    var post_data = $(this).serialize();
+    post_data += '&edit_comparison=' + encodeURIComponent(window.edit_comparison);
+    $.ajax({
+        type: 'POST',
+        url: '/edit/{{ log_config.log_module_id }}',
+        data: post_data,
+        success: function(data) {
+            alert(data + '\n\n 点击 "确定" 刷新页面 ...');
+            location.reload();
+        },
+        error: function(e) {
+            alert('请求失败：' + JSON.stringify(e));
+        }
+    })
+    return false;
+})
+#+END_SRC
+要点：
+1. 将表单 POST 到后台的数据格式是 k1=v1&k2=v2&....，通过 serialize() 函数可以转换
+2. 各字段需要进行 URL encode，JS 的相关函数是：encodeURIComponent()
+
 * 问题记录
 ** href, button, type="submit" and POST
 当我们想通过$.ajax()或$.post()等方式来向后端发起请求时，要保证发起该 JS 函数的元素

@@ -1,37 +1,37 @@
-#+TITLE: 深入分析Protobuf
+#+TITLE: Protobuf
 
 * 前言
-决定深入研究一下经典的protobuf，研究一下它的架构和实现。通过研究它，我希望达到：
+决定深入研究一下经典的 protobuf，研究一下它的架构和实现。通过研究它，我希望达到：
 1. 增加我的模块的设计能力；
 
 * 先零散地按照技术点来写
 ** Closure
-中文翻译做闭包。Protobuf用于RPC时，Client和Server间是一种网络通讯，这是一种耗时操
-作。Client有时希望RPC调用不阻塞自己的线程，所以它会以异步的方式来调用RPC，这时候
-就要把回调函数及其参数传入RPC方法之中。如何传入它们呢？Protobuf为我们提供了
+中文翻译做闭包。Protobuf 用于 RPC 时，Client 和 Server 间是一种网络通讯，这是一种耗时操
+作。Client 有时希望 RPC 调用不阻塞自己的线程，所以它会以异步的方式来调用 RPC，这时候
+就要把回调函数及其参数传入 RPC 方法之中。如何传入它们呢？Protobuf 为我们提供了
 Closure。
 
-在软件设计中，封装能够带来各种好处。假如我们把回调函数和参数直接传入到RPC方法里的
-话，封装性很不好，接口也会很难看，而我们把这些东西封装成某个东西再传入PRC方法的话，
+在软件设计中，封装能够带来各种好处。假如我们把回调函数和参数直接传入到 RPC 方法里的
+话，封装性很不好，接口也会很难看，而我们把这些东西封装成某个东西再传入 PRC 方法的话，
 就会获得（梦寐以求的）封装性。*Closure，就是指回调函数及其参数的封装*。
 
-** Message的ParseFromString()方法的简单原理
-一个Message序列化生成的String是有格式有层级的，即使我们不知道Message本身（静态），
-甚至连proto都不知道（动态），我们也可以把它的各个字段，各个嵌套Message都给解析出
+** Message 的 ParseFromString()方法的简单原理
+一个 Message 序列化生成的 String 是有格式有层级的，即使我们不知道 Message 本身（静态），
+甚至连 proto 都不知道（动态），我们也可以把它的各个字段，各个嵌套 Message 都给解析出
 来。
 
-拿一个简单的没有嵌套子Message的Message序列化成的String作例子，我们解析它时，会先
-遇到Message的标志，接着我们能获得该Message在String上的长度。然后进入到Message内部，
-我们遇到了第一个字段，我们能从String中获得该字段的id，长度以及类型（整型表示），
+拿一个简单的没有嵌套子 Message 的 Message 序列化成的 String 作例子，我们解析它时，会先
+遇到 Message 的标志，接着我们能获得该 Message 在 String 上的长度。然后进入到 Message 内部，
+我们遇到了第一个字段，我们能从 String 中获得该字段的 id，长度以及类型（整型表示），
 我们能截取出这个字段并打印出来（只不过这时我们不知道该字段的名字）。我们依次截取
-各个字段，直到完成这个Message的解析。总的来说，我们能获取这个结构未知的String的除
+各个字段，直到完成这个 Message 的解析。总的来说，我们能获取这个结构未知的 String 的除
 了名字之外的所有信息。
 
 ** C++代码生成器概览
 
-C++代码生成器的代码位于google/protobuf/compiler/cpp/目录下面，外层实现位于
-cpp_generator.cc里面，使用了io::*ZeroCopyOutputStream*来作为生成代码的输出文件，
-使用了io::*Printer*来做生成代码的格式化。还使用了自己实现的FileGenerator三个接口：
+C++代码生成器的代码位于 google/protobuf/compiler/cpp/目录下面，外层实现位于
+cpp_generator.cc 里面，使用了 io::*ZeroCopyOutputStream*来作为生成代码的输出文件，
+使用了 io::*Printer*来做生成代码的格式化。还使用了自己实现的 FileGenerator 三个接口：
 
 #+BEGIN_SRC C++
 explicit FileGenerator(const FileDescriptor* file, const string& dllexport_decl);
@@ -39,26 +39,29 @@ void GenerateHeader(io::Printer* printer);
 void GenerateSource(io::Printer* printer);
 #+END_SRC
 
-从接口可以看出，需要传入FileDescriptor，这个文件描述符的来源显然是动态编译Import
-出来的。从中我们可以看出Protobuf的静态代码依赖于动态，静态是动态的一种固化。
+从接口可以看出，需要传入 FileDescriptor，这个文件描述符的来源显然是动态编译 Import
+出来的。从中我们可以看出 Protobuf 的静态代码依赖于动态，静态是动态的一种固化。
 
-** IO子模块简介
-Protobuf有几个地方会用到IO：
+** IO 子模块简介
+Protobuf 有几个地方会用到 IO：
 1. 序列化（写内存（）和反序列化（读内存）
-2. 动态编译（读proto文件）
+2. 动态编译（读 proto 文件）
 3. 代码生成（写文件）
 
-这些都是Protobuf的核心功能。所以Protobuf专门实现了自己的IO子模块。
+这些都是 Protobuf 的核心功能。所以 Protobuf 专门实现了自己的 IO 子模块。
 
-为了提高IO效率，Protobuf提供了*ZeroCopyInputStream*/*ZeroCopyOutputStream*来减少
+为了提高 IO 效率，Protobuf 提供了*ZeroCopyInputStream*/*ZeroCopyOutputStream*来减少
 不必要的字节拷贝。
 
-Protobuf在序列化过程中对整型使用了Varint变长编码，以获得压缩，为了屏蔽编码细节，
-Protobuf在ZeroCopyStream上派生出了*CodedInputStream*/*CodedOutputStream*。
+Protobuf 在序列化过程中对整型使用了 Varint 变长编码，以获得压缩，为了屏蔽编码细节，
+Protobuf 在 ZeroCopyStream 上派生出了*CodedInputStream*/*CodedOutputStream*。
 
-为了格式化静态生成代码，IO子模块还实现了*Printer*类。该类的功能就是格式控制。
+为了格式化静态生成代码，IO 子模块还实现了*Printer*类。该类的功能就是格式控制。
 
-为了解析Proto文件，IO子模块实现了Tokenizer类。
+为了解析 Proto 文件，IO 子模块实现了 Tokenizer 类。
 
-** TextFormat简介
+** TextFormat 简介
+* API
+** 设置 repeated 字段
+方式：通过  xxx_size() 遍历，然后通过 set_xxx(index, value) 来设值。
 

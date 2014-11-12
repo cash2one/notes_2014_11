@@ -14,6 +14,10 @@ update download_config set mailList = replace(mailList, "lixxx11@baidu.com", "")
 mysql> alter table agent_config alter zk_log_file set default "/noah/log/logagent.log";
 #+END_SRC
 参考： [[http://dev.mysql.com/doc/refman/5.1/en/alter-table.html][MySQL: 13.1.7 ALTER TABLE Syntax]]
+** 修改 enum 字段
+#+BEGIN_SRC sql
+alter table log_config change log_status log_status ENUM('enabled','disabled','applying','deleting','deleted') default null;
+#+END_SRC
 * 正则表达式
 下面的 SQL 实现了搜索表中 bns_name 字段不满足正确的 faker.bns 的模式的所有记录。
 #+BEGIN_SRC sh
@@ -43,13 +47,12 @@ mysqldump -h10.23.247.91 -P3306 -uinf -p inf --skip-lock-tables > inf.sql
 #+END_SRC
 说明：由于没有 root 账号，无法 Lock table，所以只能用 ~--skip-lock-table~
 参数。
-
 ** 导入
 #+BEGIN_SRC sh
 mysql -hm1-dt-log01.m1 -P3306 -uzy -p bdg_bbs < inf.sql
 #+END_SRC
-
 ** 生成建表语句
+***  方法 1：使用 phpMyAdmin
 我想把公司开发机上表复制到我的 Mac 上，方便测试，但是我没有找到方便生成建表语句的
 工具。最后我发现 phpMyAdmin 可以很方便地帮我实现。下面是步骤：
 1. 在 Web 上访问 phpMyAdmin，选择想要的表，然后选择 "导出"。
@@ -57,7 +60,9 @@ mysql -hm1-dt-log01.m1 -P3306 -uzy -p bdg_bbs < inf.sql
    后执行导出，导出的文件可以通过浏览器直接下载到 Mac 上。
 3. 在 Mac 的终端里面执行 *mysql -uminos_test -pminos_test -Dminos_test <
    ~/Downloads/data_slice.sql* ，即完成了 *表的创建* 以及数据的导入。
-
+***  方法 2：使用 mysqldump
+使用 mysqldump，将整张或者部分表导出，因为导出数据的同时，还会把表结构也导出来，
+然后的步骤就参考 " 导入"  一节了。
 * MySQL 的安装
 ** 启动 mysqld
 修改配置中的服务器端口号为 8306（为了让外网能访问公司的 mysqld），然后执行 mysqld，
